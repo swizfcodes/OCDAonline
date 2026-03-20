@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,95 +10,105 @@
   <link rel="stylesheet" href="styles/index.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .active-tab { background-color: #1f2937; color: white; }
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .active-tab {
+      background-color: #1f2937;
+      color: white;
+    }
 
     .collapsible-content {
       display: none;
     }
+
     .collapsible-content.show {
       display: block;
     }
+
     .toggle-header {
       user-select: none;
     }
+
     .toggle-header:hover {
       background-color: #f3f4f6;
     }
 
     ul li::before {
-      content: "" !important; 
+      content: "" !important;
     }
 
     .toggle-table.hidden {
-      display: none !important; 
+      display: none !important;
     }
 
-    label{
+    label {
       color: black !important;
     }
 
-    h2{
+    h2 {
       color: black !important;
     }
 
     .form-wrapper,
-    .container-form{
+    .container-form {
       background: none !important;
     }
 
-  @media (max-width: 4000px) and (min-width: 1700px) {
-    html {
-      font-size: 100% !important;
-    } 
+    @media (max-width: 4000px) and (min-width: 1700px) {
+      html {
+        font-size: 100% !important;
+      }
 
-    label{
-      font-size: 100% !important;
+      label {
+        font-size: 100% !important;
+      }
     }
-  }
 
-  @media (max-width: 1023px) and (min-width: 600px) {
-    .p-6 {
+    @media (max-width: 1023px) and (min-width: 600px) {
+      .p-6 {
         padding-top: 7% !important;
+      }
     }
-  }
 
-  @media (max-width: 768px) {
-    html {
-      font-size: 85% !important;
+    @media (max-width: 768px) {
+      html {
+        font-size: 85% !important;
+      }
     }
-  }
 
-  @media (max-width: 600px) {
-    html {
-    font-size: 70% !important;
-  }
+    @media (max-width: 600px) {
+      html {
+        font-size: 70% !important;
+      }
 
-    @media (max-width: 468px) {
-    .email-wrap {
-      word-break: break-word;
-      max-width: 70px;
+      @media (max-width: 468px) {
+        .email-wrap {
+          word-break: break-word;
+          max-width: 70px;
+        }
+      }
+
+      .p-6 {
+        padding: 0.5rem !important;
+        padding-top: 10% !important;
+      }
     }
-  }
-
-  .p-6 {
-    padding: 0.5rem !important;
-    padding-top: 10% !important;
-  }
-}
   </style>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
 
   <!-- Header / Topbar -->
   <header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between p-4 bg-gray-100 shadow-md lg:hidden">
     <div class="text-xl font-bold text-gray-800">OCDA Admin</div>
-    
+
     <!-- Hamburger Menu Button -->
     <button id="menuToggle" class="p-2 text-gray-800 focus:outline-none">
       <!-- Hamburger Icon -->
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
-          viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+        stroke-linejoin="round">
         <path d="M4 6h16M4 12h16M4 18h16" />
       </svg>
     </button>
@@ -105,15 +116,17 @@
 
   <div class="flex flex-col lg:flex-row">
     <!-- Sidebar -->
-    <aside id="sidebar" class="bg-white w-64 fixed top-0 left-0 h-full shadow-md transform -translate-x-full transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:h-auto lg:block hidden">
+    <aside id="sidebar"
+      class="bg-white w-64 fixed top-0 left-0 h-full shadow-md transform -translate-x-full transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:h-auto lg:block hidden">
       <div class="p-6 text-xl font-bold text-gray-800 border-b">OCDA Admin</div>
       <nav class="p-4 space-y-3">
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="member-list">OCDA Members</button>
-        <button id="adminTabBtn" class="w-full px-4 py-2 text-left rounded tab-button" data-tab="create-admin">Administrators</button>
+        <button id="adminTabBtn" class="w-full px-4 py-2 text-left rounded tab-button"
+          data-tab="create-admin">Administrators</button>
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="ledger-entry">Ledger Entry</button>
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="ocda-expense">OCDA Expense</button>
         <!-- Receipt Main Tab -->
-        <div class="relative"   id="receiptTabWrapper">
+        <div class="relative" id="receiptTabWrapper">
           <button id="receiptTabBtn"
             class="w-full px-4 py-2 text-left rounded text-black flex justify-between items-center">
             <span><i data-lucide="file-text" class="w-4 h-4 inline-block mr-2"></i> Reports</span>
@@ -121,18 +134,17 @@
           </button>
 
           <!-- SUBTABS -->
-          <div id="receiptDropdown"
-              class="hidden left-0 mt-1 bg-white shadow-md rounded z-10 w-full border">
+          <div id="receiptDropdown" class="hidden left-0 mt-1 bg-white shadow-md rounded z-10 w-full border">
             <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-                    data-tab="enquiry">
+              data-tab="enquiry">
               <i data-lucide="search" class="w-4 h-4 mr-2"></i> Enquiry
             </button>
             <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-                    data-tab="memberledger">
+              data-tab="memberledger">
               <i data-lucide="book-open" class="w-4 h-4 mr-2"></i> Member Ledger
             </button>
             <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-                    data-tab="ocda-expenses-analysis">
+              data-tab="ocda-expenses-analysis">
               <i data-lucide="file-minus" class="w-4 h-4 mr-2"></i> OCDA Expenses Analysis
             </button>
             <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
@@ -140,7 +152,7 @@
               <i data-lucide="file-plus" class="w-4 h-4 mr-2"></i> OCDA Income Analysis
             </button>
             <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-             data-tab="summary">
+              data-tab="summary">
               <i data-lucide="bar-chart" class="w-4 h-4 mr-2"></i>Monthly Summary
             </button>
           </div>
@@ -148,8 +160,10 @@
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="std">Standard Expenses</button>
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="income">Income Classifications</button>
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="static-tables">Static Tables</button>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="notices-section">Notices / Events</button>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="change-PhoneNumber">Change PhoneNumber</button>
+        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="notices-section">Notices /
+          Events</button>
+        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="change-PhoneNumber">Change
+          PhoneNumber</button>
         <button id="menuToggle" class="lg:hidden p-4 text-gray-800 focus:outline-none"></button>
         <button onclick="adminLogout()" class="bg-red-500 w-full px-4 py-2 text-left rounded tab-button">Logout</button>
       </nav>
@@ -161,8 +175,8 @@
 
     <!-- Main Content -->
     <main class="flex-1 p-6 space-y-10">
-      
-        <!-- Card + Table Container -->
+
+      <!-- Card + Table Container -->
       <section id="landingSections" class="landings-section tab-content">
         <div class="overflow-x-auto rounded shadow bg-white p-4 space-y-6">
           <div id="membersSummaryTableBox">
@@ -210,9 +224,11 @@
 
 
         <!-- Edit Admin Modal -->
-        <div id="editAdminModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+        <div id="editAdminModal"
+          class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
           <div class="bg-white p-6 rounded shadow-md w-full max-w-md relative">
-            <button onclick="document.getElementById('editAdminModal').classList.add('hidden')" class="absolute top-2 right-2 text-gray-500">&times;</button>
+            <button onclick="document.getElementById('editAdminModal').classList.add('hidden')"
+              class="absolute top-2 right-2 text-gray-500">&times;</button>
             <h2 class="text-lg font-bold mb-4">Edit Admin</h2>
             <form id="editAdminForm" class="space-y-4">
               <input type="hidden" name="id" id="editAdminId">
@@ -233,7 +249,8 @@
               </div>
               <div class="flex gap-2 mt-4">
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
-                <button type="button" onclick="document.getElementById('editAdminModal').classList.add('hidden')" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+                <button type="button" onclick="document.getElementById('editAdminModal').classList.add('hidden')"
+                  class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
               </div>
             </form>
           </div>
@@ -246,7 +263,8 @@
         <div class="overflow-auto rounded shadow bg-white">
           <form id="addIncomeClassForm" class="flex gap-2 mb-2">
             <input type="text" id="newIncomecode" placeholder="Code..." required class="border rounded px-2 py-1">
-            <input type="text" id="newIncomedesc" placeholder="Description..." required class="border rounded px-2 py-1">
+            <input type="text" id="newIncomedesc" placeholder="Description..." required
+              class="border rounded px-2 py-1">
             <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
           </form>
           <table class="min-w-full text-sm text-left">
@@ -332,7 +350,8 @@
             <input type="text" name="code" class="p-2 border rounded" placeholder="e.g. 1010 or ALL" />
           </div>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Generate Report</button>
-          <button onclick="exportOCDAReportToPDF()" class="bg-green-600 text-white px-4 py-2 rounded">Export PDF</button>
+          <button onclick="exportOCDAReportToPDF()" class="bg-green-600 text-white px-4 py-2 rounded">Export
+            PDF</button>
         </form>
 
         <!-- Results Container -->
@@ -368,8 +387,8 @@
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Generate Report</button>
         </form>
         <div class="overflow-auto rounded shadow bg-white">
-            <div id="ocdaIncomeAnalysisTable">
-            </div>
+          <div id="ocdaIncomeAnalysisTable">
+          </div>
         </div>
       </section>
 
@@ -413,162 +432,163 @@
         </div>
       </section>
 
-          <!-- Create Member Form -->
+      <!-- Create Member Form -->
       <section id="create-member" class="tab-content hidden">
         <div class="form-wrapper">
           <div class="container-form">
             <form class="form active" id="createMemberForm">
               <h2 class="title">Register New Member</h2>
 
-              
+
               <div class="form-container">
-                  <!-- Success Message -->
-                  <div class="success-message" id="successMessage">
-              </div>
-
-              <!-- Row: Surname + Other Names -->
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="surname">Surname <span class="required">*</span></label>
-                  <input type="text" id="surname" name="Surname" required>
-                  <div class="error" id="surnameError"></div>
+                <!-- Success Message -->
+                <div class="success-message" id="successMessage">
                 </div>
-                <div class="form-group">
-                  <label for="otherNames">OtherNames <span class="required">*</span></label>
-                  <input type="text" id="othernames" name="othernames" required>
-                  <div class="error" id="otherNamesError"></div>
-                </div>
-              </div>
 
-              <!-- Phone Numbers -->
-              <div class="form-row">
+                <!-- Row: Surname + Other Names -->
+                <div class="form-row">
                   <div class="form-group">
-                      <label for="phoneNumber">Phone Number <span class="required">*</span></label>
-                      <input type="tel" id="phoneNumber" name="PhoneNumber" required placeholder="e.g., 08012345678">
+                    <label for="surname">Surname <span class="required">*</span></label>
+                    <input type="text" id="surname" name="Surname" required>
+                    <div class="error" id="surnameError"></div>
                   </div>
                   <div class="form-group">
-                      <label for="phoneNo2">Secondary Phone</label>
-                      <input type="tel" id="phoneno2" name="phoneno2" placeholder="Optional">
+                    <label for="otherNames">OtherNames <span class="required">*</span></label>
+                    <input type="text" id="othernames" name="othernames" required>
+                    <div class="error" id="otherNamesError"></div>
                   </div>
-              </div>
-
-              <!-- Row: Title + HonTitle -->
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="title">Title</label>
-                  <select id="title" name="Title"> 
-                    <option value="">Select Title</option>
-                  </select>
                 </div>
 
-                <div class="form-group">
-                  <label for="honTitle">Honorary Title</label>
-                  <select id="honTitle" name="HonTitle"> 
-                    <option value="">Select Honorary Title</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Row: Sex + DOB -->
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="sex">Sex <span class="required">*</span></label>
-                  <select id="sex" name="Sex" required> 
-                    <option value="">Select Sex</option>
-                    <option value="M">M</option>
-                    <option value="F">F</option>
-                  </select>
-                  <div class="error" id="sexError"></div>
-                </div>
-                <div class="form-group">
-                  <label for="dob">Date of Birth <span class="required">*</span></label>
-                  <input type="date" id="dob" name="DOB" required>
-                  <div class="error" id="dobError"></div>
-                </div>
-              </div>
-
-              <!-- Quarters  + ward-->
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="quarters">Quarters<span class="required">*</span></label>
-                  <select id="quarters" name="Quarters" required> 
-                    <option value="">Select Quaters</option>
-                  </select>
-                  <div class="error" id="quartersError"></div>
+                <!-- Phone Numbers -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="phoneNumber">Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phoneNumber" name="PhoneNumber" required placeholder="e.g., 08012345678">
+                  </div>
+                  <div class="form-group">
+                    <label for="phoneNo2">Secondary Phone</label>
+                    <input type="tel" id="phoneno2" name="phoneno2" placeholder="Optional">
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label for="ward">Ward <span class="required">*</span></label>
-                  <select id="ward" name="Ward" required> 
-                    <option value="">Select Ward</option>
-                  </select>
-                  <div class="error" id="wardError"></div>
-                </div>                
-              </div>
-              
-              <!-- Row: state + Town -->
-              <div class="form-row">
-                <!-- State -->
-                <div class="form-group">
-                  <label for="state">State <span class="required">*</span></label>
-                  <select id="state" name="State" required> 
-                    <option value="">Select State</option>
-                  </select>
-                  <div class="error" id="stateError"></div>
+                <!-- Row: Title + HonTitle -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="title">Title</label>
+                    <select id="title" name="Title">
+                      <option value="">Select Title</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="honTitle">Honorary Title</label>
+                    <select id="honTitle" name="HonTitle">
+                      <option value="">Select Honorary Title</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label for="town">Town <span class="required">*</span></label>
-                  <input type="text" id="town" name="Town" required>
-                  <div class="error" id="townError"></div>
+                <!-- Row: Sex + DOB -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="sex">Sex <span class="required">*</span></label>
+                    <select id="sex" name="Sex" required>
+                      <option value="">Select Sex</option>
+                      <option value="M">M</option>
+                      <option value="F">F</option>
+                    </select>
+                    <div class="error" id="sexError"></div>
+                  </div>
+                  <div class="form-group">
+                    <label for="dob">Date of Birth <span class="required">*</span></label>
+                    <input type="date" id="dob" name="DOB" required>
+                    <div class="error" id="dobError"></div>
+                  </div>
                 </div>
-              </div>
 
-              <!-- Row: Qualifications + Profession -->
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="qualifications">Qualification</label>
-                  <select id="qualifications" name="Qualifications"> 
-                    <option value="">Select Qualification</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="profession">Profession</label>
-                  <input type="text" id="profession" name="Profession">
-                </div>
-              </div>
+                <!-- Quarters  + ward-->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="quarters">Quarters<span class="required">*</span></label>
+                    <select id="quarters" name="Quarters" required>
+                      <option value="">Select Quaters</option>
+                    </select>
+                    <div class="error" id="quartersError"></div>
+                  </div>
 
-              <!-- Exit Date + email-->
-              <!-- Email -->
-            <div class="form-row">
-              <div class="form-group">
-                  <label for="email">Email Address</label>
-                  <input type="email" id="email" name="email" placeholder="example@domain.com">
-              </div>
-              
-              <!-- Exit Date -->
-              <div class="form-group">
-                <label for="exitDate">Exit Date</label>
-                <input type="date" id="exitDate" name="exitdate">
-              </div>
-            </div>
-
-              <!-- Row: Passwords -->
-              <div class="form-row">
-                <div class="form-group">
-                  <label for="password">Password <span class="required">*</span></label>
-                  <input type="password" id="password" name="Password" required>
-                  <div class="error" id="passwordError"></div>
+                  <div class="form-group">
+                    <label for="ward">Ward <span class="required">*</span></label>
+                    <select id="ward" name="Ward" required>
+                      <option value="">Select Ward</option>
+                    </select>
+                    <div class="error" id="wardError"></div>
+                  </div>
                 </div>
-                <div class="form-group">
-                  <label for="retypePassword">Retype Password <span class="required">*</span></label>
-                  <input type="password" id="retypePassword" name="RetypePassword" required>
-                  <div class="error" id="retypePasswordError"></div>
-                </div>
-              </div>
 
-              <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Create Member</button>
-              <button class="bg-red-600 text-white px-4 py-2 rounded"><a href="/admin-dashboard.html">Cancel</a></button>
+                <!-- Row: state + Town -->
+                <div class="form-row">
+                  <!-- State -->
+                  <div class="form-group">
+                    <label for="state">State <span class="required">*</span></label>
+                    <select id="state" name="State" required>
+                      <option value="">Select State</option>
+                    </select>
+                    <div class="error" id="stateError"></div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="town">Town <span class="required">*</span></label>
+                    <input type="text" id="town" name="Town" required>
+                    <div class="error" id="townError"></div>
+                  </div>
+                </div>
+
+                <!-- Row: Qualifications + Profession -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="qualifications">Qualification</label>
+                    <select id="qualifications" name="Qualifications">
+                      <option value="">Select Qualification</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="profession">Profession</label>
+                    <input type="text" id="profession" name="Profession">
+                  </div>
+                </div>
+
+                <!-- Exit Date + email-->
+                <!-- Email -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="example@domain.com">
+                  </div>
+
+                  <!-- Exit Date -->
+                  <div class="form-group">
+                    <label for="exitDate">Exit Date</label>
+                    <input type="date" id="exitDate" name="exitdate">
+                  </div>
+                </div>
+
+                <!-- Row: Passwords -->
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="password">Password <span class="required">*</span></label>
+                    <input type="password" id="password" name="Password" required>
+                    <div class="error" id="passwordError"></div>
+                  </div>
+                  <div class="form-group">
+                    <label for="retypePassword">Retype Password <span class="required">*</span></label>
+                    <input type="password" id="retypePassword" name="RetypePassword" required>
+                    <div class="error" id="retypePasswordError"></div>
+                  </div>
+                </div>
+
+                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Create Member</button>
+                <button class="bg-red-600 text-white px-4 py-2 rounded"><a
+                    href="/admin-dashboard.html">Cancel</a></button>
             </form>
           </div>
         </div>
@@ -579,15 +599,18 @@
         <h2 class="text-2xl font-semibold mb-4">Add Ledger Entry</h2>
         <form id="ledgerForm" class="bg-white p-6 rounded shadow-md space-y-4 max-w-md">
           <label class="block text-black">Phone Number</label>
-          <input list="phonenoList" id="phoneno" name="phoneno" class="w-full p-3 border rounded" placeholder="Search phone number..." required>
+          <input list="phonenoList" id="phoneno" name="phoneno" class="w-full p-3 border rounded"
+            placeholder="Search phone number..." required>
           <span id="ledgerPhoneError" style="display: none;"></span>
           <datalist id="phonenoList"></datalist>
 
           <label class="block text-black">Date</label>
-          <input name="transdate" id="transdate" type="date" placeholder="Date" required class="w-full p-3 border rounded" />
+          <input name="transdate" id="transdate" type="date" placeholder="Date" required
+            class="w-full p-3 border rounded" />
 
           <label class="block text-black">Amount</label>
-          <input name="amount" placeholder="Amount (use negative for reversal)" required class="w-full p-3 border rounded" />
+          <input name="amount" placeholder="Amount (use negative for reversal)" required
+            class="w-full p-3 border rounded" />
 
           <label class="block text-black">Remark</label>
           <select name="remark" id="remarkDropdown" class="w-full p-3 border rounded" required>
@@ -617,27 +640,27 @@
       </section>
 
       <section id="memberledger" class="tab-content hidden">
-          <h2 class="text-2xl font-semibold mb-4">All Member Ledger</h2>
-          <div class="overflow-auto rounded shadow bg-white">
-            <table class="min-w-full text-sm text-left">
-              <thead class="bg-gray-200 text-gray-700">
-                <tr>
-                  <th class="p-3">Phone No</th>
-                  <th class="p-3">Trans. Date</th>
-                  <th class="p-3">Amount</th>
-                  <th class="p-3">Remark</th>
-                  <th class="p-3">Record Date</th>
-                </tr>
-              </thead>
-              <tbody id="ledgerDataTable"></tbody>
-            </table>
-          </div>
+        <h2 class="text-2xl font-semibold mb-4">All Member Ledger</h2>
+        <div class="overflow-auto rounded shadow bg-white">
+          <table class="min-w-full text-sm text-left">
+            <thead class="bg-gray-200 text-gray-700">
+              <tr>
+                <th class="p-3">Phone No</th>
+                <th class="p-3">Trans. Date</th>
+                <th class="p-3">Amount</th>
+                <th class="p-3">Remark</th>
+                <th class="p-3">Record Date</th>
+              </tr>
+            </thead>
+            <tbody id="ledgerDataTable"></tbody>
+          </table>
+        </div>
       </section>
 
-            <!-- OCDA Expense Entry -->
+      <!-- OCDA Expense Entry -->
       <section id="ocda-expense" class="tab-content hidden">
         <h2 class="text-2xl font-semibold mb-4">Record OCDA Expense</h2>
-          <!-- Screen C: OCDA Cheque Input + Other Charges -->
+        <!-- Screen C: OCDA Cheque Input + Other Charges -->
         <form id="ocdaForm" class="bg-white p-6 rounded shadow max-w-xl space-y-4">
           <h2 class="text-xl font-semibold">OCDA Cheque Input + Other Charges</h2>
 
@@ -649,7 +672,7 @@
           <label class="block text-black">
             Voucher Number
             <input name="voucher" type="number" required class="w-full p-2 border rounded" />
-          </label>          
+          </label>
 
           <label class="block text-black">
             Project
@@ -670,11 +693,12 @@
 
           <div class="flex gap-4 mt-4">
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
-            <button type="button" onclick="document.getElementById('ocdaForm').reset()" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+            <button type="button" onclick="document.getElementById('ocdaForm').reset()"
+              class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
           </div>
         </form>
 
-      <h3 class="text-lg font-semibold mt-8 mb-2">Recent OCDA Expenses</h3>
+        <h3 class="text-lg font-semibold mt-8 mb-2">Recent OCDA Expenses</h3>
         <div class="overflow-auto bg-white rounded shadow">
           <table class="min-w-full text-sm text-left">
             <thead class="bg-gray-200">
@@ -750,14 +774,15 @@
             <strong>Enquiry Results</strong>
             <div class="space-x-2">
               <button onclick="printEnquiry()" class="bg-gray-300 px-3 py-1 rounded">Print</button>
-              <button onclick="exportEnquiry('excel')" class="bg-green-500 px-3 py-1 text-white rounded">Export Excel</button>
+              <button onclick="exportEnquiry('excel')" class="bg-green-500 px-3 py-1 text-white rounded">Export
+                Excel</button>
               <button onclick="exportEnquiry('pdf')" class="bg-red-500 px-3 py-1 text-white rounded">Export PDF</button>
             </div>
           </div>
 
           <!--  Dual-Column Result View -->
           <div id="enquiryTableWrapper" class="flex flex-col lg:flex-row flex-wrap gap-4 mb-4 w-full">
-            
+
             <!-- Summary Section -->
             <div id="summaryWrapper" class="w-full lg:w-1/2  h-[calc(100vh-200px)] overflow-auto">
               <h3 class="font-semibold text-lg mb-2">Summary</h3>
@@ -780,7 +805,8 @@
           <!--  Hidden Export Table -->
           <table id="enquiryTableExport" class="hidden"></table>
 
-          <button onclick="document.getElementById('enquiryResults').classList.add('hidden')" class="mt-4 text-blue-600 underline">Cancel</button>
+          <button onclick="document.getElementById('enquiryResults').classList.add('hidden')"
+            class="mt-4 text-blue-600 underline">Cancel</button>
         </div>
       </section>
 
@@ -792,10 +818,12 @@
         <!-- 🔍 Search & Export -->
         <div class="flex justify-between mb-4">
           <input id="memberSearch" type="text" placeholder="Search..." class="p-2 border rounded w-full max-w-xs" />
-          
+
           <div class="space-x-2">
-            <button class="bg-blue-600 text-white px-3 py-2 rounded tab-button" data-tab="create-member">Add New Member</button>
-            <button onclick="exportMembers('excel')" class="bg-green-600 text-white px-3 py-2 rounded">Export Excel</button>
+            <button class="bg-blue-600 text-white px-3 py-2 rounded tab-button" data-tab="create-member">Add New
+              Member</button>
+            <button onclick="exportMembers('excel')" class="bg-green-600 text-white px-3 py-2 rounded">Export
+              Excel</button>
             <button onclick="exportMembers('pdf')" class="bg-red-600 text-white px-3 py-2 rounded">Export PDF</button>
           </div>
         </div>
@@ -827,7 +855,7 @@
       <!-- Full Member View/Edit Section -->
       <section id="memberDetails" class="hidden bg-white p-6 rounded shadow-md">
         <h2 class="text-xl font-semibold mb-4">Member Details</h2>
-        
+
         <form id="memberEditForm" style="display:none" class="space-y-6">
 
           <!-- Row: Surname + Other Names -->
@@ -846,7 +874,7 @@
           <div class="form-row grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="form-group">
               <label for="PhoneNumber">Phone Number</label>
-              <input name="PhoneNumber" id="PhoneNumber" type="tel" class="p-3 border rounded w-full" readonly/>
+              <input name="PhoneNumber" id="PhoneNumber" type="tel" class="p-3 border rounded w-full" readonly />
             </div>
             <div class="form-group">
               <label for="phoneno2">Secondary Phone</label>
@@ -975,7 +1003,8 @@
 
 
         <div class="mt-4 space-x-2">
-          <button id="updateMemberBtn" onclick="saveMemberChanges()" class="bg-green-600 text-white px-4 py-2 rounded hidden">
+          <button id="updateMemberBtn" onclick="saveMemberChanges()"
+            class="bg-green-600 text-white px-4 py-2 rounded hidden">
             Save
           </button>
           <button onclick="closeMemberDetails()" class="bg-gray-500 text-white px-4 py-2 rounded">
@@ -990,12 +1019,16 @@
           <div class="bg-white shadow rounded p-4">
             <h2 class="text-lg font-semibold mb-2">Titles</h2>
             <form id="addTitleForm" class="flex gap-2 mb-2">
-              <input type="text" id="newTitle" name="title" placeholder="New title..." required class="flex-1 border rounded px-2 py-1">
+              <input type="text" id="newTitle" name="title" placeholder="New title..." required
+                class="flex-1 border rounded px-2 py-1">
               <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded">Add</button>
             </form>
             <table class="w-full border text-sm">
               <thead>
-                <tr class="bg-gray-100"><th class="p-2">Title</th><th class="p-2">Actions</th></tr>
+                <tr class="bg-gray-100">
+                  <th class="p-2">Title</th>
+                  <th class="p-2">Actions</th>
+                </tr>
               </thead>
               <tbody id="titlesTableBody"></tbody>
             </table>
@@ -1005,7 +1038,8 @@
           <div class="bg-white shadow rounded p-4">
             <h2 class="text-lg font-semibold mb-4">Qualifications</h2>
             <form id="addQualificationForm" class="flex gap-2 mb-4">
-              <input type="text" id="newQualification" name="qualification" placeholder="New qualification..." required class="flex-1 border rounded px-3 py-2">
+              <input type="text" id="newQualification" name="qualification" placeholder="New qualification..." required
+                class="flex-1 border rounded px-3 py-2">
               <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Add</button>
             </form>
             <table class="w-full table-auto border border-gray-300 text-sm text-center">
@@ -1023,8 +1057,10 @@
           <div class="bg-white shadow rounded p-4 mt-8">
             <h2 class="text-lg font-semibold mb-4">Hon Titles</h2>
             <form id="addHontitleForm" class="flex gap-2 mb-4">
-            <input type="text" id="newHtitle" name="Htitle" placeholder="New Hon Title..." required class="flex-1 border rounded px-3 py-2">
-              <input type="text" id="newTitlerank" name="titlerank" placeholder="Rank..." required class="flex-1 border rounded px-3 py-2">
+              <input type="text" id="newHtitle" name="Htitle" placeholder="New Hon Title..." required
+                class="flex-1 border rounded px-3 py-2">
+              <input type="text" id="newTitlerank" name="titlerank" placeholder="Rank..." required
+                class="flex-1 border rounded px-3 py-2">
               <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Add</button>
             </form>
             <table class="w-full table-auto border border-gray-300 text-sm text-center">
@@ -1043,8 +1079,10 @@
           <div class="bg-white shadow rounded p-4 mt-8">
             <h2 class="text-lg font-semibold mb-4">Wards & Quarters</h2>
             <form id="addWardsForm" class="flex gap-2 mb-4">
-              <input type="text" id="newWard" name="ward" placeholder="Ward..." required class="border rounded px-3 py-2">
-              <input type="text" id="newQuarter" name="Quarter" placeholder="Quarter..." required class="border rounded px-3 py-2">
+              <input type="text" id="newWard" name="ward" placeholder="Ward..." required
+                class="border rounded px-3 py-2">
+              <input type="text" id="newQuarter" name="Quarter" placeholder="Quarter..." required
+                class="border rounded px-3 py-2">
               <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Add</button>
             </form>
             <table class="w-full table-auto border border-gray-300 text-sm text-center">
@@ -1063,46 +1101,56 @@
 
       <!-- notices -->
       <section id="notices-section" class="tab-content hidden">
-          <h2 class="text-xl font-semibold mb-4">Post Notice/Event</h2>
-          <form id="noticeForm" class="bg-white p-4 rounded shadow space-y-4 max-w-md">
-              <input type="text" id="noticeTitle" placeholder="Title" required class="w-full p-2 border rounded">
-              <select id="noticeType" class="w-full p-2 border rounded">
-                  <option value="notice">Notice</option>
-                  <option value="event">Event</option>
+        <h2 class="text-xl font-semibold mb-4">Post Notice/Event</h2>
+        <form id="noticeForm" class="bg-white p-4 rounded shadow space-y-4 max-w-md">
+          <input type="text" id="noticeTitle" placeholder="Title" required class="w-full p-2 border rounded">
+          <select id="noticeType" class="w-full p-2 border rounded">
+            <option value="notice">Notice</option>
+            <option value="event">Event</option>
+          </select>
+          <textarea id="noticeContent" placeholder="Content" required class="w-full p-2 border rounded"></textarea>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Post</button>
+        </form>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Posted Notices/Events</h2>
+        <div id="noticesList" class="mt-4">
+        </div>
+
+        <div id="editNoticeModal"
+          class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+          <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-4">Edit Notice/Event</h2>
+            <input type="hidden" id="editNoticeId">
+            <div class="mb-4">
+              <label for="editNoticeTitle" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
+              <input type="text" id="editNoticeTitle"
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required>
+            </div>
+            <div class="mb-4">
+              <label for="editNoticeContent" class="block text-gray-700 text-sm font-bold mb-2">Content:</label>
+              <textarea id="editNoticeContent"
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                rows="4" required></textarea>
+            </div>
+            <div class="mb-4">
+              <label for="editNoticeType" class="block text-gray-700 text-sm font-bold mb-2">Type:</label>
+              <select id="editNoticeType"
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                required>
+                <option value="notice">Notice</option>
+                <option value="event">Event</option>
               </select>
-              <textarea id="noticeContent" placeholder="Content" required class="w-full p-2 border rounded"></textarea>
-              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Post</button>
-          </form>
-
-          <h2 class="text-xl font-semibold mt-8 mb-4">Posted Notices/Events</h2>
-          <div id="noticesList" class="mt-4">
-              </div>
-
-          <div id="editNoticeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
-              <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-                  <h2 class="text-2xl font-bold mb-4">Edit Notice/Event</h2>
-                  <input type="hidden" id="editNoticeId">
-                  <div class="mb-4">
-                      <label for="editNoticeTitle" class="block text-gray-700 text-sm font-bold mb-2">Title:</label>
-                      <input type="text" id="editNoticeTitle" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                  </div>
-                  <div class="mb-4">
-                      <label for="editNoticeContent" class="block text-gray-700 text-sm font-bold mb-2">Content:</label>
-                      <textarea id="editNoticeContent" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="4" required></textarea>
-                  </div>
-                  <div class="mb-4">
-                      <label for="editNoticeType" class="block text-gray-700 text-sm font-bold mb-2">Type:</label>
-                      <select id="editNoticeType" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                          <option value="notice">Notice</option>
-                          <option value="event">Event</option>
-                      </select>
-                  </div>
-                  <div class="flex justify-end">
-                      <button id="saveEditNoticeBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2">Save Changes</button>
-                      <button id="cancelEditNoticeBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Cancel</button>
-                  </div>
-              </div>
+            </div>
+            <div class="flex justify-end">
+              <button id="saveEditNoticeBtn"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2">Save
+                Changes</button>
+              <button id="cancelEditNoticeBtn"
+                class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Cancel</button>
+            </div>
           </div>
+        </div>
       </section>
 
       <section id="change-PhoneNumber" class="tab-content hidden p-6 bg-white rounded-lg shadow-md">
@@ -1165,40 +1213,41 @@
   </div>
 
   <!-- Hidden Export Table -->
-<table id="memberTableExport" class="hidden">
-  <thead>
-    <tr>
-      <th>Surname</th>
-      <th>Other Names</th>
-      <th>Email</th>
-      <th>Sex</th>
-      <th>Date of Birth</th>
-      <th>Quarters</th>
-      <th>Ward</th>
-      <th>Town</th>
-      <th>State</th>
-      <th>Phone Number</th>
-      <th>Phone Number 2</th>
-      <th>Title</th>
-      <th>Hon Title</th>
-      <th>Qualifications</th>
-      <th>Profession</th>
-      <th>Exit Date</th>
-      <th>Created At</th>
-    </tr>
-  </thead>
-  <tbody>
-    <!-- JS injects rows here -->
-  </tbody>
-</table>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  lucide.createIcons();
-</script>
+  <table id="memberTableExport" class="hidden">
+    <thead>
+      <tr>
+        <th>Surname</th>
+        <th>Other Names</th>
+        <th>Email</th>
+        <th>Sex</th>
+        <th>Date of Birth</th>
+        <th>Quarters</th>
+        <th>Ward</th>
+        <th>Town</th>
+        <th>State</th>
+        <th>Phone Number</th>
+        <th>Phone Number 2</th>
+        <th>Title</th>
+        <th>Hon Title</th>
+        <th>Qualifications</th>
+        <th>Profession</th>
+        <th>Exit Date</th>
+        <th>Created At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- JS injects rows here -->
+    </tbody>
+  </table>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
 </body>
 <script src="script/admin-dashboard.js"></script>
+
 </html>
