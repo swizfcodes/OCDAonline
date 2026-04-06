@@ -142,7 +142,7 @@ router.post("/login", async (req, res) => {
         });
     }
 
-    const token = jwt.sign({ id: admin.Id }, SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ id: admin.Id, role: admin.role }, SECRET, { expiresIn: "1d" });
     res.status(200).json({
       message: "Login successful",
       token,
@@ -251,7 +251,8 @@ router.get("/memberledger", verifyToken, async (req, res) => {
         DATE_FORMAT(transdate, '%Y-%m-%d') AS transdate,
         amount, 
         remark, 
-        DATE_FORMAT(paydate, '%Y-%m-%d') AS paydate
+        DATE_FORMAT(paydate, '%Y-%m-%d') AS paydate,
+        comment
       FROM memberledger
       ORDER BY transdate DESC
     `).run();
@@ -288,7 +289,8 @@ router.get("/member-recordledger", verifyToken, async (req, res) => {
                 transdate, 
                 amount, 
                 remark, 
-                paydate 
+                paydate,
+                comment
             FROM memberledger
             WHERE 
                 paydate >= @from 
@@ -311,7 +313,7 @@ router.get("/member-recordledger", verifyToken, async (req, res) => {
 router.get("/monthlysummary", verifyToken, async (req, res) => {
   try {
     const result = await request(
-      "SELECT period, openbalance, Debitbalance, Creditbalance, Netbalance FROM monthlysummary",
+      "SELECT period, openbalance, Debitbalance, Creditbalance, Netbalance FROM monthlysummary ORDER BY period DESC",
     ).run();
     res.json(result.recordset);
   } catch (err) {
@@ -702,7 +704,7 @@ router.put("/member/:phone", verifyToken, async (req, res) => {
 // POST: Add Ledger Entry
 router.post("/ledger-entry/:phoneno", verifyToken, async (req, res) => {
   const { phoneno } = req.params;
-  const { transdate, amount, remark } = req.body;
+  const { transdate, amount, remark, comment } = req.body;
 
   try {
     // First, check if the phone number exists in the members table
@@ -721,15 +723,84 @@ router.post("/ledger-entry/:phoneno", verifyToken, async (req, res) => {
     }
 
     // If member exists, proceed with ledger entry
-    await request(`INSERT INTO memberledger(phoneno, transdate, amount, remark, paydate, created_by)
-      VALUES (@phoneno, @transdate, @amount, @remark, CURRENT_DATE, @created_by)`)
-      .inputs({ phoneno, transdate, amount, remark, created_by: req.adminId })
+    await request(`INSERT INTO memberledger(phoneno, transdate, amount, remark, paydate, created_by, comment)
+      VALUES (@phoneno, @transdate, @amount, @remark, CURRENT_DATE, @created_by, @comment)`)
+      .inputs({ phoneno, transdate, amount, remark, created_by: req.adminId, comment: comment || '' })
       .run();
 
     res.status(200).json({ message: "Ledger entry recorded successfully" });
   } catch (err) {
     console.error("Ledger operation error:", err);
     res.status(500).json({ message: "Failed to record ledger entry" });
+  }
+});
+
+// PUT: Edit Ledger Entry
+router.put("/ledger-entry/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { transdate, amount, remark } = req.body;
+
+  if (!transdate || amount == null || !remark) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  try {
+    const result = await request(`
+      UPDATE memberledger
+      SET transdate = @transdate, amount = @amount, remark = @remark
+      WHERE id = @id
+    `)
+      .inputs({ id, transdate, amount, remark })
+      .run();
+
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ message: "Ledger entry not found" });
+    }
+
+    res.json({ message: "Ledger entry updated successfully" });
+  } catch (err) {
+    console.error("Ledger update error:", err);
+    res.status(500).json({ message: "Failed to update ledger entry" });
+  }
+});
+
+// DELETE: Delete Ledger Entry
+router.delete("/ledger-entry/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await request(`DELETE FROM memberledger WHERE id = @id`)
+      .inputs({ id })
+      .run();
+
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ message: "Ledger entry not found" });
+    }
+
+    res.json({ message: "Ledger entry deleted successfully" });
+  } catch (err) {
+    console.error("Ledger delete error:", err);
+    res.status(500).json({ message: "Failed to delete ledger entry" });
+  }
+});
+
+// GET all ledger entries for a member (for receipts management screen)
+router.get("/ledger-entries/:phoneno", verifyToken, async (req, res) => {
+  const { phoneno } = req.params;
+  try {
+    const result = await request(`
+      SELECT id, phoneno, DATE_FORMAT(transdate, '%Y-%m-%d') AS transdate,
+             amount, remark, DATE_FORMAT(paydate, '%Y-%m-%d') AS paydate
+      FROM memberledger
+      WHERE phoneno = @phoneno
+      ORDER BY transdate DESC
+    `)
+      .inputs({ phoneno })
+      .run();
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Fetch ledger entries error:", err);
+    res.status(500).json({ message: "Failed to fetch ledger entries" });
   }
 });
 
@@ -795,7 +866,7 @@ router.get("/enquiry/options", verifyToken, async (req, res) => {
     // Use the 'request' from your db-wrapper
     const [membersResult, wardsResult, quartersResult] = await Promise.all([
       request(
-        "SELECT PhoneNumber, CONCAT(Surname, ' ', othernames) AS fullname FROM members",
+        "SELECT PhoneNumber, CONCAT(IFNULL(Title,''), ' ', Surname, ' ', othernames) AS fullname FROM members",
       ).run(),
       request(
         "SELECT DISTINCT Ward FROM members WHERE Ward IS NOT NULL AND Ward <> ''",
@@ -866,7 +937,7 @@ router.get("/enquiry", verifyToken, async (req, res) => {
         const summaryQuery = `
                     SELECT 
                         m.PhoneNumber, 
-                        CONCAT(m.Surname, ' ', m.othernames) AS fullname, 
+                        CONCAT(IFNULL(m.Title,''), ' ', m.Surname, ' ', m.othernames) AS fullname, 
                         COALESCE(SUM(l.amount), 0) AS total
                     FROM members m
                     LEFT JOIN memberledger l ON m.PhoneNumber = l.phoneno ${dateFilter}
@@ -887,7 +958,7 @@ router.get("/enquiry", verifyToken, async (req, res) => {
           const detailQuery = `
                         SELECT 
                             l.phoneno, 
-                            CONCAT(m.Surname, ' ', m.othernames) AS fullname, 
+                            CONCAT(IFNULL(m.Title,''), ' ', m.Surname, ' ', m.othernames) AS fullname, 
                             DATE_FORMAT(l.transdate, '%Y-%m-%d') AS transdate, 
                             l.amount, 
                             l.remark
@@ -909,7 +980,7 @@ router.get("/enquiry", verifyToken, async (req, res) => {
           const summaryQuery = `
                         SELECT 
                             l.phoneno, 
-                            CONCAT(m.Surname, ' ', m.othernames) AS fullname, 
+                            CONCAT(IFNULL(m.Title,''), ' ', m.Surname, ' ', m.othernames) AS fullname, 
                             SUM(l.amount) AS total
                         FROM memberledger l
                         LEFT JOIN members m ON l.phoneno = m.PhoneNumber
@@ -923,7 +994,7 @@ router.get("/enquiry", verifyToken, async (req, res) => {
           const detailQuery = `
                         SELECT 
                             l.phoneno, 
-                            CONCAT(m.Surname, ' ', m.othernames) AS fullname, 
+                            CONCAT(IFNULL(m.Title,''), ' ', m.Surname, ' ', m.othernames) AS fullname, 
                             DATE_FORMAT(l.transdate, '%Y-%m-%d') AS transdate, 
                             l.amount, 
                             l.remark
@@ -984,7 +1055,7 @@ router.get("/enquiry", verifyToken, async (req, res) => {
             const membersQuery = `
                             SELECT 
                                 l.phoneno, 
-                                CONCAT(m.Surname, ' ', m.othernames) AS fullname, 
+                                CONCAT(IFNULL(m.Title,''), ' ', m.Surname, ' ', m.othernames) AS fullname, 
                                 DATE_FORMAT(l.transdate, '%Y-%m-%d') AS transdate, 
                                 l.amount, 
                                 l.remark
@@ -1027,7 +1098,7 @@ router.get("/enquiry", verifyToken, async (req, res) => {
           const membersQuery = `
                         SELECT 
                             l.phoneno, 
-                            CONCAT(m.Surname, ' ', m.othernames) AS fullname, 
+                            CONCAT(IFNULL(m.Title,''), ' ', m.Surname, ' ', m.othernames) AS fullname, 
                             DATE_FORMAT(l.transdate, '%Y-%m-%d') AS transdate, 
                             l.amount, 
                             l.remark
@@ -1089,7 +1160,7 @@ router.get("/enquiry", verifyToken, async (req, res) => {
               const membersQuery = `
                                 SELECT 
                                     l.phoneno, 
-                                    CONCAT(m.Surname, ' ', m.othernames) AS fullname, 
+                                    CONCAT(IFNULL(m.Title,''), ' ', m.Surname, ' ', m.othernames) AS fullname, 
                                     DATE_FORMAT(l.transdate, '%Y-%m-%d') AS transdate, 
                                     l.amount, 
                                     l.remark
@@ -1146,7 +1217,7 @@ router.get("/enquiry", verifyToken, async (req, res) => {
             const membersQuery = `
                             SELECT 
                                 l.phoneno, 
-                                CONCAT(m.Surname, ' ', m.othernames) AS fullname, 
+                                CONCAT(IFNULL(m.Title,''), ' ', m.Surname, ' ', m.othernames) AS fullname, 
                                 DATE_FORMAT(l.transdate, '%Y-%m-%d') AS transdate, 
                                 l.amount, 
                                 l.remark
@@ -1643,6 +1714,7 @@ router.get("/ocda-expenses-analysis", verifyToken, async (req, res) => {
           e.project AS code,
           s.expsdesc AS description,
           DATE_FORMAT(e.docdate, '%Y-%m-%d') AS date, 
+          e.voucher AS voucher,
           e.remarks AS remark, 
           e.amount
         FROM ocdaexpenses e
@@ -1728,8 +1800,9 @@ router.get("/ocda-income-analysis", verifyToken, async (req, res) => {
           ml.remark AS code,
           DATE_FORMAT(ml.transdate, '%Y-%m-%d') AS date,
           ml.amount,
-          CONCAT(IFNULL(ml.phoneno, ''), '(', IFNULL(m.Surname, ''), ' ', IFNULL(m.othernames, ''), ')') AS phoneno_name,
-          ml.remark AS transaction_description
+          CONCAT(IFNULL(ml.phoneno, ''), '(', IFNULL(m.Title,''), ' ', IFNULL(m.Surname, ''), ' ', IFNULL(m.othernames, ''), ')') AS phoneno_name,
+          ml.remark AS transaction_description,
+          ml.comment AS comment
         FROM memberledger ml
         LEFT JOIN members m ON ml.phoneno = m.PhoneNumber
         ${whereClause}
@@ -1754,6 +1827,7 @@ router.get("/ocda-income-analysis", verifyToken, async (req, res) => {
           phoneno_name: row.phoneno_name,
           amount: row.amount,
           transaction_description: row.transaction_description || "",
+          comment: row.comment || "",
         });
         return acc;
       }, {});
@@ -2069,6 +2143,216 @@ router.put("/merge-phone", verifyToken, async (req, res) => {
     if (connection) connection.release();
     res.status(500).json({ message: "Server error." });
   }
+});
+
+// ===== CONTACT US (Item 2) =====
+// GET: Public - fetch contact us content
+router.get("/contactus", async (req, res) => {
+  try {
+    const result = await request(`
+      SELECT id, title, content, created_at
+      FROM notices
+      WHERE type = 'contact'
+      ORDER BY created_at DESC
+      LIMIT 1
+    `).run();
+    res.json(result.recordset[0] || null);
+  } catch (err) {
+    console.error("Fetch contact us error:", err);
+    res.status(500).json({ message: "Failed to fetch contact us content" });
+  }
+});
+
+// POST: Admin - save/update contact us content
+router.post("/contactus", verifyToken, async (req, res) => {
+  const { title, content } = req.body;
+  if (!title || !content) {
+    return res.status(400).json({ message: "Title and content are required" });
+  }
+  try {
+    // Delete existing contact entry and replace (only one record needed)
+    await request(`DELETE FROM notices WHERE type = 'contact'`).run();
+    await request(`
+      INSERT INTO notices (title, content, type, created_by)
+      VALUES (@title, @content, 'contact', @created_by)
+    `)
+      .inputs({ title, content, created_by: req.adminId })
+      .run();
+    res.json({ message: "Contact Us content updated successfully" });
+  } catch (err) {
+    console.error("Save contact us error:", err);
+    res.status(500).json({ message: "Failed to save contact us content" });
+  }
+});
+
+// ===== FAQ (Item 3) =====
+// GET: Public - fetch all FAQ entries
+router.get("/faq", async (req, res) => {
+  try {
+    const result = await request(`
+      SELECT id, title AS question, content AS answer, created_at
+      FROM notices
+      WHERE type = 'faq'
+      ORDER BY created_at ASC
+    `).run();
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Fetch FAQ error:", err);
+    res.status(500).json({ message: "Failed to fetch FAQ" });
+  }
+});
+
+// POST: Admin - add FAQ entry
+router.post("/faq", verifyToken, async (req, res) => {
+  const { question, answer } = req.body;
+  if (!question || !answer) {
+    return res.status(400).json({ message: "Question and answer are required" });
+  }
+  try {
+    await request(`
+      INSERT INTO notices (title, content, type, created_by)
+      VALUES (@question, @answer, 'faq', @created_by)
+    `)
+      .inputs({ question, answer, created_by: req.adminId })
+      .run();
+    res.json({ message: "FAQ entry added successfully" });
+  } catch (err) {
+    console.error("Add FAQ error:", err);
+    res.status(500).json({ message: "Failed to add FAQ entry" });
+  }
+});
+
+// PUT: Admin - edit FAQ entry
+router.put("/faq/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const { question, answer } = req.body;
+  if (!question || !answer) {
+    return res.status(400).json({ message: "Question and answer are required" });
+  }
+  try {
+    const result = await request(`
+      UPDATE notices SET title = @question, content = @answer
+      WHERE id = @id AND type = 'faq'
+    `)
+      .inputs({ id, question, answer })
+      .run();
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ message: "FAQ entry not found" });
+    }
+    res.json({ message: "FAQ entry updated successfully" });
+  } catch (err) {
+    console.error("Update FAQ error:", err);
+    res.status(500).json({ message: "Failed to update FAQ entry" });
+  }
+});
+
+// DELETE: Admin - delete FAQ entry
+router.delete("/faq/:id", verifyToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await request(`DELETE FROM notices WHERE id = @id AND type = 'faq'`)
+      .inputs({ id })
+      .run();
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ message: "FAQ entry not found" });
+    }
+    res.json({ message: "FAQ entry deleted successfully" });
+  } catch (err) {
+    console.error("Delete FAQ error:", err);
+    res.status(500).json({ message: "Failed to delete FAQ entry" });
+  }
+});
+
+// ===== FINAL ACCOUNT REPORT (Item 4) =====
+router.get("/final-account", verifyToken, async (req, res) => {
+  const { from, to } = req.query;
+
+  if (!from || !to) {
+    return res.status(400).json({ message: "Both from and to dates are required" });
+  }
+
+  // Enforce start date is 1st of month
+  const fromDate = new Date(from);
+  if (fromDate.getDate() !== 1) {
+    return res.status(400).json({ message: "Start date must be the 1st of a month" });
+  }
+
+  try {
+    // Get opening balance from monthlysummary — the openbalance of the period matching the from date
+    const fromPeriod = `${fromDate.getFullYear()}${String(fromDate.getMonth() + 1).padStart(2, "0")}`;
+
+    const openingResult = await request(`
+      SELECT openbalance FROM monthlysummary
+      WHERE period = @fromPeriod
+    `)
+      .inputs({ fromPeriod })
+      .run();
+
+    const openingBalance = openingResult.recordset.length > 0
+      ? openingResult.recordset[0].openbalance
+      : 0;
+
+    // Total Income (b): sum of memberledger for period
+    const incomeResult = await request(`
+      SELECT IFNULL(SUM(amount), 0) AS totalIncome
+      FROM memberledger
+      WHERE transdate >= @from AND transdate <= @to
+    `)
+      .inputs({ from, to })
+      .run();
+    const totalIncome = incomeResult.recordset[0].totalIncome;
+
+    // Total Expenses (c): sum of ocdaexpenses for period
+    const expensesResult = await request(`
+      SELECT IFNULL(SUM(amount), 0) AS totalExpenses
+      FROM ocdaexpenses
+      WHERE docdate >= @from AND docdate <= @to
+    `)
+      .inputs({ from, to })
+      .run();
+    const totalExpenses = expensesResult.recordset[0].totalExpenses;
+
+    // Current Balance = a + b - c
+    const currentBalance = parseFloat(openingBalance) + parseFloat(totalIncome) - parseFloat(totalExpenses);
+
+    res.json({
+      fromDate: from,
+      toDate: to,
+      openingBalance: parseFloat(openingBalance),
+      totalIncome: parseFloat(totalIncome),
+      totalExpenses: parseFloat(totalExpenses),
+      currentBalance,
+    });
+  } catch (err) {
+    console.error("Final Account error:", err);
+    res.status(500).json({ message: "Failed to generate final account" });
+  }
+});
+
+// ===== VIEWADMIN AUTH MIDDLEWARE (Item 1) =====
+const verifyViewAdmin = (req, res, next) => {
+  const bearerHeader = req.headers["authorization"];
+  if (!bearerHeader) return res.status(403).json({ message: "No token provided" });
+
+  const token = bearerHeader.split(" ")[1];
+  jwt.verify(token, SECRET, (err, decoded) => {
+    if (err) return res.status(401).json({ message: "Failed to authenticate token" });
+    req.adminId = decoded.id;
+    req.adminRole = decoded.role;
+    if (decoded.role !== "VIEWADMIN" && decoded.role !== "superadmin" && decoded.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+    next();
+  });
+};
+
+// VIEWADMIN login is same as admin login — role is embedded in JWT
+// The frontend will route VIEWADMIN to a restricted dashboard
+// GET: VIEWADMIN-accessible reports (enquiry + final account only)
+router.get("/viewadmin/enquiry", verifyViewAdmin, async (req, res) => {
+  // Proxy through to the main enquiry handler by forwarding query params
+  req.url = `/enquiry?${new URLSearchParams(req.query).toString()}`;
+  res.redirect(307, `/admin/enquiry?${new URLSearchParams(req.query).toString()}`);
 });
 
 module.exports = router;

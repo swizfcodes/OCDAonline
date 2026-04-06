@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OCDA</title>
+  <title>OCDA - FAQ</title>
 </head>
 <link rel="stylesheet" href="styles/index.css">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -12,18 +12,18 @@
 <link rel="icon" type="image/png" href="/photos/favicon.ico" sizes="32x32">
 
 <style>
-  ul li::before {
-    content: "" !important;
-  }
+  ul li::before { content: "" !important; }
+  .faq-answer { display: none; }
+  .faq-item.open .faq-answer { display: block; }
+  .faq-item.open .faq-chevron { transform: rotate(180deg); }
+  .faq-chevron { transition: transform 0.2s ease; }
 </style>
 
 <body>
-  <!--- header design -->
   <header class="hicad-header">
     <a href="index.html" class="hicad-logo">
       <img src="/photos/OCDA-Logo3.png" alt="ocda-logo" class="ocda-logoIdentity">
     </a>
-
     <nav class="hicad-navbar" id="navbar">
       <a href="aboutus.html">About Us</a>
       <a href="news.html">News & Events</a>
@@ -32,71 +32,57 @@
       <a href="adminlog.html">Admin</a>
       <a href="faq.html" class="home-active">FAQ</a>
     </nav>
-
-    <div class="hamburger" id="hamburger">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
+    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
   </header>
 
   <section class="support-section fade-in-section py-8">
-    <div class="container mx-auto px-4">
-      <h2 class="text-xl md:text-2xl lg:text-3xl font-bold mb-6 text-gray-800">Frequently Asked Questions (FAQ)</h2>
-
-      <div class="mb-10">
-        <h3 class="text-lg md:text-xl lg:text-2xl font-semibold mb-2">Who is a member?</h3>
-        <p class="text-sm md:text-base lg:text-lg leading-relaxed text-gray-700">
-          Anyone that has the interest of the town and has a valid income, and is ready to work with others for the
-          development of the town in terms of human capital, infrastructure, and the upgrade of the dynamics of the
-          society.
-        </p>
-      </div>
-
-      <div class="mb-10">
-        <h3 class="text-lg md:text-xl lg:text-2xl font-semibold mb-2">How do I join?</h3>
-        <p class="text-sm md:text-base lg:text-lg leading-relaxed text-gray-700">
-          Pay a minimum of <strong>N12,000</strong> (Twelve Thousand Naira) annually to the association account,
-          <a href="signup.html" class="text-blue-600 underline hover:text-blue-800">register on this platform</a>,
-          and attend meetings called either physically or online.
-        </p>
-      </div>
-
-      <div class="mb-10">
-        <h3 class="text-lg md:text-xl lg:text-2xl font-semibold mb-2">How can I register on this platform?</h3>
-        <ul class="list-decimal list-inside text-sm md:text-base lg:text-lg leading-relaxed text-gray-700 space-y-1">
-          <li><a href="login.html" class="text-blue-600 underline hover:text-blue-800">Login</a> with your phone number
-            and password.</li>
-          <li>Use <a href="forgotpassword.html" class="text-blue-600 underline hover:text-blue-800">Forgot Password</a>
-            to reset or create a new password.</li>
-          <li>Click on <a href="signup.html" class="text-blue-600 underline hover:text-blue-800">Register</a> to create
-            your profile.</li>
-        </ul>
-      </div>
-
-      <div class="mb-10">
-        <h3 class="text-lg md:text-xl lg:text-2xl font-semibold mb-2">Who are the Admin Users?</h3>
-        <p class="text-sm md:text-base lg:text-lg leading-relaxed text-gray-700">
-          These are the current executive committee members. They log in using their email address and password.
-          Admin users cannot create themselves.
-        </p>
-      </div>
-
-      <div>
-        <h3 class="text-lg md:text-xl lg:text-2xl font-semibold mb-2">I paid but my payment is not showing</h3>
-        <p class="text-sm md:text-base lg:text-lg leading-relaxed text-gray-700">
-          Updates are done manually from SMS alerts or the bank statement. There may be a delay if the SMS didn't
-          deliver.
-          Once the statement is reviewed, your payment will be updated.
-          If it's been more than two weeks, please contact any of the officers.
-          You can also paste your payment receipt on the <strong>Oyin Sons and Daughters Forum</strong> to speed up the
-          process.
-        </p>
+    <div class="container mx-auto px-4 max-w-3xl">
+      <h2 class="text-xl md:text-2xl lg:text-3xl font-bold mb-6">Frequently Asked Questions (FAQ)</h2>
+      <div id="faqList" class="space-y-3">
+        <p class="text-gray-500 text-sm">Loading FAQ...</p>
       </div>
     </div>
   </section>
 
+  <script>
+    async function loadFaq() {
+      const list = document.getElementById('faqList');
+      try {
+        const res = await fetch('/admin/faq');
+        const data = await res.json();
+
+        if (!data.length) {
+          list.innerHTML = '<p class="text-gray-500 text-sm">No FAQ entries available yet.</p>';
+          return;
+        }
+
+        list.innerHTML = data.map((item, i) => `
+          <div class="faq-item border rounded-lg bg-white shadow-sm" id="faq-${i}">
+            <button class="w-full text-left px-5 py-4 flex justify-between items-center font-semibold text-gray-800 hover:bg-gray-50 transition-colors"
+              onclick="toggleFaq(${i})">
+              <span>${item.question}</span>
+              <svg class="faq-chevron w-5 h-5 text-gray-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            <div class="faq-answer px-5 pb-4 text-gray-700 text-sm leading-relaxed border-t">
+              <div class="pt-3">${item.answer.replace(/\n/g, '<br>')}</div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('FAQ load error:', err);
+        list.innerHTML = '<p class="text-red-500 text-sm">Unable to load FAQ at this time.</p>';
+      }
+    }
+
+    function toggleFaq(index) {
+      const item = document.getElementById(`faq-${index}`);
+      item.classList.toggle('open');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadFaq);
+  </script>
 </body>
 <script src="script/index.js"></script>
-
 </html>

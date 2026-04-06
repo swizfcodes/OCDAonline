@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCDA - View Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/photos/favicon.ico" sizes="32x32">
+  <style>
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .tab-btn.active { background-color: #1d4ed8; color: white; }
+    .tab-btn { transition: background-color 0.15s; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <header class="bg-blue-800 text-white px-6 py-3 flex justify-between items-center shadow">
+    <div class="flex items-center gap-3">
+      <img src="/photos/OCDA-Logo3.png" alt="OCDA" class="h-10 w-auto">
+      <div>
+        <h1 class="font-bold text-lg leading-tight">OCDA View Admin</h1>
+        <p class="text-xs text-blue-200">Reports &amp; Enquiry Access</p>
+      </div>
+    </div>
+    <button onclick="viewAdminLogout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">Logout</button>
+  </header>
+
+  <div class="flex" style="height:calc(100vh - 56px)">
+    <aside class="w-56 bg-white border-r shadow-sm flex flex-col py-4 px-3 gap-1 shrink-0 overflow-y-auto">
+      <button class="tab-btn active text-left px-4 py-2 rounded text-sm font-medium hover:bg-blue-50" data-tab="enquiry-tab">Enquiry</button>
+      <button class="tab-btn text-left px-4 py-2 rounded text-sm font-medium hover:bg-blue-50" data-tab="memberledger-tab">Member Ledger</button>
+      <button class="tab-btn text-left px-4 py-2 rounded text-sm font-medium hover:bg-blue-50" data-tab="summary-tab">Monthly Summary</button>
+      <button class="tab-btn text-left px-4 py-2 rounded text-sm font-medium hover:bg-blue-50" data-tab="final-account-tab">Final Account</button>
+      <button class="tab-btn text-left px-4 py-2 rounded text-sm font-medium hover:bg-blue-50" data-tab="expenses-tab">Expenses Analysis</button>
+      <button class="tab-btn text-left px-4 py-2 rounded text-sm font-medium hover:bg-blue-50" data-tab="income-tab">Income Analysis</button>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-6">
+
+      <!-- ENQUIRY -->
+      <div id="enquiry-tab" class="tab-content active">
+        <h2 class="text-xl font-semibold mb-4">Enquiry</h2>
+        <form id="vaEnquiryForm" class="bg-white p-4 rounded shadow space-y-4 max-w-xl mb-6">
+          <div class="flex gap-4 flex-wrap">
+            <label class="text-sm"><input type="radio" name="enquiryType" value="member" checked class="mr-1"/> Member</label>
+            <label class="text-sm"><input type="radio" name="enquiryType" value="ward" class="mr-1"/> Ward</label>
+            <label class="text-sm"><input type="radio" name="enquiryType" value="quarter" class="mr-1"/> Quarter</label>
+          </div>
+          <div id="va-member-group">
+            <label class="block text-xs font-medium mb-1">Member</label>
+            <select id="va-enquiry-member" class="w-full p-2 border rounded text-sm"><option value="ALL">All Members</option></select>
+          </div>
+          <div id="va-ward-group" class="hidden">
+            <label class="block text-xs font-medium mb-1">Ward</label>
+            <select id="va-enquiry-ward" class="w-full p-2 border rounded text-sm"><option value="ALL">All Wards</option></select>
+          </div>
+          <div id="va-quarter-group" class="hidden">
+            <label class="block text-xs font-medium mb-1">Quarter</label>
+            <select id="va-enquiry-quarter" class="w-full p-2 border rounded text-sm"><option value="ALL">All Quarters</option></select>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-medium mb-1">Start Date</label><input type="date" name="start" class="w-full p-2 border rounded text-sm" /></div>
+            <div><label class="block text-xs font-medium mb-1">End Date</label><input type="date" name="end" class="w-full p-2 border rounded text-sm" /></div>
+          </div>
+          <label class="flex items-center gap-2 text-sm cursor-pointer"><input type="checkbox" name="detail" class="w-4 h-4 accent-blue-600" /> Show All Details</label>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Submit</button>
+        </form>
+        <div id="vaEnquiryResults" class="hidden mt-2">
+          <div class="flex justify-between items-center mb-3">
+            <strong class="text-sm">Enquiry Results</strong>
+            <button onclick="vaPrintEnquiry()" class="px-3 py-1 bg-gray-600 text-white rounded text-xs">Print</button>
+          </div>
+          <div id="vaEnquiryTableWrapper" class="flex flex-col lg:flex-row gap-4">
+            <div class="w-full lg:w-1/2"><h3 class="font-semibold text-sm mb-2">Summary</h3><div class="bg-white border rounded p-2 overflow-x-auto" id="vaSummaryBox"></div></div>
+            <div class="w-full lg:w-1/2"><h3 class="font-semibold text-sm mb-2">Details</h3><div class="bg-white border rounded p-2 overflow-x-auto" id="vaDetailBox"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEMBER LEDGER -->
+      <div id="memberledger-tab" class="tab-content">
+        <h2 class="text-xl font-semibold mb-4">Member Ledger</h2>
+        <div class="flex flex-wrap items-end gap-3 mb-4">
+          <div><label class="block text-xs font-medium mb-1">Start Date:</label><input type="date" id="vaLedgerStart" class="p-2 border rounded text-sm" /></div>
+          <div><label class="block text-xs font-medium mb-1">End Date:</label><input type="date" id="vaLedgerEnd" class="p-2 border rounded text-sm" /></div>
+          <button onclick="vaFilterLedger()" class="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>Filter
+          </button>
+          <button onclick="vaClearLedger()" class="flex items-center gap-1 bg-gray-500 text-white px-4 py-2 rounded text-sm hover:bg-gray-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>Clear
+          </button>
+          <button onclick="vaCurrentMonth()" class="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Current Month
+          </button>
+        </div>
+        <p id="vaLedgerCount" class="text-sm font-bold mb-3"></p>
+        <div class="overflow-auto rounded shadow bg-white">
+          <table class="min-w-full text-sm text-left">
+            <thead class="bg-gray-200 text-gray-700"><tr><th class="p-3">Phone No</th><th class="p-3">Trans. Date</th><th class="p-3">Amount</th><th class="p-3">Remark</th><th class="p-3">Record Date</th></tr></thead>
+            <tbody id="vaLedgerBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- MONTHLY SUMMARY -->
+      <div id="summary-tab" class="tab-content">
+        <h2 class="text-xl font-semibold mb-4">Monthly Summary</h2>
+        <div class="overflow-auto rounded shadow bg-white">
+          <table class="min-w-full text-sm text-left">
+            <thead class="bg-gray-200 text-gray-700"><tr><th class="p-3">Period</th><th class="p-3">Opening Balance</th><th class="p-3">Debit</th><th class="p-3">Credit</th><th class="p-3">Net Balance</th></tr></thead>
+            <tbody id="vaSummaryData"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- FINAL ACCOUNT -->
+      <div id="final-account-tab" class="tab-content">
+        <h2 class="text-xl font-semibold mb-4">Final Account Report</h2>
+        <div class="bg-white p-6 rounded shadow max-w-md mb-6 space-y-4">
+          <div><label class="block text-sm font-medium mb-1">Start Date <span class="text-gray-400 text-xs">(must be 1st of month)</span></label><input type="date" id="vaFinalFrom" class="w-full p-2 border rounded text-sm" /></div>
+          <div><label class="block text-sm font-medium mb-1">End Date</label><input type="date" id="vaFinalTo" class="w-full p-2 border rounded text-sm" /></div>
+          <button onclick="vaLoadFinalAccount()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Generate</button>
+        </div>
+        <div id="vaFinalResult"></div>
+      </div>
+
+      <!-- EXPENSES ANALYSIS -->
+      <div id="expenses-tab" class="tab-content">
+        <h2 class="text-xl font-semibold mb-4">OCDA Expenses Analysis</h2>
+        <form id="vaExpForm" class="bg-white p-4 rounded shadow mb-4 flex flex-wrap gap-4 items-end">
+          <div><label class="block text-xs font-medium mb-1">Mode</label><select name="mode" class="p-2 border rounded text-sm"><option value="summary">Summary</option><option value="detail">Detail</option></select></div>
+          <div><label class="block text-xs font-medium mb-1">Start Date</label><input type="date" name="start" class="p-2 border rounded text-sm" /></div>
+          <div><label class="block text-xs font-medium mb-1">End Date</label><input type="date" name="end" class="p-2 border rounded text-sm" /></div>
+          <div><label class="block text-xs font-medium mb-1">Code or ALL</label><input type="text" name="code" class="p-2 border rounded text-sm" placeholder="e.g. 1010 or ALL" /></div>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Generate Report</button>
+        </form>
+        <div id="vaExpTable" class="overflow-auto rounded shadow bg-white p-4 space-y-8"></div>
+      </div>
+
+      <!-- INCOME ANALYSIS -->
+      <div id="income-tab" class="tab-content">
+        <h2 class="text-xl font-semibold mb-4">OCDA Income Analysis</h2>
+        <form id="vaIncForm" class="bg-white p-4 rounded shadow mb-4 flex flex-wrap gap-4 items-end">
+          <div><label class="block text-xs font-medium mb-1">Mode</label><select name="mode" class="p-2 border rounded text-sm"><option value="summary">Summary</option><option value="detail">Detail</option></select></div>
+          <div><label class="block text-xs font-medium mb-1">Start Date</label><input type="date" name="start" class="p-2 border rounded text-sm" /></div>
+          <div><label class="block text-xs font-medium mb-1">End Date</label><input type="date" name="end" class="p-2 border rounded text-sm" /></div>
+          <div><label class="block text-xs font-medium mb-1">Description or ALL</label><input type="text" name="code" class="p-2 border rounded text-sm" placeholder="Description or ALL" /></div>
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">Generate Report</button>
+        </form>
+        <div id="vaIncTable" class="overflow-auto rounded shadow bg-white p-4 space-y-8"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div id="vaModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 overflow-hidden">
+      <div id="vaModalHeader" class="px-5 py-3 flex items-center justify-between text-white bg-blue-600">
+        <h3 id="vaModalTitle" class="font-semibold text-base"></h3>
+        <button onclick="vaCloseModal()" class="text-white hover:text-gray-200 text-xl leading-none">&times;</button>
+      </div>
+      <div class="px-5 py-4"><p id="vaModalMsg" class="text-sm text-gray-700"></p></div>
+      <div class="px-5 pb-4 flex justify-end gap-2">
+        <button id="vaModalCancel" class="hidden px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm">Cancel</button>
+        <button id="vaModalOk" class="px-4 py-2 bg-blue-600 text-white rounded text-sm">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const vaToken = localStorage.getItem("adminToken");
+    const vaRole  = localStorage.getItem("adminRole");
+    if (!vaToken || vaRole !== "VIEWADMIN") { alert("Access denied."); window.location.href="/adminlog.html"; }
+    const vaH = { Authorization: `Bearer ${vaToken}` };
+
+    // Modal
+    let _vaRes = null;
+    function vaModal(msg, {title="Notice",type="info",confirm=false}={}) {
+      return new Promise(resolve => {
+        _vaRes = resolve;
+        const colours = {info:"bg-blue-600",success:"bg-green-600",error:"bg-red-600",warning:"bg-yellow-500"};
+        const hdr = document.getElementById("vaModalHeader");
+        const ok  = document.getElementById("vaModalOk");
+        const can = document.getElementById("vaModalCancel");
+        document.getElementById("vaModalTitle").textContent = title;
+        document.getElementById("vaModalMsg").textContent   = msg;
+        hdr.className = `px-5 py-3 flex items-center justify-between text-white ${colours[type]||colours.info}`;
+        ok.className  = `px-4 py-2 rounded text-sm text-white ${colours[type]||colours.info}`;
+        ok.textContent = confirm?"Confirm":"OK";
+        if (confirm) { can.classList.remove("hidden"); can.onclick=()=>vaCloseModal(false); ok.onclick=()=>vaCloseModal(true); }
+        else { can.classList.add("hidden"); ok.onclick=()=>vaCloseModal(true); }
+        document.getElementById("vaModal").classList.remove("hidden");
+      });
+    }
+    function vaCloseModal(r=true) { document.getElementById("vaModal").classList.add("hidden"); if(_vaRes){_vaRes(r);_vaRes=null;} }
+    const vaAlert = (m,t="info",ti)=>vaModal(m,{title:ti||(t==="error"?"Error":t==="success"?"Success":t==="warning"?"Warning":"Notice"),type:t});
+
+    // Formatters
+    const fmt     = n => `₦${parseFloat(n||0).toLocaleString("en-NG",{minimumFractionDigits:2})}`;
+    const fmtDate = d => { const dt=new Date(d); return isNaN(dt)?d:dt.toLocaleDateString("en-GB"); };
+
+    // Tab switching
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+        if (btn.dataset.tab==="summary-tab")      vaLoadSummary();
+        if (btn.dataset.tab==="memberledger-tab") vaLoadLedger();
+      });
+    });
+
+    // Enquiry dropdowns
+    async function vaLoadDropdowns() {
+      try {
+        const d = await (await fetch("/admin/enquiry/options",{headers:vaH})).json();
+        const mS=document.getElementById("va-enquiry-member"), wS=document.getElementById("va-enquiry-ward"), qS=document.getElementById("va-enquiry-quarter");
+        d.members.forEach(m=>{const o=document.createElement("option");o.value=m.PhoneNumber;o.textContent=m.fullname;mS.appendChild(o);});
+        d.wards.forEach(w=>{const o=document.createElement("option");o.value=w;o.textContent=w;wS.appendChild(o);});
+        d.quarters.forEach(q=>{const o=document.createElement("option");o.value=q;o.textContent=q;qS.appendChild(o);});
+      } catch(e){console.error(e);}
+    }
+    document.querySelectorAll("[name=enquiryType]").forEach(r=>{
+      r.addEventListener("change",()=>{
+        ["member","ward","quarter"].forEach(t=>document.getElementById(`va-${t}-group`).classList.add("hidden"));
+        document.getElementById(`va-${r.value}-group`).classList.remove("hidden");
+      });
+    });
+
+    // Enquiry submit
+    document.getElementById("vaEnquiryForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const f=e.target, type=f.enquiryType.value, mode=f.detail.checked?"detail":"summary";
+      let val="ALL";
+      if(type==="member")  val=document.getElementById("va-enquiry-member").value;
+      if(type==="ward")    val=document.getElementById("va-enquiry-ward").value;
+      if(type==="quarter") val=document.getElementById("va-enquiry-quarter").value;
+      const p=new URLSearchParams({type,param:val,mode});
+      if(f.start.value) p.append("start",f.start.value);
+      if(f.end.value)   p.append("end",f.end.value);
+      try {
+        const res=await fetch(`/admin/enquiry?${p}`,{headers:vaH});
+        const data=await res.json();
+        if(!res.ok){vaAlert(data.message||"Enquiry failed","error");return;}
+        vaRenderEnquiry(data,type,mode);
+        document.getElementById("vaEnquiryResults").classList.remove("hidden");
+      } catch(err){vaAlert("Server error","error");}
+    });
+
+    function vaRenderEnquiry(data,type,mode) {
+      const sBox=document.getElementById("vaSummaryBox"), dBox=document.getElementById("vaDetailBox");
+      // Summary
+      if(!data.summary?.length){sBox.innerHTML='<p class="text-xs text-gray-400 p-2">No data.</p>';}
+      else {
+        const hdrs = type==="member"?["Phone","Name","Total"]:type==="ward"?["Ward","Total"]:["Quarter","Total"];
+        sBox.innerHTML=`<table class="min-w-full text-xs border-collapse"><thead class="bg-gray-100"><tr>${hdrs.map(h=>`<th class="border p-2">${h}</th>`).join("")}</tr></thead><tbody>
+          ${data.summary.map(r=>{
+            if(type==="member") return `<tr class="border-t"><td class="border p-2">${r.PhoneNumber||r.phoneno||""}</td><td class="border p-2">${r.fullname||""}</td><td class="border p-2 text-right">${fmt(r.total)}</td></tr>`;
+            if(type==="ward")   return `<tr class="border-t"><td class="border p-2">${r.Ward||""}</td><td class="border p-2 text-right">${fmt(r.total)}</td></tr>`;
+            return `<tr class="border-t"><td class="border p-2">${r.Quarters||r.Quarter||""}</td><td class="border p-2 text-right">${fmt(r.total)}</td></tr>`;
+          }).join("")}</tbody></table>`;
+      }
+      // Detail
+      if(!data.detail?.length){dBox.innerHTML='<p class="text-xs text-gray-400 p-2">No detail data.</p>';return;}
+      let html="";
+      const txRow = r=>`<tr class="border-t"><td class="border p-2">${r.phoneno||""}</td><td class="border p-2">${r.fullname||""}</td><td class="border p-2">${fmtDate(r.transdate)}</td><td class="border p-2 text-right">${fmt(r.amount)}</td><td class="border p-2">${r.remark||""}</td></tr>`;
+      const txHead = `<table class="min-w-full text-xs border-collapse"><thead class="bg-gray-100"><tr><th class="border p-2">Phone</th><th class="border p-2">Name</th><th class="border p-2">Date</th><th class="border p-2">Amount</th><th class="border p-2">Remark</th></tr></thead><tbody>`;
+      if(type==="member") html=txHead+data.detail.map(txRow).join("")+"</tbody></table>";
+      else if(type==="ward") data.detail.forEach(wg=>{html+=`<div class="mb-3"><strong class="text-xs">${wg.ward}</strong>${txHead}${wg.members.map(txRow).join("")}</tbody></table></div>`;});
+      else data.detail.forEach(qg=>{html+=`<div class="mb-3"><strong class="text-xs">${qg.quarter}</strong>`;qg.wards?.forEach(wg=>{html+=`<div class="ml-3 mt-1"><em class="text-xs text-gray-500">${wg.ward}</em>${txHead}${wg.members.map(txRow).join("")}</tbody></table></div>`;});html+=`</div>`;});
+      dBox.innerHTML=html;
+    }
+
+    function vaPrintEnquiry() {
+      const c=document.getElementById("vaEnquiryTableWrapper")?.innerHTML;
+      if(!c) return;
+      const w=window.open("","","width=1000,height=700");
+      w.document.write(`<html><head><title>Enquiry</title><style>body{font-family:Arial;padding:16px;font-size:12px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ccc;padding:4px 6px}th{background:#eee}.flex{display:flex;gap:16px}</style></head><body>${c}</body></html>`);
+      w.document.close();w.print();
+    }
+
+    // Member Ledger
+    async function vaLoadLedger(from="",to="") {
+      const body=document.getElementById("vaLedgerBody"), cnt=document.getElementById("vaLedgerCount");
+      if(body) body.innerHTML=`<tr><td colspan="5" class="p-4 text-center text-gray-400">Loading...</td></tr>`;
+      try {
+        const url = from&&to ? `/admin/member-recordledger?from=${from}&to=${to}` : "/admin/memberledger";
+        const data = await (await fetch(url,{headers:vaH})).json();
+        if(cnt) cnt.textContent=`${data.length} record${data.length!==1?"s":""} found`;
+        if(!data.length){body.innerHTML=`<tr><td colspan="5" class="p-4 text-center text-gray-400">No records.</td></tr>`;return;}
+        body.innerHTML=data.map(r=>`<tr class="border-t hover:bg-gray-50"><td class="p-3">${r.phoneno}</td><td class="p-3">${fmtDate(r.transdate)}</td><td class="p-3">${fmt(r.amount)}</td><td class="p-3">${r.remark||"—"}</td><td class="p-3">${r.paydate?fmtDate(r.paydate):"—"}</td></tr>`).join("");
+      } catch(e){if(body)body.innerHTML=`<tr><td colspan="5" class="p-4 text-center text-red-400">Failed.</td></tr>`;}
+    }
+    function vaFilterLedger(){const f=document.getElementById("vaLedgerStart")?.value,t=document.getElementById("vaLedgerEnd")?.value;if(!f||!t){vaAlert("Select both dates","warning");return;}vaLoadLedger(f,t);}
+    function vaClearLedger(){document.getElementById("vaLedgerStart").value="";document.getElementById("vaLedgerEnd").value="";vaLoadLedger();}
+    function vaCurrentMonth(){const now=new Date(),y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,"0"),f=`${y}-${m}-01`,t=new Date(y,now.getMonth()+1,0).toISOString().split("T")[0];document.getElementById("vaLedgerStart").value=f;document.getElementById("vaLedgerEnd").value=t;vaLoadLedger(f,t);}
+
+    // Monthly Summary
+    async function vaLoadSummary() {
+      try {
+        const data=await (await fetch("/admin/monthlysummary",{headers:vaH})).json();
+        document.getElementById("vaSummaryData").innerHTML=data.map(r=>`<tr class="border-t hover:bg-gray-50"><td class="p-3">${r.period}</td><td class="p-3 text-right">${fmt(r.openbalance)}</td><td class="p-3 text-right">${fmt(r.Debitbalance)}</td><td class="p-3 text-right">${fmt(r.Creditbalance)}</td><td class="p-3 text-right font-semibold">${fmt(r.Netbalance)}</td></tr>`).join("");
+      } catch(e){console.error(e);}
+    }
+
+    // Final Account
+    async function vaLoadFinalAccount() {
+      const from=document.getElementById("vaFinalFrom").value, to=document.getElementById("vaFinalTo").value, div=document.getElementById("vaFinalResult");
+      if(!from||!to){vaAlert("Select both dates","warning");return;}
+      if(new Date(from).getDate()!==1){vaAlert("Start date must be 1st of month","warning");return;}
+      div.innerHTML='<p class="text-gray-400 text-sm p-4">Loading...</p>';
+      try {
+        const res=await fetch(`/admin/final-account?from=${from}&to=${to}`,{headers:vaH});
+        const d=await res.json();
+        if(!res.ok){div.innerHTML=`<p class="text-red-500 p-4">${d.message}</p>`;return;}
+        div.innerHTML=`
+          <div id="vaFinalPrint" class="border rounded p-6 bg-white max-w-lg">
+            <h3 class="text-center font-bold text-lg mb-6 uppercase">Final Account</h3>
+            <table class="w-full text-sm border-collapse">
+              <tbody>
+                <tr style="border-top:1px solid #ccc;border-bottom:1px solid #ccc">
+                  <td class="py-3 font-semibold">OPENING BALANCE AS AT ${fmtDate(d.fromDate)} <span class="text-gray-400 text-xs">(a)</span></td>
+                  <td class="py-3 text-right font-mono">${fmt(d.openingBalance)}</td>
+                </tr>
+                <tr style="border-bottom:1px solid #ccc" class="cursor-pointer hover:bg-blue-50" onclick="vaFinalDrill('income','${from}','${to}')">
+                  <td class="py-3 font-semibold">TOTAL INCOME <span class="text-gray-400 text-xs">(b)</span> <span class="text-blue-400 text-xs ml-2">▼</span></td>
+                  <td class="py-3 text-right font-mono">${fmt(d.totalIncome)}</td>
+                </tr>
+                <tr id="vaIncomeDrillRow" class="hidden"><td colspan="2" class="pb-3 pt-1"><div id="vaIncomeDrillCont" class="bg-blue-50 rounded p-3 text-xs"></div></td></tr>
+                <tr style="border-bottom:1px solid #ccc" class="cursor-pointer hover:bg-orange-50" onclick="vaFinalDrill('expenses','${from}','${to}')">
+                  <td class="py-3 font-semibold">TOTAL EXPENSES <span class="text-gray-400 text-xs">(c)</span> <span class="text-orange-400 text-xs ml-2">▼</span></td>
+                  <td class="py-3 text-right font-mono">${fmt(d.totalExpenses)}</td>
+                </tr>
+                <tr id="vaExpDrillRow" class="hidden"><td colspan="2" class="pb-3 pt-1"><div id="vaExpDrillCont" class="bg-orange-50 rounded p-3 text-xs"></div></td></tr>
+                <tr style="border-top:2px solid black">
+                  <td class="py-3 font-bold">CURRENT BALANCE AS AT ${fmtDate(d.toDate)} <span class="text-gray-400 text-xs">(a+b-c)</span></td>
+                  <td class="py-3 text-right font-mono font-bold">${fmt(d.currentBalance)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="flex gap-3 mt-4">
+            <button onclick="vaPrintFinal()" class="px-4 py-2 bg-blue-600 text-white rounded text-sm">Print</button>
+            <button onclick="document.getElementById('vaFinalResult').innerHTML='';document.getElementById('vaFinalFrom').value='';document.getElementById('vaFinalTo').value=''" class="px-4 py-2 bg-gray-300 text-gray-700 rounded text-sm">Clear</button>
+          </div>`;
+      } catch(e){div.innerHTML='<p class="text-red-500 p-4">Server error</p>';}
+    }
+
+    async function vaFinalDrill(type,from,to) {
+      const rId=type==="income"?"vaIncomeDrillRow":"vaExpDrillRow", cId=type==="income"?"vaIncomeDrillCont":"vaExpDrillCont";
+      const row=document.getElementById(rId), cont=document.getElementById(cId);
+      if(!row)return;
+      if(!row.classList.contains("hidden")){row.classList.add("hidden");return;}
+      row.classList.remove("hidden"); cont.innerHTML='<p class="text-gray-400 italic">Loading...</p>';
+      try {
+        const ep=type==="income"?`/admin/ocda-income-analysis?start=${from}&end=${to}&mode=summary`:`/admin/ocda-expenses-analysis?start=${from}&end=${to}&mode=summary`;
+        const data=await (await fetch(ep,{headers:vaH})).json();
+        if(!data.length){cont.innerHTML='<p class="text-gray-500">No records.</p>';return;}
+        const col=type==="income"?"bg-blue-100":"bg-orange-100";
+        cont.innerHTML=`<table class="w-full border-collapse"><thead><tr class="${col}"><th class="border px-2 py-1 text-left">Description</th><th class="border px-2 py-1 text-right">Amount</th></tr></thead><tbody>${data.map(r=>`<tr class="border-t"><td class="border px-2 py-1">${r.description||r.code||""}</td><td class="border px-2 py-1 text-right font-mono">${fmt(r.amount)}</td></tr>`).join("")}</tbody></table>`;
+      } catch(e){cont.innerHTML='<p class="text-red-400">Failed.</p>';}
+    }
+
+    function vaPrintFinal(){const c=document.getElementById("vaFinalPrint")?.innerHTML;if(!c)return;const w=window.open("","","width=700,height=600");w.document.write(`<html><head><title>Final Account</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse}td{padding:8px 4px}.text-right{text-align:right}.font-mono{font-family:monospace}.hidden{display:none}</style></head><body>${c}</body></html>`);w.document.close();w.print();}
+
+    // Expenses Analysis
+    document.getElementById("vaExpForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const f=e.target, mode=f.mode.value, start=f.start.value, end=f.end.value, code=f.code.value||"ALL";
+      const tbl=document.getElementById("vaExpTable"); tbl.innerHTML='<p class="text-gray-400 text-sm">Loading...</p>';
+      try {
+        const data=await (await fetch(`/admin/ocda-expenses-analysis?${new URLSearchParams({start,end,mode,code})}`,{headers:vaH})).json();
+        vaRenderExp(data,mode,tbl,start,end);
+      } catch(e){tbl.innerHTML='<p class="text-red-500 text-sm">Server error</p>';}
+    });
+
+    function vaRenderExp(data,mode,tbl,start,end) {
+      if(!Array.isArray(data)||!data.length){tbl.innerHTML='<div class="text-gray-500 text-sm">No data.</div>';return;}
+      tbl.dataset.start=start; tbl.dataset.end=end;
+      if(mode==="summary") {
+        tbl.innerHTML=`
+          <table class="min-w-full border border-gray-300">
+            <thead class="bg-gray-100"><tr>
+              <th class="p-2 border">Code</th>
+              <th class="p-2 border">Description</th>
+              <th class="p-2 border">Amount</th>
+            </tr></thead>
+            <tbody>${data.map(r=>`
+              <tr>
+                <td class="p-2 border text-center">${r.code||""}</td>
+                <td class="p-2 border text-center">${r.description||""}</td>
+                <td class="p-2 border text-center font-mono">${fmt(r.amount)}</td>
+              </tr>`).join("")}
+            </tbody>
+          </table>`;
+      } else {
+        const grouped={};
+        data.forEach(r=>{const k=r.description||r.code||"Other";if(!grouped[k])grouped[k]=[];grouped[k].push(r);});
+        tbl.innerHTML=Object.entries(grouped).map(([h,rows],i)=>`
+          <div class="mb-4 border rounded overflow-hidden shadow">
+            <button class="w-full text-left px-4 py-2 bg-gray-100 font-bold hover:bg-gray-200 text-sm" onclick="vaTogGrp('va-eg-${i}')">${h}</button>
+            <div id="va-eg-${i}" class="hidden px-4 py-2">
+              <table class="w-full border-collapse text-xs"><thead><tr>
+                <th class="border px-2 py-1 bg-gray-200">Date</th>
+                <th class="border px-2 py-1 bg-gray-200">Voucher No</th>
+                <th class="border px-2 py-1 bg-gray-200">Remark</th>
+                <th class="border px-2 py-1 bg-gray-200 text-right">Amount</th>
+              </tr></thead>
+              <tbody>${rows.map(r=>`<tr class="border-t">
+                <td class="border px-2 py-1">${fmtDate(r.date||r.docdate)}</td>
+                <td class="border px-2 py-1">${r.voucher||""}</td>
+                <td class="border px-2 py-1">${r.remark||""}</td>
+                <td class="border px-2 py-1 text-right font-mono">${fmt(r.amount)}</td>
+              </tr>`).join("")}</tbody></table>
+            </div>
+          </div>`).join("");
+      }
+    }
+
+    async function vaExpDrill(i,desc) {
+      const row=document.getElementById(`va-ed-${i}`), cont=document.getElementById(`va-edc-${i}`);
+      if(!row)return; if(!row.classList.contains("hidden")){row.classList.add("hidden");return;}
+      row.classList.remove("hidden");
+      const tbl=document.getElementById("vaExpTable"), s=tbl.dataset.start||"", e=tbl.dataset.end||"";
+      try {
+        const data=await (await fetch(`/admin/ocda-expenses-analysis?start=${s}&end=${e}&mode=detail`,{headers:vaH})).json();
+        const rows=data.filter(r=>(r.description||r.remark||"").trim()===desc.trim());
+        if(!rows.length){cont.innerHTML='<span class="text-gray-400">No detail.</span>';return;}
+        cont.innerHTML=`<table class="w-full border-collapse mt-1"><thead><tr class="bg-gray-200"><th class="border px-2 py-1 text-left">Date</th><th class="border px-2 py-1 text-left">Remark</th><th class="border px-2 py-1 text-right">Amount</th></tr></thead><tbody>${rows.map(r=>`<tr class="border-t"><td class="border px-2 py-1">${fmtDate(r.date)}</td><td class="border px-2 py-1">${r.remark||""}</td><td class="border px-2 py-1 text-right font-mono">${fmt(r.amount)}</td></tr>`).join("")}</tbody></table>`;
+      } catch(e){cont.innerHTML='<span class="text-red-400">Failed.</span>';}
+    }
+
+    // Income Analysis
+    document.getElementById("vaIncForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const f=e.target, mode=f.mode.value, start=f.start.value, end=f.end.value, code=f.code.value||"ALL";
+      const tbl=document.getElementById("vaIncTable"); tbl.innerHTML='<p class="text-gray-400 text-sm">Loading...</p>';
+      try {
+        const data=await (await fetch(`/admin/ocda-income-analysis?${new URLSearchParams({start,end,mode,code})}`,{headers:vaH})).json();
+        vaRenderInc(data,mode,tbl,start,end);
+      } catch(e){tbl.innerHTML='<p class="text-red-500 text-sm">Server error</p>';}
+    });
+
+    function vaRenderInc(data,mode,tbl,start,end) {
+      if(!Array.isArray(data)||!data.length){tbl.innerHTML='<div class="text-gray-500 text-sm">No data.</div>';return;}
+      tbl.dataset.start=start; tbl.dataset.end=end;
+      if(mode==="summary") {
+        tbl.innerHTML=`
+          <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-300">
+              <thead class="bg-gray-100"><tr>
+                <th class="p-2 border">Code</th>
+                <th class="p-2 border">Description</th>
+                <th class="p-2 border">Amount</th>
+              </tr></thead>
+              <tbody>${data.map(r=>`
+                <tr>
+                  <td class="p-2 border text-center break-words">${r.code||"No Code"}</td>
+                  <td class="p-2 border text-center break-words">${r.description?.trim()||r.code||"N/A"}</td>
+                  <td class="p-2 border text-center font-mono">${fmt(r.amount)}</td>
+                </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>`;
+      } else {
+        tbl.innerHTML=data.map((g,i)=>`
+          <div class="mb-4 border rounded overflow-hidden shadow">
+            <button class="w-full text-left px-4 py-2 bg-gray-100 font-bold hover:bg-gray-200 text-sm" onclick="vaTogGrp('va-ig-${i}')">${g.code} (${g.transactions?.length||0} transactions)</button>
+            <div id="va-ig-${i}" class="hidden px-4 py-2">
+              <table class="w-full border-collapse text-xs"><thead><tr>
+                <th class="border px-2 py-1 bg-gray-200">Date</th>
+                <th class="border px-2 py-1 bg-gray-200">Phone (Name)</th>
+                <th class="border px-2 py-1 bg-gray-200 text-right">Amount</th>
+                <th class="border px-2 py-1 bg-gray-200">Comment</th>
+              </tr></thead>
+              <tbody>${(g.transactions||[]).map(t=>`<tr class="border-t">
+                <td class="border px-2 py-1">${fmtDate(t.date)}</td>
+                <td class="border px-2 py-1" style="word-break:break-all">${t.phoneno_name||""}</td>
+                <td class="border px-2 py-1 text-right font-mono">${fmt(t.amount)}</td>
+                <td class="border px-2 py-1">${t.comment||""}</td>
+              </tr>`).join("")}</tbody></table>
+            </div>
+          </div>`).join("");
+      }
+    }
+
+    async function vaIncDrill(i,desc) {
+      const row=document.getElementById(`va-id-${i}`), cont=document.getElementById(`va-idc-${i}`);
+      if(!row)return; if(!row.classList.contains("hidden")){row.classList.add("hidden");return;}
+      row.classList.remove("hidden");
+      const tbl=document.getElementById("vaIncTable"), s=tbl.dataset.start||"", e=tbl.dataset.end||"";
+      try {
+        const data=await (await fetch(`/admin/ocda-income-analysis?start=${s}&end=${e}&mode=detail&code=${encodeURIComponent(desc)}`,{headers:vaH})).json();
+        if(!data.length||!data[0]?.transactions?.length){cont.innerHTML='<span class="text-gray-400">No detail.</span>';return;}
+        cont.innerHTML=`<table class="w-full border-collapse mt-1"><thead><tr class="bg-gray-200"><th class="border px-2 py-1 text-left">Date</th><th class="border px-2 py-1 text-left">Phone (Name)</th><th class="border px-2 py-1 text-right">Amount</th></tr></thead><tbody>${data[0].transactions.map(t=>`<tr class="border-t"><td class="border px-2 py-1">${fmtDate(t.date)}</td><td class="border px-2 py-1">${t.phoneno_name||""}</td><td class="border px-2 py-1 text-right font-mono">${fmt(t.amount)}</td></tr>`).join("")}</tbody></table>`;
+      } catch(e){cont.innerHTML='<span class="text-red-400">Failed.</span>';}
+    }
+
+    function vaTogGrp(id){const el=document.getElementById(id);if(el)el.classList.toggle("hidden");}
+    function viewAdminLogout(){localStorage.removeItem("adminToken");localStorage.removeItem("adminRole");localStorage.removeItem("adminId");window.location.href="/adminlog.html";}
+
+    document.addEventListener("DOMContentLoaded", vaLoadDropdowns);
+  </script>
+</body>
+</html>

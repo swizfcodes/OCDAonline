@@ -19,6 +19,26 @@
       color: white;
     }
 
+    .pdf-export-enhanced {
+      background-color: white;
+      color: #000;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+    }
+    .pdf-export-enhanced table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .pdf-export-enhanced th,
+    .pdf-export-enhanced td {
+      border: 1px solid #333;
+      padding: 8px;
+      text-align: left;
+    }
+    .pdf-export-enhanced th {
+      background-color: #f0f0f0;
+    }
+
     .collapsible-content {
       display: none;
     }
@@ -66,9 +86,12 @@
       }
     }
 
-    @media (max-width: 1023px) and (min-width: 600px) {
+    @media (max-width: 1045px) and (min-width: 600px) {
       .p-6 {
         padding-top: 7% !important;
+      }
+      html {
+        font-size: 80% !important;
       }
     }
 
@@ -88,11 +111,38 @@
           word-break: break-word;
           max-width: 70px;
         }
+
+        .gap-2 {
+          gap: 0.5rem !important;
+        }
+
+        .gap-4 {
+          gap: 0.4rem !important;
+        }
+
+        .px-3 {
+          padding-left: 0.15rem !important;
+          padding-right: 0.15rem !important;
+        }
+
+        .p-6 {
+          padding: 0.5rem !important;
+          padding-top: 15% !important;
+        }
+
+        .p-4 {
+          padding: 0.4rem !important;
+        }
+
+        .px-4 {
+          padding-left: 0.1rem !important;
+          padding-right: 0.1rem !important;
+        }
       }
 
       .p-6 {
         padding: 0.5rem !important;
-        padding-top: 10% !important;
+        padding-top: 12% !important;
       }
     }
   </style>
@@ -114,7 +164,7 @@
     </button>
   </header>
 
-  <div class="flex flex-col lg:flex-row">
+  <div class="flex flex-col lg:flex-row min-h-screen">
     <!-- Sidebar -->
     <aside id="sidebar"
       class="bg-white w-64 fixed top-0 left-0 h-full shadow-md transform -translate-x-full transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:h-auto lg:block hidden">
@@ -155,6 +205,10 @@
               data-tab="summary">
               <i data-lucide="bar-chart" class="w-4 h-4 mr-2"></i>Monthly Summary
             </button>
+            <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
+              data-tab="final-account">
+              <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>Final Account
+            </button>
           </div>
         </div>
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="std">Standard Expenses</button>
@@ -162,6 +216,8 @@
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="static-tables">Static Tables</button>
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="notices-section">Notices /
           Events</button>
+        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="contactus-section">Contact Us</button>
+        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="faq-section">FAQ</button>
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="change-PhoneNumber">Change
           PhoneNumber</button>
         <button id="menuToggle" class="lg:hidden p-4 text-gray-800 focus:outline-none"></button>
@@ -174,7 +230,7 @@
 
 
     <!-- Main Content -->
-    <main class="flex-1 p-6 space-y-10">
+    <main class="flex-1 p-6 min-w-0 overflow-x-hidden pt-20 lg:pt-6">
 
       <!-- Card + Table Container -->
       <section id="landingSections" class="landings-section tab-content">
@@ -195,6 +251,7 @@
           <select name="role" class="w-full p-3 border rounded">
             <option value="admin">Admin</option>
             <option value="superadmin">Super Admin</option>
+            <option value="VIEWADMIN">View Admin (Reports Only)</option>
           </select>
           <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Create Admin</button>
         </form>
@@ -245,6 +302,7 @@
                 <select name="role" id="editAdminRole" class="w-full p-2 border rounded">
                   <option value="admin">Admin</option>
                   <option value="superadmin">Super Admin</option>
+                  <option value="VIEWADMIN">View Admin (Reports Only)</option>
                 </select>
               </div>
               <div class="flex gap-2 mt-4">
@@ -324,7 +382,24 @@
         </div>
       </section>
 
-      <!-- OCDA Expenses Analysis Section -->
+      <!-- Final Account Report (Item 4) -->
+      <section id="final-account" class="tab-content hidden p-4">
+        <h2 class="text-2xl font-semibold mb-4">Final Account Report</h2>
+        <div class="bg-white p-6 rounded shadow-md max-w-md mb-6 space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Start Date <span class="text-gray-400 text-xs">(must be 1st of month)</span></label>
+            <input type="date" id="finalAccountFrom" class="w-full p-2 border rounded text-sm" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">End Date</label>
+            <input type="date" id="finalAccountTo" class="w-full p-2 border rounded text-sm" />
+          </div>
+          <button onclick="loadFinalAccount()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Generate Report</button>
+        </div>
+        <div id="finalAccountResult"></div>
+      </section>
+
+
       <section id="ocda-expenses-analysis" class="tab-content hidden">
         <h2 class="text-2xl font-semibold mb-4">OCDA Expenses Analysis</h2>
 
@@ -350,8 +425,7 @@
             <input type="text" name="code" class="p-2 border rounded" placeholder="e.g. 1010 or ALL" />
           </div>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Generate Report</button>
-          <button onclick="exportOCDAReportToPDF()" class="bg-green-600 text-white px-4 py-2 rounded">Export
-            PDF</button>
+          <button type="button" onclick="exportOCDAExpReportToPDF()" class="bg-green-600 text-white px-4 py-2 rounded" id="exportExpensesBtn">Export PDF</button>
         </form>
 
         <!-- Results Container -->
@@ -385,6 +459,7 @@
             <input type="text" name="code" class="p-2 border rounded" placeholder="e.g. ANNUAL DUES or ALL" />
           </div>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Generate Report</button>
+          <button type="button" onclick="exportOCDAReportToPDF()" class="bg-green-600 text-white px-4 py-2 rounded">Export PDF</button>
         </form>
         <div class="overflow-auto rounded shadow bg-white">
           <div id="ocdaIncomeAnalysisTable">
@@ -617,6 +692,11 @@
             <option value="">-- Select Income Classification --</option>
             <!-- Options will be populated by JS -->
           </select>
+
+          <label class="block text-black">
+            Comment
+            <input name="comment" placeholder="ignore if none.." type="text" class="w-full p-2 border rounded" />
+          </label>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
         </form>
 
@@ -631,6 +711,7 @@
                   <th class="p-3">Amount</th>
                   <th class="p-3">Remark</th>
                   <th class="p-3">Record Date</th>
+                  <th class="p-3">Actions</th>
                 </tr>
               </thead>
               <tbody id="ledgerData"></tbody>
@@ -640,7 +721,37 @@
       </section>
 
       <section id="memberledger" class="tab-content hidden">
-        <h2 class="text-2xl font-semibold mb-4">All Member Ledger</h2>
+        <div class="mb-4 flex gap-4 items-center">
+          <div>
+            <label class="block text-sm font-medium mb-1">Start Date:</label>
+            <input type="date" id="startDate" class="border rounded px-3 py-2">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">End Date:</label>
+            <input type="date" id="endDate" class="border rounded px-3 py-2">
+          </div>
+          <div class="flex flex-wrap gap-2 mt-6">
+            <button onclick="loadAllMemberLedger()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7 sm:mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+              </svg>
+              <span class="hidden sm:inline">Filter</span>
+            </button>
+            <button onclick="clearDateFilters()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7 sm:mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span class="hidden sm:inline">Clear</span>
+            </button>
+            <button onclick="loadCurrentMonth()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7 sm:mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="hidden sm:inline">Current Month</span>
+            </button>
+          </div>
+        </div>
+        <h2 class="text-2xl font-semibold mb-4" id="recordCount">All Member Ledger</h2>
         <div class="overflow-auto rounded shadow bg-white">
           <table class="min-w-full text-sm text-left">
             <thead class="bg-gray-200 text-gray-700">
@@ -819,12 +930,25 @@
         <div class="flex justify-between mb-4">
           <input id="memberSearch" type="text" placeholder="Search..." class="p-2 border rounded w-full max-w-xs" />
 
-          <div class="space-x-2">
-            <button class="bg-blue-600 text-white px-3 py-2 rounded tab-button" data-tab="create-member">Add New
-              Member</button>
-            <button onclick="exportMembers('excel')" class="bg-green-600 text-white px-3 py-2 rounded">Export
-              Excel</button>
-            <button onclick="exportMembers('pdf')" class="bg-red-600 text-white px-3 py-2 rounded">Export PDF</button>
+          <div class="flex flex-wrap gap-2">
+            <button class="bg-blue-600 text-white px-3 py-2 rounded tab-button flex items-center gap-x-2" data-tab="create-member">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <span class="hidden sm:inline">Add New Member</span>
+            </button>
+            <button onclick="exportMembers('print')" class="bg-green-600 text-white px-3 py-2 rounded flex items-center gap-x-2 hover:bg-green-700 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18H4.5A2.25 2.25 0 012.25 15.75V9A2.25 2.25 0 014.5 6.75h15A2.25 2.25 0 0121.75 9v6.75A2.25 2.25 0 0119.5 18H18v-5.25A2.25 2.25 0 0015.75 10.5h-7.5a2.25 2.25 0 00-2.25 2.25V18zM18 12v3.75h3.75" />
+              </svg>
+              <span class="hidden sm:inline">Print</span>
+            </button>
+            <button onclick="exportMembers('pdf')" class="bg-red-600 text-white px-3 py-2 rounded flex items-center gap-x-2 hover:bg-red-700 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5l-7.5 7.5-7.5-7.5M21 15v4.5a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 19.5V15" />
+              </svg>
+              <span class="hidden sm:inline">Export PDF</span>
+            </button>
           </div>
         </div>
 
@@ -1153,6 +1277,49 @@
         </div>
       </section>
 
+      <!-- Contact Us Management (Item 2) -->
+      <section id="contactus-section" class="tab-content hidden p-4">
+        <h2 class="text-xl font-semibold mb-4">Manage Contact Us Page</h2>
+        <div class="bg-white p-6 rounded shadow-md max-w-2xl space-y-4">
+          <p class="text-sm text-gray-500">This content will appear on the public Contact Us page. Edit and save to update it.</p>
+          <div>
+            <label class="block text-sm font-medium mb-1">Title</label>
+            <input type="text" id="contactUsTitle" class="w-full p-2 border rounded text-sm" placeholder="e.g. Contact OCDA" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Content</label>
+            <textarea id="contactUsContent" rows="10" class="w-full p-2 border rounded text-sm font-mono" placeholder="Enter contact details, addresses, phone numbers, emails..."></textarea>
+          </div>
+          <button id="saveContactUsBtn" onclick="saveContactUs()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Save Changes</button>
+          <p id="contactUsStatus" class="text-sm hidden"></p>
+        </div>
+      </section>
+
+      <!-- FAQ Management (Item 3) -->
+      <section id="faq-section" class="tab-content hidden p-4">
+        <h2 class="text-xl font-semibold mb-4">Manage FAQ</h2>
+
+        <!-- Add new FAQ entry -->
+        <div class="bg-white p-6 rounded shadow-md max-w-2xl mb-6 space-y-3">
+          <h3 class="font-semibold text-sm">Add New FAQ Entry</h3>
+          <div>
+            <label class="block text-sm font-medium mb-1">Question</label>
+            <input type="text" id="newFaqQuestion" class="w-full p-2 border rounded text-sm" placeholder="Enter question..." />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Answer</label>
+            <textarea id="newFaqAnswer" rows="4" class="w-full p-2 border rounded text-sm" placeholder="Enter answer..."></textarea>
+          </div>
+          <button id="addFaqBtn" onclick="addFaqEntry()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">Add FAQ Entry</button>
+        </div>
+
+        <!-- Existing FAQ list -->
+        <div class="max-w-2xl">
+          <h3 class="font-semibold mb-3">Existing FAQ Entries</h3>
+          <div id="faqAdminList" class="space-y-3"></div>
+        </div>
+      </section>
+
       <section id="change-PhoneNumber" class="tab-content hidden p-6 bg-white rounded-lg shadow-md">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">Change Phone Number</h2>
 
@@ -1247,6 +1414,23 @@
   <script>
     lucide.createIcons();
   </script>
+  <!-- Reusable Alert Modal -->
+  <div id="appModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 overflow-hidden">
+      <div id="appModalHeader" class="px-5 py-3 flex items-center justify-between">
+        <h3 id="appModalTitle" class="font-semibold text-base"></h3>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+      </div>
+      <div class="px-5 py-4">
+        <p id="appModalMessage" class="text-sm text-gray-700"></p>
+      </div>
+      <div class="px-5 pb-4 flex justify-end gap-2">
+        <button id="appModalCancel" onclick="closeModal()" class="hidden px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">Cancel</button>
+        <button id="appModalConfirm" onclick="closeModal()" class="px-4 py-2 rounded text-sm text-white">OK</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 <script src="script/admin-dashboard.js"></script>
 
