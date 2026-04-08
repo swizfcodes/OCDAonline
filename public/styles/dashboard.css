@@ -18,6 +18,10 @@
   }
 }
 
+html {
+  font-size: 85% !important;
+}
+
 :root {
   --bg: #0f2027;
   --bg-light: #2c5364;

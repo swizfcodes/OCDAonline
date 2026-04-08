@@ -18,6 +18,10 @@
   --hover-bg: rgba(255, 255, 255, 0.1);
 }
 
+html {
+  font-size: 85% !important;
+}
+
 /* Header */
 .hicad-header {
   background: var(--bg-color);

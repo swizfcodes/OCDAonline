@@ -247,6 +247,7 @@ router.get("/memberledger", verifyToken, async (req, res) => {
   try {
     const result = await request(`
       SELECT 
+        id,
         phoneno, 
         DATE_FORMAT(transdate, '%Y-%m-%d') AS transdate,
         amount, 
@@ -285,6 +286,7 @@ router.get("/member-recordledger", verifyToken, async (req, res) => {
   try {
     const result = await request(`
             SELECT 
+                id,
                 phoneno, 
                 transdate, 
                 amount, 
@@ -442,116 +444,111 @@ router.post("/createmember", verifyToken, async (req, res) => {
 });
 
 // Gemerate Monthly Summary
-router.post("/generate-summary", verifyToken, async (req, res) => {
+router.post('/generate-summary', verifyToken, async (req, res) => {
   try {
     const { year, month } = req.body;
-    const paddedMonth = month.padStart(2, "0");
-    const period = `${year}${paddedMonth}`; // e.g., 202406
+    const paddedMonth = month.padStart(2, '0');
+    const period = `${year}${paddedMonth}`; // e.g., 202407
 
-    // Get today's date
+    // Prevent summaries for current or future months
     const now = new Date();
-    const thisMonth = now.getMonth() + 1;
-    const thisYear = now.getFullYear();
-    let lastMonth = thisMonth - 1;
-    let lastMonthYear = thisYear;
+    const currentPeriod = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    if (lastMonth === 0) {
-      lastMonth = 12;
-      lastMonthYear--;
+    if (parseInt(period) >= parseInt(currentPeriod)) {
+      return res.status(400).json({ message: 'You can only generate summaries for completed months.' });
     }
 
-    const lastPeriod = `${lastMonthYear}${String(lastMonth).padStart(2, "0")}`;
-
-    // Only allow summaries for past months
-    if (parseInt(period) > parseInt(lastPeriod)) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "You can only generate summary for the previous or earlier months.",
-        });
-    }
-
-    // Check if summary already exists
-    const exists = await request(
-      "SELECT 1 FROM monthlysummary WHERE period = @period",
-    )
-      .inputs({ period })
-      .run();
-
-    if (exists.recordset.length > 0) {
-      return res
-        .status(409)
-        .json({ message: `Summary for ${period} already exists.` });
-    }
-
-    // 💳 Total Credit (inflows)
-    const creditResult = await request(`
-      SELECT IFNULL(SUM(amount), 0) AS totalCredit
+    // Fetch the earliest recorded period
+    const firstEntry = await request(`
+      SELECT MIN(DATE_FORMAT(transdate, '%Y%m')) AS firstPeriod
       FROM memberledger
-      WHERE DATE_FORMAT(transdate, '%Y%m') = @period
-    `)
-      .inputs({ period })
-      .run();
+    `).run();
+    const startPeriod = firstEntry.recordset[0].firstPeriod;
 
-    const totalCredit = creditResult.recordset[0].totalCredit;
+    // Fetch all existing summary periods
+    const existing = await request(`
+      SELECT period FROM monthlysummary
+    `).run();
+    const existingPeriods = new Set(existing.recordset.map(r => r.period));
 
-    // 💸 Total Debit (expenses)
+    // Generate all expected periods from startPeriod to the target period (exclusive)
+    const missing = [];
+    let cursor = startPeriod;
+    while (cursor < period) {
+      if (!existingPeriods.has(cursor)) {
+        missing.push(cursor);
+      }
+      // Advance cursor to next month
+      let y = parseInt(cursor.substring(0, 4));
+      let m = parseInt(cursor.substring(4, 6));
+      m++;
+      if (m === 13) { m = 1; y++; }
+      cursor = `${y}${String(m).padStart(2, '0')}`;
+    }
+
+    if (missing.length > 0) {
+      return res.status(400).json({
+        message: `You must first generate summary for previous period(s): ${missing.join(', ')}`
+      });
+    }
+
+    // Check if summary for this period already exists
+    const exists = await request('SELECT 1 FROM monthlysummary WHERE period = @period')
+      .inputs({ period }).run();
+    if (exists.recordset.length > 0) {
+      return res.status(409).json({ message: `Summary for ${period} already exists.` });
+    }
+
+    // Debit from memberledger (inflow)
     const debitResult = await request(`
       SELECT IFNULL(SUM(amount), 0) AS totalDebit
+      FROM memberledger
+      WHERE DATE_FORMAT(paydate, '%Y%m') = @period
+    `).inputs({ period }).run();
+    const Debitbalance = parseFloat(debitResult.recordset[0].totalDebit || 0);
+
+    // Credit from ocdaexpenses (outflow)
+    const creditResult = await request(`
+      SELECT IFNULL(SUM(amount), 0) AS totalCredit
       FROM ocdaexpenses
       WHERE DATE_FORMAT(docdate, '%Y%m') = @period
-    `)
-      .inputs({ period })
-      .run();
+    `).inputs({ period }).run();
+    const Creditbalance = parseFloat(creditResult.recordset[0].totalCredit || 0);
 
-    const totalDebit = debitResult.recordset[0].totalDebit;
-
-    // 🧾 Get previous balance
-    const prev = await request(`
-      SELECT Netbalance AS prevNet
+    // Previous balance
+    const previousBalance = await request(`
+      SELECT Netbalance
       FROM monthlysummary
       WHERE period < @period
       ORDER BY period DESC
       LIMIT 1
-    `)
-      .inputs({ period })
-      .run();
+    `).inputs({ period }).run();
+    const openbalance = previousBalance.recordset.length > 0
+      ? parseFloat(previousBalance.recordset[0].Netbalance)
+      : 0;
 
-    const prevNet = prev.recordset.length > 0 ? prev.recordset[0].prevNet : 0;
+    const Netbalance = openbalance + Debitbalance - Creditbalance;
 
-    const Netbalance = prevNet + totalCredit - totalDebit;
-
-    // 💾 Save new summary
+    // Insert new summary
     await request(`
       INSERT INTO monthlysummary (period, openbalance, Debitbalance, Creditbalance, Netbalance)
       VALUES (@period, @openbalance, @Debitbalance, @Creditbalance, @Netbalance)
-    `)
-      .inputs({
-        period,
-        openbalance: prevNet,
-        Debitbalance: totalCredit, // Your original code swapped these
-        Creditbalance: totalDebit,
-        Netbalance,
-      })
-      .run();
+    `).inputs({ period, openbalance, Debitbalance, Creditbalance, Netbalance }).run();
 
-    // ✅ Fetch & return inserted summary
-    const summaryResult = await request(`
+    const summary = await request(`
       SELECT period, openbalance, Debitbalance, Creditbalance, Netbalance
       FROM monthlysummary
       WHERE period = @period
-    `)
-      .inputs({ period })
-      .run();
+    `).inputs({ period }).run();
 
     res.status(201).json({
-      message: "Monthly summary saved",
-      summary: summaryResult.recordset[0],
+      message: 'Monthly summary saved',
+      summary: summary.recordset[0]
     });
+
   } catch (err) {
-    console.error("Monthly Summary Error:", err);
-    res.status(500).json({ message: "Failed to generate summary" });
+    console.error('Monthly Summary Error:', err);
+    res.status(500).json({ message: 'Failed to generate summary' });
   }
 });
 
@@ -1939,7 +1936,7 @@ router.post("/notices", verifyToken, async (req, res) => {
 router.get("/notices", async (req, res) => {
   try {
     const result =
-      await request`SELECT id, title, content, type, created_at FROM notices ORDER BY created_at DESC`.run();
+      await request`SELECT id, title, content, type, created_at FROM notices where type in ('notice', 'event') ORDER BY created_at DESC`.run();
     res.json(result.recordset);
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch notices/events" });
@@ -1959,7 +1956,7 @@ router.put("/notices/:id", verifyToken, async (req, res) => {
     const result = await request(`
       UPDATE notices 
       SET title = @title, content = @content, type = @type
-      WHERE id = @id
+      WHERE id = @id AND type IN ('notice', 'event')
     `)
       .inputs({ id, title, content, type })
       .run();
@@ -1979,7 +1976,7 @@ router.put("/notices/:id", verifyToken, async (req, res) => {
 router.delete("/notices/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await request`DELETE FROM notices WHERE id = @id`
+    const result = await request`DELETE FROM notices WHERE id = @id AND type IN ('notice', 'event')`
       .inputs({ id })
       .run();
 
@@ -2282,21 +2279,23 @@ router.get("/final-account", verifyToken, async (req, res) => {
     const fromPeriod = `${fromDate.getFullYear()}${String(fromDate.getMonth() + 1).padStart(2, "0")}`;
 
     const openingResult = await request(`
-      SELECT openbalance FROM monthlysummary
-      WHERE period = @fromPeriod
+      SELECT Netbalance FROM monthlysummary
+      WHERE period < @fromPeriod
+      ORDER BY period DESC
+      LIMIT 1
     `)
       .inputs({ fromPeriod })
       .run();
 
     const openingBalance = openingResult.recordset.length > 0
-      ? openingResult.recordset[0].openbalance
+      ? openingResult.recordset[0].Netbalance
       : 0;
 
     // Total Income (b): sum of memberledger for period
     const incomeResult = await request(`
       SELECT IFNULL(SUM(amount), 0) AS totalIncome
       FROM memberledger
-      WHERE transdate >= @from AND transdate <= @to
+      WHERE paydate >= @from AND paydate <= @to
     `)
       .inputs({ from, to })
       .run();
@@ -2353,6 +2352,103 @@ router.get("/viewadmin/enquiry", verifyViewAdmin, async (req, res) => {
   // Proxy through to the main enquiry handler by forwarding query params
   req.url = `/enquiry?${new URLSearchParams(req.query).toString()}`;
   res.redirect(307, `/admin/enquiry?${new URLSearchParams(req.query).toString()}`);
+});
+
+// ===== MEMBER PAYMENT SCHEDULE REPORT =====
+router.get("/payment-schedule", verifyToken, async (req, res) => {
+  const { fromMonth, fromYear, toMonth, toYear, remark = "ALL" } = req.query;
+
+  if (!fromMonth || !fromYear || !toMonth || !toYear) {
+    return res.status(400).json({ message: "fromMonth, fromYear, toMonth, toYear are required" });
+  }
+
+  // Build start and end dates
+  const startDate = `${fromYear}-${String(fromMonth).padStart(2, "0")}-01`;
+  const endYear  = parseInt(toYear);
+  const endMon   = parseInt(toMonth);
+  const lastDay  = new Date(endYear, endMon, 0).getDate(); // last day of toMonth
+  const endDate  = `${endYear}-${String(endMon).padStart(2, "0")}-${lastDay}`;
+
+  // Validate range does not exceed 12 months
+  const startMs = new Date(startDate).getTime();
+  const endMs   = new Date(endDate).getTime();
+  const diffMonths =
+    (parseInt(toYear) - parseInt(fromYear)) * 12 +
+    (parseInt(toMonth) - parseInt(fromMonth));
+
+  if (diffMonths < 0) {
+    return res.status(400).json({ message: "End month must be after start month" });
+  }
+  if (diffMonths > 11) {
+    return res.status(400).json({ message: "Date range must not exceed 12 months" });
+  }
+
+  try {
+    let remarkFilter = "";
+    const params = { startDate, endDate };
+
+    if (remark !== "ALL") {
+      remarkFilter = "AND l.remark = @remark";
+      params.remark = remark;
+    }
+
+    const query = `
+      SELECT
+        m.PhoneNumber,
+        CONCAT(IFNULL(m.Title,''), ' ', m.Surname, ' ', m.othernames) AS fullname,
+        MONTH(l.transdate)  AS month,
+        YEAR(l.transdate)   AS year,
+        SUM(l.amount)       AS amount
+      FROM memberledger l
+      JOIN members m ON l.phoneno = m.PhoneNumber
+      WHERE l.transdate >= @startDate
+        AND l.transdate <= @endDate
+        ${remarkFilter}
+      GROUP BY l.phoneno, m.Title, m.Surname, m.othernames, YEAR(l.transdate), MONTH(l.transdate)
+      ORDER BY m.Surname, m.othernames, YEAR(l.transdate), MONTH(l.transdate)
+    `;
+
+    const result = await request(query).inputs(params).run();
+
+    // Build column list (ordered months in the range)
+    const columns = [];
+    let cy = parseInt(fromYear), cm = parseInt(fromMonth);
+    for (let i = 0; i <= diffMonths; i++) {
+      columns.push({ year: cy, month: cm });
+      cm++;
+      if (cm > 12) { cm = 1; cy++; }
+    }
+
+    // Pivot rows into members map
+    const membersMap = {};
+    result.recordset.forEach(row => {
+      const key = row.PhoneNumber;
+      if (!membersMap[key]) {
+        membersMap[key] = { fullname: row.fullname.trim(), payments: {} };
+      }
+      const colKey = `${row.year}-${String(row.month).padStart(2, "0")}`;
+      membersMap[key].payments[colKey] = parseFloat(row.amount);
+    });
+
+    // Build response rows
+    const members = Object.values(membersMap).map(m => {
+      let total = 0;
+      const monthly = columns.map(col => {
+        const key = `${col.year}-${String(col.month).padStart(2, "0")}`;
+        const amt = m.payments[key] || 0;
+        total += amt;
+        return amt;
+      });
+      return { fullname: m.fullname, monthly, total };
+    });
+
+    const grandTotal = members.reduce((s, m) => s + m.total, 0);
+
+    res.json({ columns, members, grandTotal });
+  } catch (err) {
+    console.error("Payment Schedule error:", err);
+    res.status(500).json({ message: "Failed to generate payment schedule" });
+  }
 });
 
 module.exports = router;

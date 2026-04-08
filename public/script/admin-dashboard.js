@@ -4,21 +4,29 @@ const BASE_URL = isLocal ? "http://localhost:5500" : "https://oyinakokocda.org";
 // ===== REUSABLE MODAL (replaces all alert/confirm) =====
 let _modalResolve = null;
 
-function showModal(message, { title = "Notice", type = "info", confirm = false } = {}) {
+function showModal(
+  message,
+  { title = "Notice", type = "info", confirm = false } = {},
+) {
   return new Promise((resolve) => {
     _modalResolve = resolve;
-    const modal    = document.getElementById("appModal");
-    const header   = document.getElementById("appModalHeader");
-    const titleEl  = document.getElementById("appModalTitle");
-    const msgEl    = document.getElementById("appModalMessage");
-    const okBtn    = document.getElementById("appModalConfirm");
-    const cancelBtn= document.getElementById("appModalCancel");
+    const modal = document.getElementById("appModal");
+    const header = document.getElementById("appModalHeader");
+    const titleEl = document.getElementById("appModalTitle");
+    const msgEl = document.getElementById("appModalMessage");
+    const okBtn = document.getElementById("appModalConfirm");
+    const cancelBtn = document.getElementById("appModalCancel");
 
-    titleEl.textContent  = title;
-    msgEl.textContent    = message;
+    titleEl.textContent = title;
+    msgEl.textContent = message;
 
     // Colour header by type
-    const colours = { info:"bg-blue-600", success:"bg-green-600", error:"bg-red-600", warning:"bg-yellow-500" };
+    const colours = {
+      info: "bg-blue-600",
+      success: "bg-green-600",
+      error: "bg-red-600",
+      warning: "bg-yellow-500",
+    };
     header.className = `px-5 py-3 flex items-center justify-between text-white ${colours[type] || colours.info}`;
 
     okBtn.className = `px-4 py-2 rounded text-sm text-white ${colours[type] || colours.info}`;
@@ -26,11 +34,17 @@ function showModal(message, { title = "Notice", type = "info", confirm = false }
 
     if (confirm) {
       cancelBtn.classList.remove("hidden");
-      cancelBtn.onclick = () => { closeModal(false); };
-      okBtn.onclick     = () => { closeModal(true); };
+      cancelBtn.onclick = () => {
+        closeModal(false);
+      };
+      okBtn.onclick = () => {
+        closeModal(true);
+      };
     } else {
       cancelBtn.classList.add("hidden");
-      okBtn.onclick = () => { closeModal(true); };
+      okBtn.onclick = () => {
+        closeModal(true);
+      };
     }
 
     modal.classList.remove("hidden");
@@ -39,12 +53,28 @@ function showModal(message, { title = "Notice", type = "info", confirm = false }
 
 function closeModal(result = true) {
   document.getElementById("appModal").classList.add("hidden");
-  if (_modalResolve) { _modalResolve(result); _modalResolve = null; }
+  if (_modalResolve) {
+    _modalResolve(result);
+    _modalResolve = null;
+  }
 }
 
 // Convenience wrappers
-const showAlert   = (msg, type = "info", title)       => showModal(msg, { title: title || (type === "error" ? "Error" : type === "success" ? "Success" : type === "warning" ? "Warning" : "Notice"), type });
-const showConfirm = (msg, title = "Confirm Action")    => showModal(msg, { title, type: "warning", confirm: true });
+const showAlert = (msg, type = "info", title) =>
+  showModal(msg, {
+    title:
+      title ||
+      (type === "error"
+        ? "Error"
+        : type === "success"
+          ? "Success"
+          : type === "warning"
+            ? "Warning"
+            : "Notice"),
+    type,
+  });
+const showConfirm = (msg, title = "Confirm Action") =>
+  showModal(msg, { title, type: "warning", confirm: true });
 
 document.addEventListener("DOMContentLoaded", function () {
   const role = localStorage.getItem("adminRole");
@@ -217,6 +247,8 @@ window.addEventListener("DOMContentLoaded", () => {
       "ocda-expenses-analysis",
       "ocda-income-analysis",
       "summary",
+      "final-account",
+      "payment-schedule",
     ].includes(tab);
 
   // Toggle sidebar
@@ -477,7 +509,10 @@ document
     const email = document.getElementById("editAdminEmail").value;
     const role = document.getElementById("editAdminRole").value;
 
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Saving..."; }
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Saving...";
+    }
 
     try {
       const res = await fetch(`${BASE_URL}/admin/update/${id}`, {
@@ -489,7 +524,11 @@ document
         body: JSON.stringify({ fullname, email, role }),
       });
       const result = await res.json();
-      showAlert(res.ok ? "Admin updated successfully!" : result.message || "Update failed",);
+      showAlert(
+        res.ok
+          ? "Admin updated successfully!"
+          : result.message || "Update failed",
+      );
       if (res.ok) {
         document.getElementById("editAdminModal").classList.add("hidden");
         loadAdmins();
@@ -497,7 +536,10 @@ document
     } catch (err) {
       showAlert("Server error");
     } finally {
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Save"; }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Save";
+      }
     }
   });
 
@@ -505,14 +547,19 @@ document
 async function toggleAdminStatus(adminId, isActive) {
   const token = `Bearer ${localStorage.getItem("adminToken")}`;
   const action = isActive ? "deactivate" : "activate";
-  if (!await showConfirm(`Are you sure you want to ${action} this admin?`)) return;
+  if (!(await showConfirm(`Are you sure you want to ${action} this admin?`)))
+    return;
   try {
     const res = await fetch(`${BASE_URL}/admin/${action}/${adminId}`, {
       method: "PATCH",
       headers: { Authorization: token },
     });
     const result = await res.json();
-    showAlert(res.ok ? `Admin ${action}d successfully!` : result.message || "Action failed",);
+    showAlert(
+      res.ok
+        ? `Admin ${action}d successfully!`
+        : result.message || "Action failed",
+    );
     if (res.ok) loadAdmins();
   } catch (err) {
     showAlert("Server error");
@@ -522,14 +569,19 @@ async function toggleAdminStatus(adminId, isActive) {
 // Delete admin
 async function deleteAdmin(adminId) {
   const token = `Bearer ${localStorage.getItem("adminToken")}`;
-  if (!await showConfirm("Are you sure you want to delete this admin?")) return;
+  if (!(await showConfirm("Are you sure you want to delete this admin?")))
+    return;
   try {
     const res = await fetch(`${BASE_URL}/admin/delete/${adminId}`, {
       method: "DELETE",
       headers: { Authorization: token },
     });
     const result = await res.json();
-    showAlert(res.ok ? "Admin deleted successfully!" : result.message || "Delete failed",);
+    showAlert(
+      res.ok
+        ? "Admin deleted successfully!"
+        : result.message || "Delete failed",
+    );
     if (res.ok) loadAdmins();
   } catch (err) {
     showAlert("Server error");
@@ -553,7 +605,10 @@ function setupAdminTab() {
           role: form.role.value,
         };
 
-        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Creating..."; }
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Creating...";
+        }
 
         try {
           const res = await fetch(`${BASE_URL}/admin/create`, {
@@ -565,14 +620,21 @@ function setupAdminTab() {
             body: JSON.stringify(data),
           });
           const result = await res.json();
-          showAlert(res.ok ? "Admin created!" : result.message || "Error creating admin",);
+          showAlert(
+            res.ok
+              ? "Admin created!"
+              : result.message || "Error creating admin",
+          );
           if (res.ok) form.reset();
           loadAdmins(); // Refresh list after creation
         } catch (err) {
           console.error("Create Admin Error:", err);
           showAlert("Server error");
         } finally {
-          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Create Admin"; }
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Create Admin";
+          }
         }
       });
     setupAdminTab.initialized = true;
@@ -780,7 +842,7 @@ function editStdExpense(code, btn) {
 }
 
 async function deleteStdExpense(code) {
-  if (!await showConfirm("Delete this expense?")) return;
+  if (!(await showConfirm("Delete this expense?"))) return;
   fetch(`/admin/stdxpenses?expscode=${encodeURIComponent(code)}`, {
     method: "DELETE",
   }).then((res) => {
@@ -867,7 +929,7 @@ function editIncomeClass(code, btn) {
 }
 
 async function deleteIncomeClass(code) {
-  if (!await showConfirm("Delete this income class?")) return;
+  if (!(await showConfirm("Delete this income class?"))) return;
   fetch(`/admin/incomeclass?incomecode=${encodeURIComponent(code)}`, {
     method: "DELETE",
   }).then((res) => {
@@ -942,7 +1004,10 @@ document
       email: form.email.value,
     };
 
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Creating..."; }
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Creating...";
+    }
 
     try {
       const res = await fetch("/admin/createmember", {
@@ -955,7 +1020,11 @@ document
       });
 
       const result = await res.json();
-      showAlert(res.ok ? "Member created successfully!" : result.message || "Error creating member.",);
+      showAlert(
+        res.ok
+          ? "Member created successfully!"
+          : result.message || "Error creating member.",
+      );
 
       if (res.ok) {
         form.reset();
@@ -971,7 +1040,10 @@ document
       console.error("Create Member Error:", err);
       showAlert("Server error");
     } finally {
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Create Member"; }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Create Member";
+      }
     }
   });
 
@@ -1025,7 +1097,7 @@ function displayMembers(data) {
       (m) => `
     <tr class="border-t">
       <td class="p-3">${m.PhoneNumber}</td>
-      <td class="p-3">${m.Title || ''} ${m.Surname}</td>
+      <td class="p-3">${m.Title || ""} ${m.Surname}</td>
       <td class="p-3">${m.othernames}</td>
       <td class="p-3">${m.Title}</td>
       <td class="p-3">${m.Sex}</td>
@@ -1086,21 +1158,25 @@ async function loadMembers() {
     displayMembers(allMembers);
 
     // Populate hidden export table
-    const exportTableBody = document.getElementById('membersTableExport');
+    const exportTableBody = document.getElementById("membersTableExport");
     if (exportTableBody) {
-      exportTableBody.innerHTML = allMembers.map(member => `
+      exportTableBody.innerHTML = allMembers
+        .map(
+          (member) => `
         <tr>
-          <td>${member.PhoneNumber || ''}</td>
-          <td>${member.Surname || ''}</td>
-          <td>${member.othernames || ''}</td>
-          <td>${member.Sex || ''}</td>
-          <td>${member.DOB ? new Date(member.DOB).toLocaleDateString() : ''}</td>
-          <td>${member.Quarters || ''}</td>
-          <td>${member.Ward || ''}</td>
-          <td>${member.Town || ''}</td>
-          <td>${member.State || ''}</td>
+          <td>${member.PhoneNumber || ""}</td>
+          <td>${member.Surname || ""}</td>
+          <td>${member.othernames || ""}</td>
+          <td>${member.Sex || ""}</td>
+          <td>${member.DOB ? new Date(member.DOB).toLocaleDateString() : ""}</td>
+          <td>${member.Quarters || ""}</td>
+          <td>${member.Ward || ""}</td>
+          <td>${member.Town || ""}</td>
+          <td>${member.State || ""}</td>
         </tr>
-      `).join('');
+      `,
+        )
+        .join("");
     }
   } catch (err) {
     console.error("Member Load Error:", err);
@@ -1216,42 +1292,40 @@ window.addEventListener("DOMContentLoaded", function () {
 
 // Export to Excel or PDF
 function exportMembers(type) {
-  const table = document.getElementById('memberTableExport');
+  const table = document.getElementById("memberTableExport");
 
-  if (type === 'excel') {
+  if (type === "excel") {
     const wb = XLSX.utils.table_to_book(table, { sheet: "Members" });
     XLSX.writeFile(wb, "members.xlsx");
-
-  } else if (type === 'pdf') {
-    const doc = new jspdf.jsPDF('landscape', 'pt', 'a4');
+  } else if (type === "pdf") {
+    const doc = new jspdf.jsPDF("landscape", "pt", "a4");
     doc.autoTable({
-      html: '#memberTableExport',
+      html: "#memberTableExport",
       styles: {
-        font: 'helvetica',
+        font: "helvetica",
         fontSize: 10,
         cellPadding: 5,
-        halign: 'center',
-        valign: 'middle',
+        halign: "center",
+        valign: "middle",
         lineColor: [220, 220, 220],
         lineWidth: 0.2,
       },
       headStyles: {
         fillColor: [240, 240, 240],
         textColor: 33,
-        fontStyle: 'bold'
+        fontStyle: "bold",
       },
       alternateRowStyles: { fillColor: [248, 248, 248] },
       margin: { top: 40 },
       didDrawPage: function (data) {
         doc.setFontSize(14);
         doc.text("OCDA Member List", data.settings.margin.left, 30);
-      }
+      },
     });
     doc.save("members.pdf");
-
-  } else if (type === 'print') {
+  } else if (type === "print") {
     const printContent = table.outerHTML;
-    const win = window.open('', '', 'width=1000,height=800');
+    const win = window.open("", "", "width=1000,height=800");
     win.document.write(`
       <html>
         <head>
@@ -1429,7 +1503,9 @@ async function saveMemberChanges() {
         headers: { Authorization: localStorage.getItem("adminToken") },
       });
       if (checkRes.ok) {
-        showAlert(`A member already exists with phone number: ${changedData.PhoneNumber}`,);
+        showAlert(
+          `A member already exists with phone number: ${changedData.PhoneNumber}`,
+        );
         return;
       }
     } catch (err) {
@@ -1449,7 +1525,11 @@ async function saveMemberChanges() {
     });
 
     const result = await res.json();
-    showAlert(res.ok ? "Member updated successfully!" : result.message || "Update failed",);
+    showAlert(
+      res.ok
+        ? "Member updated successfully!"
+        : result.message || "Update failed",
+    );
     if (res.ok) {
       loadMembers();
       closeMemberDetails();
@@ -1509,7 +1589,9 @@ async function savePhoneNumber(e) {
     });
 
     const result = await res.json();
-    showAlert(result.message || (res.ok ? "Phone number updated." : "Update failed"),);
+    showAlert(
+      result.message || (res.ok ? "Phone number updated." : "Update failed"),
+    );
 
     if (res.ok) {
       form.reset();
@@ -1557,7 +1639,8 @@ async function mergePhoneNumber(e) {
 }
 
 async function deleteMember(phone) {
-  if (!await showConfirm("Are you sure you want to delete this member?")) return;
+  if (!(await showConfirm("Are you sure you want to delete this member?")))
+    return;
   try {
     const res = await fetch(`/admin/member/${phone}`, {
       method: "DELETE",
@@ -1645,7 +1728,7 @@ document.getElementById("ledgerForm")?.addEventListener("submit", async (e) => {
     transdate: form.transdate.value,
     amount: parseFloat(form.amount.value),
     remark: form.remark.value,
-    comment: form.comment?.value || '',
+    comment: form.comment?.value || "",
   };
 
   console.log("Submitting ledger entry for:", data);
@@ -1656,7 +1739,10 @@ document.getElementById("ledgerForm")?.addEventListener("submit", async (e) => {
     return;
   }
 
-  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Submitting..."; }
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submitting...";
+  }
 
   try {
     const res = await fetch(`/admin/ledger-entry/${data.phoneno}`, {
@@ -1695,7 +1781,10 @@ document.getElementById("ledgerForm")?.addEventListener("submit", async (e) => {
     console.error("Ledger Error:", err.message || err);
     showAlert("Server error");
   } finally {
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Submit"; }
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit";
+    }
   }
 });
 
@@ -1735,12 +1824,12 @@ async function loadMemberLedger() {
         (row) => `
       <tr class="border-t" id="ledger-row-${row.id}">
         <td class="p-2">${row.phoneno}</td>
-        <td class="p-2 ledger-transdate">${row.transdate ? row.transdate.substring(0,10) : ''}</td>
+        <td class="p-2 ledger-transdate">${row.transdate ? row.transdate.substring(0, 10) : ""}</td>
         <td class="p-2 ledger-amount">${formatAmount(row.amount)}</td>
         <td class="p-2 ledger-remark">${row.remark}</td>
         <td class="p-2">${formatDate(row.paydate || "—")}</td>
         <td class="p-2 flex gap-1">
-          <button onclick="editLedgerEntry(${row.id}, '${row.transdate ? row.transdate.substring(0,10) : ''}', ${row.amount}, '${(row.remark||'').replace(/'/g,"\\'")}', '${row.phoneno}')"
+          <button onclick="editLedgerEntry(${row.id}, '${row.transdate ? row.transdate.substring(0, 10) : ""}', ${row.amount}, '${(row.remark || "").replace(/'/g, "\\'")}', '${row.phoneno}')"
             class="px-2 py-1 bg-yellow-500 text-white rounded text-xs">Edit</button>
           <button onclick="deleteLedgerEntry(${row.id})"
             class="px-2 py-1 bg-red-600 text-white rounded text-xs">Delete</button>
@@ -1761,7 +1850,8 @@ function editLedgerEntry(id, transdate, amount, remark, phoneno) {
 
   const modal = document.createElement("div");
   modal.id = "ledgerEditModal";
-  modal.className = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
+  modal.className =
+    "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
   modal.innerHTML = `
     <div class="bg-white rounded-lg p-6 w-full max-w-md shadow-xl">
       <h3 class="text-lg font-bold mb-4">Edit Ledger Entry</h3>
@@ -1824,12 +1914,20 @@ async function saveLedgerEdit(id) {
     console.error("Ledger edit error:", err);
     showAlert("Server error");
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Save Changes"; }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Save Changes";
+    }
   }
 }
 
 async function deleteLedgerEntry(id) {
-  if (!await showConfirm("Are you sure you want to delete this ledger entry? This cannot be undone.")) return;
+  if (
+    !(await showConfirm(
+      "Are you sure you want to delete this ledger entry? This cannot be undone.",
+    ))
+  )
+    return;
 
   try {
     const res = await fetch(`/admin/ledger-entry/${id}`, {
@@ -1853,66 +1951,71 @@ async function deleteLedgerEntry(id) {
 
 async function loadAllMemberLedger() {
   try {
-    const startDate = document.getElementById('startDate')?.value || '';
-    const endDate = document.getElementById('endDate')?.value || '';
+    const startDate = document.getElementById("startDate")?.value || "";
+    const endDate = document.getElementById("endDate")?.value || "";
 
     // Use date-filtered endpoint when dates provided, otherwise fetch all
-    let url = '/admin/memberledger';
+    let url = "/admin/memberledger";
     if (startDate && endDate) {
       url = `/admin/member-recordledger?from=${startDate}&to=${endDate}`;
     }
 
     const res = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-      }
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
     });
 
     const data = await res.json();
-    const body = document.getElementById('ledgerDataTable');
+    const body = document.getElementById("ledgerDataTable");
 
     if (!body) {
-      console.error('ledgerDataTable element not found');
+      console.error("ledgerDataTable element not found");
       return;
     }
 
     if (data.length === 0) {
-      body.innerHTML = '<tr><td colspan="5" class="p-2 text-center text-gray-500">No records found for the selected date range</td></tr>';
-      const recordCount = document.getElementById('recordCount');
-      if (recordCount) recordCount.textContent = '0 records found';
+      body.innerHTML =
+        '<tr><td colspan="5" class="p-2 text-center text-gray-500">No records found for the selected date range</td></tr>';
+      const recordCount = document.getElementById("recordCount");
+      if (recordCount) recordCount.textContent = "0 records found";
       return;
     }
 
-    body.innerHTML = data.map(row => `
+    body.innerHTML = data
+      .map(
+        (row) => `
       <tr class="border-t hover:bg-gray-50">
         <td class="p-3">${row.phoneno}</td>
         <td class="p-3">${formatDate(row.transdate)}</td>
         <td class="p-3">${formatAmount(row.amount)}</td>
-        <td class="p-3">${row.remark || '—'}</td>
-        <td class="p-3">${row.paydate ? formatDate(row.paydate) : '—'}</td>
+        <td class="p-3">${row.remark || "—"}</td>
+        <td class="p-3">${row.paydate ? formatDate(row.paydate) : "—"}</td>
       </tr>
-    `).join('');
+    `,
+      )
+      .join("");
 
-    const recordCount = document.getElementById('recordCount');
+    const recordCount = document.getElementById("recordCount");
     if (recordCount) {
       recordCount.textContent = `${data.length} records found`;
     }
-
   } catch (err) {
-    console.error('Load memberLedger Error:', err);
-    const body = document.getElementById('ledgerDataTable');
+    console.error("Load memberLedger Error:", err);
+    const body = document.getElementById("ledgerDataTable");
     if (body) {
-      body.innerHTML = '<tr><td colspan="5" class="p-2 text-center text-red-500">Failed to load ledger data</td></tr>';
+      body.innerHTML =
+        '<tr><td colspan="5" class="p-2 text-center text-red-500">Failed to load ledger data</td></tr>';
     }
   }
 }
 
 // Function to clear date filters
 function clearDateFilters() {
-  const startDate = document.getElementById('startDate');
-  const endDate = document.getElementById('endDate');
-  if (startDate) startDate.value = '';
-  if (endDate) endDate.value = '';
+  const startDate = document.getElementById("startDate");
+  const endDate = document.getElementById("endDate");
+  if (startDate) startDate.value = "";
+  if (endDate) endDate.value = "";
   loadAllMemberLedger();
 }
 
@@ -1920,20 +2023,26 @@ function clearDateFilters() {
 function loadCurrentMonth() {
   const now = new Date();
   const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const startDate = document.getElementById('startDate');
-  const endDate = document.getElementById('endDate');
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const startDate = document.getElementById("startDate");
+  const endDate = document.getElementById("endDate");
   if (startDate) startDate.value = `${year}-${month}-01`;
   if (endDate) {
     const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
-    endDate.value = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
+    endDate.value = `${year}-${month}-${String(lastDay).padStart(2, "0")}`;
   }
   loadAllMemberLedger();
 }
 
-function filterAllLedger() { loadAllMemberLedger(); }
-function clearAllLedgerFilter() { clearDateFilters(); }
-function loadAllLedgerCurrentMonth() { loadCurrentMonth(); }
+function filterAllLedger() {
+  loadAllMemberLedger();
+}
+function clearAllLedgerFilter() {
+  clearDateFilters();
+}
+function loadAllLedgerCurrentMonth() {
+  loadCurrentMonth();
+}
 
 // Add OCDA Expense (Screen E)
 document.getElementById("ocdaForm")?.addEventListener("submit", async (e) => {
@@ -1948,7 +2057,10 @@ document.getElementById("ocdaForm")?.addEventListener("submit", async (e) => {
     remarks: form.remarks.value,
   };
 
-  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Saving..."; }
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Saving...";
+  }
 
   try {
     const res = await fetch("/admin/ocdaexpenses", {
@@ -1961,7 +2073,9 @@ document.getElementById("ocdaForm")?.addEventListener("submit", async (e) => {
     });
 
     const result = await res.json();
-    showAlert(res.ok ? "Saved successfully!" : result.message || "Error saving data",);
+    showAlert(
+      res.ok ? "Saved successfully!" : result.message || "Error saving data",
+    );
     if (res.ok) {
       form.reset();
       loadOCDAExpenses(); // refresh display
@@ -1970,7 +2084,10 @@ document.getElementById("ocdaForm")?.addEventListener("submit", async (e) => {
     console.error("OCDA Submit Error:", err.message || err);
     showAlert("Server error");
   } finally {
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Submit"; }
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit";
+    }
   }
 });
 
@@ -2054,7 +2171,10 @@ document
 
     const data = { year, month };
 
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Generating..."; }
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Generating...";
+    }
 
     try {
       const res = await fetch("/admin/generate-summary", {
@@ -2067,7 +2187,11 @@ document
       });
 
       const result = await res.json();
-      showAlert(res.ok ? `Summary for ${year}-${month} generated!` : result.message || "Error generating summary.",);
+      showAlert(
+        res.ok
+          ? `Summary for ${year}-${month} generated!`
+          : result.message || "Error generating summary.",
+      );
 
       if (res.ok) {
         form.reset();
@@ -2077,7 +2201,10 @@ document
       console.error("Summary Error:", err);
       showAlert("⚠️ Server error. Please try again.");
     } finally {
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Generate"; }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Generate";
+      }
     }
   });
 
@@ -2517,7 +2644,9 @@ function renderEnquiryResults(data, type, mode) {
         const byQuery = document.querySelector(`#${CSS.escape(targetId)}`);
         console.log("Alternative query result:", byQuery);
 
-        showAlert(`❗ Element with ID "${targetId}" not found!\nAvailable IDs: ${allIds.join(", ")}`,);
+        showAlert(
+          `❗ Element with ID "${targetId}" not found!\nAvailable IDs: ${allIds.join(", ")}`,
+        );
       }
     }
   });
@@ -2547,36 +2676,35 @@ function renderEnquiryResults(data, type, mode) {
 
 // Export
 function exportEnquiry(type) {
-  const table = document.getElementById('enquiryTableExport');
+  const table = document.getElementById("enquiryTableExport");
 
-  if (type === 'excel') {
+  if (type === "excel") {
     const wb = XLSX.utils.table_to_book(table, { sheet: "Enquiry" });
     XLSX.writeFile(wb, "enquiry.xlsx");
-
-  } else if (type === 'pdf') {
-    const doc = new jspdf.jsPDF('landscape', 'pt', 'a4');
+  } else if (type === "pdf") {
+    const doc = new jspdf.jsPDF("landscape", "pt", "a4");
     doc.autoTable({
-      html: '#enquiryTableExport',
+      html: "#enquiryTableExport",
       styles: {
-        font: 'helvetica',
+        font: "helvetica",
         fontSize: 10,
         cellPadding: 5,
-        valign: 'middle',
-        halign: 'center',
+        valign: "middle",
+        halign: "center",
         lineColor: [200, 200, 200],
-        lineWidth: 0.2
+        lineWidth: 0.2,
       },
       headStyles: {
         fillColor: [240, 240, 240],
         textColor: 20,
-        fontStyle: 'bold'
+        fontStyle: "bold",
       },
       alternateRowStyles: { fillColor: [245, 245, 245] },
       margin: { top: 40 },
       didDrawPage: function (data) {
         doc.setFontSize(14);
         doc.text("OCDA Enquiry Report", data.settings.margin.left, 30);
-      }
+      },
     });
     doc.save("enquiry.pdf");
   }
@@ -2584,8 +2712,8 @@ function exportEnquiry(type) {
 
 //  Print
 function printEnquiry() {
-  const content = document.getElementById('enquiryTableWrapper').innerHTML;
-  const win = window.open('', '', 'width=1000,height=800');
+  const content = document.getElementById("enquiryTableWrapper").innerHTML;
+  const win = window.open("", "", "width=1000,height=800");
   win.document.write(`
     <html>
       <head>
@@ -2620,7 +2748,10 @@ async function loadFinalAccount() {
   const from = fromInput.value;
   const to = toInput.value;
 
-  if (!from || !to) { showAlert("Please select both start and end dates"); return; }
+  if (!from || !to) {
+    showAlert("Please select both start and end dates");
+    return;
+  }
 
   const fromDate = new Date(from);
   if (fromDate.getDate() !== 1) {
@@ -2632,13 +2763,19 @@ async function loadFinalAccount() {
 
   try {
     const res = await fetch(`/admin/final-account?from=${from}&to=${to}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
     });
     const data = await res.json();
 
-    if (!res.ok) { resultDiv.innerHTML = `<p class="text-red-500 p-4">${data.message}</p>`; return; }
+    if (!res.ok) {
+      resultDiv.innerHTML = `<p class="text-red-500 p-4">${data.message}</p>`;
+      return;
+    }
 
-    const fmt = (n) => `₦${parseFloat(n).toLocaleString("en-NG", { minimumFractionDigits: 2 })}`;
+    const fmt = (n) =>
+      `₦${parseFloat(n).toLocaleString("en-NG", { minimumFractionDigits: 2 })}`;
     const fmtDate = (d) => new Date(d).toLocaleDateString("en-GB");
 
     resultDiv.innerHTML = `
@@ -2647,25 +2784,25 @@ async function loadFinalAccount() {
         <table class="w-full text-sm border-collapse">
           <tbody>
             <tr style="border-top:1px solid #ccc; border-bottom:1px solid #ccc">
-              <td class="py-3 font-semibold">OPENING BALANCE AS AT ${fmtDate(data.fromDate)} <span class="text-gray-500 text-xs">(a)</span></td>
+              <td class="py-3 font-semibold">OPENING BALANCE AS AT ${fmtDate(data.fromDate)}</td>
               <td class="py-3 text-right font-mono">${fmt(data.openingBalance)}</td>
             </tr>
             <tr style="border-bottom:1px solid #ccc" class="cursor-pointer hover:bg-blue-50 transition-colors" title="Click to view income breakdown" onclick="loadFinalAccountDrilldown('income','${from}','${to}')">
-              <td class="py-3 font-semibold">TOTAL INCOME <span class="text-gray-500 text-xs">(b)</span> <span class="text-blue-500 text-xs ml-2">▼ click to expand</span></td>
+              <td class="py-3 font-semibold">TOTAL INCOME <span class="text-blue-500 text-xs ml-2">▼ click to expand</span></td>
               <td class="py-3 text-right font-mono">${fmt(data.totalIncome)}</td>
             </tr>
             <tr id="incomeBreakdownRow" class="hidden">
               <td colspan="2" class="pb-3 pt-1"><div id="incomeBreakdownContent" class="bg-blue-50 rounded p-3 text-xs"></div></td>
             </tr>
             <tr style="border-bottom:1px solid #ccc" class="cursor-pointer hover:bg-orange-50 transition-colors" title="Click to view expenses breakdown" onclick="loadFinalAccountDrilldown('expenses','${from}','${to}')">
-              <td class="py-3 font-semibold">TOTAL EXPENSES <span class="text-gray-500 text-xs">(c)</span> <span class="text-orange-500 text-xs ml-2">▼ click to expand</span></td>
+              <td class="py-3 font-semibold">TOTAL EXPENSES <span class="text-orange-500 text-xs ml-2">▼ click to expand</span></td>
               <td class="py-3 text-right font-mono">${fmt(data.totalExpenses)}</td>
             </tr>
             <tr id="expensesBreakdownRow" class="hidden">
               <td colspan="2" class="pb-3 pt-1"><div id="expensesBreakdownContent" class="bg-orange-50 rounded p-3 text-xs"></div></td>
             </tr>
             <tr style="border-top:2px solid black">
-              <td class="py-3 font-bold">CURRENT BALANCE AS AT ${fmtDate(data.toDate)} <span class="text-gray-500 text-xs">(a + b - c)</span></td>
+              <td class="py-3 font-bold">CURRENT BALANCE AS AT ${fmtDate(data.toDate)}</td>
               <td class="py-3 text-right font-mono font-bold">${fmt(data.currentBalance)}</td>
             </tr>
           </tbody>
@@ -2678,7 +2815,8 @@ async function loadFinalAccount() {
     `;
   } catch (err) {
     console.error("Final Account error:", err);
-    resultDiv.innerHTML = '<p class="text-red-500 p-4">Server error loading final account</p>';
+    resultDiv.innerHTML =
+      '<p class="text-red-500 p-4">Server error loading final account</p>';
   }
 }
 
@@ -2700,9 +2838,11 @@ function clearFinalAccount() {
 }
 
 async function loadFinalAccountDrilldown(type, from, to) {
-  const rowId     = type === "income" ? "incomeBreakdownRow"     : "expensesBreakdownRow";
-  const contentId = type === "income" ? "incomeBreakdownContent" : "expensesBreakdownContent";
-  const row     = document.getElementById(rowId);
+  const rowId =
+    type === "income" ? "incomeBreakdownRow" : "expensesBreakdownRow";
+  const contentId =
+    type === "income" ? "incomeBreakdownContent" : "expensesBreakdownContent";
+  const row = document.getElementById(rowId);
   const content = document.getElementById(contentId);
   if (!row || !content) return;
 
@@ -2715,15 +2855,25 @@ async function loadFinalAccountDrilldown(type, from, to) {
   content.innerHTML = '<p class="text-gray-400 italic">Loading...</p>';
   row.classList.remove("hidden");
 
-  const fmt = (n) => `₦${parseFloat(n||0).toLocaleString("en-NG", { minimumFractionDigits: 2 })}`;
+  const fmt = (n) =>
+    `₦${parseFloat(n || 0).toLocaleString("en-NG", { minimumFractionDigits: 2 })}`;
 
   try {
     if (type === "income") {
-      const res = await fetch(`/admin/ocda-income-analysis?start=${from}&end=${to}&mode=summary`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
-      });
+      const res = await fetch(
+        `/admin/ocda-income-analysis?start=${from}&end=${to}&mode=summary`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        },
+      );
       const data = await res.json();
-      if (!data.length) { content.innerHTML = '<p class="text-gray-500">No income records found.</p>'; return; }
+      if (!data.length) {
+        content.innerHTML =
+          '<p class="text-gray-500">No income records found.</p>';
+        return;
+      }
       content.innerHTML = `
         <table class="w-full border-collapse text-xs">
           <thead><tr class="bg-blue-100">
@@ -2731,18 +2881,31 @@ async function loadFinalAccountDrilldown(type, from, to) {
             <th class="border px-2 py-1 text-right">Amount</th>
           </tr></thead>
           <tbody>
-            ${data.map(r => `<tr class="border-t">
-              <td class="border px-2 py-1">${r.description || r.code || ''}</td>
+            ${data
+              .map(
+                (r) => `<tr class="border-t">
+              <td class="border px-2 py-1">${r.description || r.code || ""}</td>
               <td class="border px-2 py-1 text-right font-mono">${fmt(r.amount)}</td>
-            </tr>`).join("")}
+            </tr>`,
+              )
+              .join("")}
           </tbody>
         </table>`;
     } else {
-      const res = await fetch(`/admin/ocda-expenses-analysis?start=${from}&end=${to}&mode=summary`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
-      });
+      const res = await fetch(
+        `/admin/ocda-expenses-analysis?start=${from}&end=${to}&mode=summary`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        },
+      );
       const data = await res.json();
-      if (!data.length) { content.innerHTML = '<p class="text-gray-500">No expense records found.</p>'; return; }
+      if (!data.length) {
+        content.innerHTML =
+          '<p class="text-gray-500">No expense records found.</p>';
+        return;
+      }
       content.innerHTML = `
         <table class="w-full border-collapse text-xs">
           <thead><tr class="bg-orange-100">
@@ -2750,10 +2913,14 @@ async function loadFinalAccountDrilldown(type, from, to) {
             <th class="border px-2 py-1 text-right">Amount</th>
           </tr></thead>
           <tbody>
-            ${data.map(r => `<tr class="border-t">
-              <td class="border px-2 py-1">${r.description || r.code || ''}</td>
+            ${data
+              .map(
+                (r) => `<tr class="border-t">
+              <td class="border px-2 py-1">${r.description || r.code || ""}</td>
               <td class="border px-2 py-1 text-right font-mono">${fmt(r.amount)}</td>
-            </tr>`).join("")}
+            </tr>`,
+              )
+              .join("")}
           </tbody>
         </table>`;
     }
@@ -2805,13 +2972,17 @@ function renderOCDAExpensesAnalysis(data, mode) {
           </tr>
         </thead>
         <tbody>
-          ${data.map((row) => `
+          ${data
+            .map(
+              (row) => `
             <tr>
               <td class="p-2 border text-center">${row.code}</td>
               <td class="p-2 border text-center">${row.description}</td>
               <td class="p-2 border text-center">${formatAmount(row.amount)}</td>
             </tr>
-          `).join("")}
+          `,
+            )
+            .join("")}
         </tbody>
       </table>
     `;
@@ -2823,7 +2994,9 @@ function renderOCDAExpensesAnalysis(data, mode) {
       grouped[key].push(row);
     });
 
-    table.innerHTML = Object.entries(grouped).map(([heading, rows], index) => `
+    table.innerHTML = Object.entries(grouped)
+      .map(
+        ([heading, rows], index) => `
       <div class="mb-4 border rounded overflow-hidden shadow">
         <button class="w-full text-left px-4 py-2 bg-gray-100 font-bold" onclick="toggleGroup(${index})">
           ${heading}
@@ -2839,22 +3012,27 @@ function renderOCDAExpensesAnalysis(data, mode) {
               </tr>
             </thead>
             <tbody>
-              ${rows.map((row) => `
+              ${rows
+                .map(
+                  (row) => `
                 <tr>
                   <td class="border px-2 py-1 text-center">${formatDate(row.date)}</td>
                   <td class="border px-2 py-1 text-center">${row.voucher || ""}</td>
                   <td class="border px-2 py-1 text-center">${row.remark || ""}</td>
                   <td class="border px-2 py-1 text-center">${formatAmount(row.amount)}</td>
                 </tr>
-              `).join("")}
+              `,
+                )
+                .join("")}
             </tbody>
           </table>
         </div>
       </div>
-    `).join("");
+    `,
+      )
+      .join("");
   }
 }
-
 
 // Add this outside the render function
 function toggleGroup(index) {
@@ -2863,34 +3041,50 @@ function toggleGroup(index) {
 }
 
 async function toggleExpenseSummaryDrilldown(index) {
-  const row     = document.getElementById(`exp-drill-${index}`);
+  const row = document.getElementById(`exp-drill-${index}`);
   const content = document.getElementById(`exp-drill-content-${index}`);
   if (!row) return;
-  if (!row.classList.contains("hidden")) { row.classList.add("hidden"); return; }
+  if (!row.classList.contains("hidden")) {
+    row.classList.add("hidden");
+    return;
+  }
   row.classList.remove("hidden");
 
   // Get current form params
-  const form  = document.getElementById("ocdaExpensesAnalysisForm");
+  const form = document.getElementById("ocdaExpensesAnalysisForm");
   const start = form?.start?.value || "";
-  const end   = form?.end?.value   || "";
+  const end = form?.end?.value || "";
   // Get code from the data row's code attribute stored at render time
-  const codeEl = document.querySelector(`#exp-drill-${index}`).previousElementSibling?.querySelector("td");
+  const codeEl = document
+    .querySelector(`#exp-drill-${index}`)
+    .previousElementSibling?.querySelector("td");
   // Re-fetch detail for this specific code
   try {
     const params = new URLSearchParams({ start, end, mode: "detail" });
-    const res  = await fetch(`/admin/ocda-expenses-analysis?${params}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+    const res = await fetch(`/admin/ocda-expenses-analysis?${params}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
     });
     const data = await res.json();
 
     // The data at this index in summary corresponds to the same index in detail groups
     // Filter detail rows that belong to this group by matching the description
-    const descCell = document.querySelector(`#exp-drill-${index}`).previousElementSibling;
-    const descText = descCell?.querySelector("td")?.textContent?.replace("▼","").trim() || "";
+    const descCell = document.querySelector(
+      `#exp-drill-${index}`,
+    ).previousElementSibling;
+    const descText =
+      descCell?.querySelector("td")?.textContent?.replace("▼", "").trim() || "";
 
-    const rows = data.filter(r => (r.description || r.remark || "").trim() === descText.trim());
+    const rows = data.filter(
+      (r) => (r.description || r.remark || "").trim() === descText.trim(),
+    );
 
-    if (!rows.length) { content.innerHTML = '<span class="text-gray-400">No detail records.</span>'; return; }
+    if (!rows.length) {
+      content.innerHTML =
+        '<span class="text-gray-400">No detail records.</span>';
+      return;
+    }
 
     content.innerHTML = `
       <table class="w-full border-collapse mt-1">
@@ -2900,52 +3094,65 @@ async function toggleExpenseSummaryDrilldown(index) {
           <th class="border px-2 py-1 text-right">Amount</th>
         </tr></thead>
         <tbody>
-          ${rows.map(r => `<tr class="border-t">
+          ${rows
+            .map(
+              (r) => `<tr class="border-t">
             <td class="border px-2 py-1">${formatDate(r.date)}</td>
             <td class="border px-2 py-1">${r.remark || ""}</td>
             <td class="border px-2 py-1 text-right font-mono">${formatAmount(r.amount)}</td>
-          </tr>`).join("")}
+          </tr>`,
+            )
+            .join("")}
         </tbody>
       </table>`;
   } catch (err) {
-    content.innerHTML = '<span class="text-red-400">Failed to load details.</span>';
+    content.innerHTML =
+      '<span class="text-red-400">Failed to load details.</span>';
   }
 }
 
 function exportOCDAExpReportToPDF() {
-  const element = document.getElementById('ocdaExpensesAnalysisTable');
+  const element = document.getElementById("ocdaExpensesAnalysisTable");
   if (!element) {
-    console.error('ocdaExpensesAnalysisTable not found in DOM!');
+    console.error("ocdaExpensesAnalysisTable not found in DOM!");
     return;
   }
-  element.classList.add('pdf-export-enhanced');
-  html2pdf().set({
-    margin: 0.3,
-    filename: 'OCDA_Expenses_Analysis.pdf',
-    image: { type: 'jpeg', quality: 1 },
-    html2canvas: { scale: 4, useCORS: true },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-  }).from(element).save().then(() => {
-    element.classList.remove('pdf-export-enhanced');
-  });
+  element.classList.add("pdf-export-enhanced");
+  html2pdf()
+    .set({
+      margin: 0.3,
+      filename: "OCDA_Expenses_Analysis.pdf",
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: { scale: 4, useCORS: true },
+      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+    })
+    .from(element)
+    .save()
+    .then(() => {
+      element.classList.remove("pdf-export-enhanced");
+    });
 }
 
 function exportOCDAReportToPDF() {
-  const element = document.getElementById('ocdaIncomeAnalysisTable');
+  const element = document.getElementById("ocdaIncomeAnalysisTable");
   if (!element) {
-    console.error('ocdaIncomeAnalysisTable not found in DOM!');
+    console.error("ocdaIncomeAnalysisTable not found in DOM!");
     return;
   }
-  element.classList.add('pdf-export-enhanced');
-  html2pdf().set({
-    margin: 0.3,
-    filename: 'OCDA_Income_Analysis.pdf',
-    image: { type: 'jpeg', quality: 1 },
-    html2canvas: { scale: 4, useCORS: true },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-  }).from(element).save().then(() => {
-    element.classList.remove('pdf-export-enhanced');
-  });
+  element.classList.add("pdf-export-enhanced");
+  html2pdf()
+    .set({
+      margin: 0.3,
+      filename: "OCDA_Income_Analysis.pdf",
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: { scale: 4, useCORS: true },
+      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+    })
+    .from(element)
+    .save()
+    .then(() => {
+      element.classList.remove("pdf-export-enhanced");
+    });
 }
 
 document
@@ -3000,25 +3207,36 @@ function toggleIncomeGroup(index) {
 }
 
 async function toggleIncomeSummaryDrilldown(index, description) {
-  const row     = document.getElementById(`inc-drill-${index}`);
+  const row = document.getElementById(`inc-drill-${index}`);
   const content = document.getElementById(`inc-drill-content-${index}`);
   if (!row) return;
-  if (!row.classList.contains("hidden")) { row.classList.add("hidden"); return; }
+  if (!row.classList.contains("hidden")) {
+    row.classList.add("hidden");
+    return;
+  }
   row.classList.remove("hidden");
 
-  const form  = document.getElementById("ocdaIncomeAnalysisForm");
+  const form = document.getElementById("ocdaIncomeAnalysisForm");
   const start = form?.start?.value || "";
-  const end   = form?.end?.value   || "";
+  const end = form?.end?.value || "";
 
   try {
-    const params = new URLSearchParams({ start, end, mode: "detail", code: description });
-    const res  = await fetch(`/admin/ocda-income-analysis?${params}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+    const params = new URLSearchParams({
+      start,
+      end,
+      mode: "detail",
+      code: description,
+    });
+    const res = await fetch(`/admin/ocda-income-analysis?${params}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
     });
     const data = await res.json();
 
     if (!data.length || !data[0]?.transactions?.length) {
-      content.innerHTML = '<span class="text-gray-400">No detail records.</span>';
+      content.innerHTML =
+        '<span class="text-gray-400">No detail records.</span>';
       return;
     }
 
@@ -3031,15 +3249,20 @@ async function toggleIncomeSummaryDrilldown(index, description) {
           <th class="border px-2 py-1 text-right">Amount</th>
         </tr></thead>
         <tbody>
-          ${transactions.map(t => `<tr class="border-t">
+          ${transactions
+            .map(
+              (t) => `<tr class="border-t">
             <td class="border px-2 py-1">${formatDate(t.date)}</td>
             <td class="border px-2 py-1">${t.phoneno_name || ""}</td>
             <td class="border px-2 py-1 text-right font-mono">${formatAmount(t.amount)}</td>
-          </tr>`).join("")}
+          </tr>`,
+            )
+            .join("")}
         </tbody>
       </table>`;
   } catch (err) {
-    content.innerHTML = '<span class="text-red-400">Failed to load details.</span>';
+    content.innerHTML =
+      '<span class="text-red-400">Failed to load details.</span>';
   }
 }
 
@@ -3047,12 +3270,15 @@ async function toggleIncomeSummaryDrilldown(index, description) {
 function renderOCDAIncomeAnalysis(data, mode) {
   const tableContainer = document.getElementById("ocdaIncomeAnalysisTable");
   if (!tableContainer) {
-    console.error("Element with ID 'ocdaIncomeAnalysisTable' not found. Cannot render income analysis.");
+    console.error(
+      "Element with ID 'ocdaIncomeAnalysisTable' not found. Cannot render income analysis.",
+    );
     return;
   }
 
   if (!Array.isArray(data) || data.length === 0) {
-    tableContainer.innerHTML = '<div class="text-center text-gray-600 p-4">No income data found</div>';
+    tableContainer.innerHTML =
+      '<div class="text-center text-gray-600 p-4">No income data found</div>';
     return;
   }
 
@@ -3068,20 +3294,26 @@ function renderOCDAIncomeAnalysis(data, mode) {
             </tr>
           </thead>
           <tbody>
-            ${data.map((row) => `
+            ${data
+              .map(
+                (row) => `
               <tr>
                 <td class="p-2 border text-center break-words">${row.code || "No Code"}</td>
                 <td class="p-2 border text-center break-words">${row.description?.trim() || row.code || "N/A"}</td>
                 <td class="p-2 border text-center">${formatAmount(row.amount)}</td>
               </tr>
-            `).join("")}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       </div>
     `;
   } else {
     // Detail: Grouped table with expand/collapse, includes Comment column
-    tableContainer.innerHTML = data.map((group, index) => `
+    tableContainer.innerHTML = data
+      .map(
+        (group, index) => `
       <div class="mb-4 border rounded overflow-hidden shadow">
         <button class="w-full text-left px-4 py-2 bg-gray-100 font-bold hover:bg-gray-200 focus:outline-none" onclick="toggleIncomeGroup(${index})">
           ${group.code} (${group.transactions.length} transactions)
@@ -3098,23 +3330,28 @@ function renderOCDAIncomeAnalysis(data, mode) {
                 </tr>
               </thead>
               <tbody>
-                ${group.transactions.map((transaction) => `
+                ${group.transactions
+                  .map(
+                    (transaction) => `
                   <tr>
                     <td class="border px-2 py-1 text-center whitespace-nowrap">${formatDate(transaction.date)}</td>
                     <td class="border px-2 py-1 text-center overflow-hidden" style="word-break: break-all;">${transaction.phoneno_name}</td>
                     <td class="border px-2 py-1 text-center whitespace-nowrap">${formatAmount(transaction.amount)}</td>
                     <td class="border px-2 py-1 text-center">${transaction.comment || ""}</td>
                   </tr>
-                `).join("")}
+                `,
+                  )
+                  .join("")}
               </tbody>
             </table>
           </div>
         </div>
       </div>
-    `).join("");
+    `,
+      )
+      .join("");
   }
 }
-
 
 document
   .getElementById("ocdaIncomeAnalysisForm")
@@ -3152,6 +3389,221 @@ function showAccountSummary() {
   `,
   );
 }
+
+// ===== MEMBER PAYMENT SCHEDULE REPORT =====
+
+// Populate income classification dropdown on page load
+async function loadPaymentScheduleDropdown() {
+  try {
+    const res = await fetch("/admin/incomeclass", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    });
+    const data = await res.json();
+    const sel = document.getElementById("psRemark");
+    if (!sel) return;
+    // Clear all options except the first "All Classifications" option
+    while (sel.options.length > 1) sel.remove(1);
+    data.forEach((item) => {
+      const opt = document.createElement("option");
+      opt.value = item.incomedesc;
+      opt.textContent = item.incomedesc;
+      sel.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("Payment schedule dropdown error:", err);
+  }
+}
+
+async function loadPaymentSchedule() {
+  const fromMonth = document.getElementById("psFromMonth").value;
+  const fromYear  = document.getElementById("psFromYear").value;
+  const toMonth   = document.getElementById("psToMonth").value;
+  const toYear    = document.getElementById("psToYear").value;
+  const remarkSel = document.getElementById("psRemark");
+  const remark    = remarkSel.value;
+  // Get display label for selected option
+  const remarkLabel = remark === "ALL"
+    ? "All Income"
+    : remarkSel.options[remarkSel.selectedIndex].text;
+  const result    = document.getElementById("paymentScheduleResult");
+
+  if (!fromYear || !toYear) {
+    showAlert("Please enter both From Year and To Year", "warning");
+    return;
+  }
+
+  result.innerHTML = '<p class="text-gray-400 text-sm p-4">Generating report...</p>';
+
+  try {
+    const params = new URLSearchParams({ fromMonth, fromYear, toMonth, toYear, remark });
+    const res = await fetch(`/admin/payment-schedule?${params}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      result.innerHTML = `<p class="text-red-500 p-4">${data.message}</p>`;
+      return;
+    }
+
+    if (!data.members.length) {
+      result.innerHTML = '<p class="text-gray-500 p-4">No payment records found for the selected period.</p>';
+      return;
+    }
+
+    result.innerHTML = buildPaymentScheduleTable(data, remarkLabel);
+
+  } catch (err) {
+    console.error("Payment schedule error:", err);
+    result.innerHTML = '<p class="text-red-500 p-4">Server error generating report.</p>';
+  }
+}
+
+const MONTH_NAMES = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
+
+function buildPaymentScheduleTable(data, remarkLabel) {
+  const { columns, members, grandTotal } = data;
+  const fmtAmt = n => n ? `₦${parseFloat(n).toLocaleString("en-NG", { minimumFractionDigits: 2 })}` : "";
+
+  // Column headers — show month name, and year underneath if range spans two years
+  const spansTwoYears = columns.some(c => c.year !== columns[0].year);
+  const colHeaders = columns.map(c =>
+    spansTwoYears
+      ? `${MONTH_NAMES[c.month - 1]}<br><span style="font-size:10px;font-weight:normal">${c.year}</span>`
+      : MONTH_NAMES[c.month - 1]
+  );
+
+  // FIX 1: Use income label instead of "MONTHS"
+  const incomeLabel = remarkLabel && remarkLabel !== "ALL"
+    ? remarkLabel
+    : "All Income";
+
+  // Column width: distribute evenly, min 65px per month col
+  const colW = Math.max(65, Math.floor(700 / columns.length));
+
+  const thead = `
+    <thead>
+      <tr>
+        <th class="ps-cell ps-hdr" rowspan="2">SN</th>
+        <th class="ps-cell ps-hdr" rowspan="2">NAMES</th>
+        <th class="ps-cell ps-hdr" colspan="${columns.length}">${incomeLabel}</th>
+        <th class="ps-cell ps-hdr" rowspan="2">TOTAL</th>
+      </tr>
+      <tr>
+        ${colHeaders.map(h => `<th class="ps-cell ps-hdr ps-month">${h}</th>`).join("")}
+      </tr>
+    </thead>`;
+
+  const tbody = members.map((m, i) => `
+    <tr>
+      <td class="ps-cell ps-sn">${i + 1}</td>
+      <td class="ps-cell ps-name">${m.fullname}</td>
+      ${m.monthly.map(amt => `<td class="ps-cell ps-amt">${fmtAmt(amt)}</td>`).join("")}
+      <td class="ps-cell ps-total">${fmtAmt(m.total)}</td>
+    </tr>
+  `).join("");
+
+  const grandRow = `
+    <tr>
+      <td class="ps-cell" colspan="2">GRAND TOTAL</td>
+      ${columns.map(() => `<td class="ps-cell"></td>`).join("")}
+      <td class="ps-cell ps-grand" colspan="2">
+        <span class="ps-grand-val">${fmtAmt(grandTotal)}</span>
+      </td>
+    </tr>`;
+
+  return `
+    <style>
+      .ps-wrap { font-family: Arial, sans-serif; font-size: 13px; }
+      .ps-table { border-collapse: collapse; width: 100%; }
+      .ps-cell { border: 1px solid #555; padding: 5px 8px; }
+      .ps-hdr { background: #fff; font-weight: bold; text-align: center; }
+      .ps-month { text-align: center; min-width: 70px; }
+      .ps-sn { text-align: center; font-weight: bold; }
+      .ps-name { font-weight: bold; white-space: nowrap; }
+      .ps-amt { text-align: right; }
+      .ps-total { text-align: right; font-weight: bold; }
+      .ps-grand { text-align: right; font-weight: bold; }
+      .ps-grand-label { margin-right: 24px; }
+      .ps-grand-val { }
+      tfoot {
+        display: table-row-group;
+      }
+    </style>
+    <div class="ps-wrap" id="paymentSchedulePrintArea">
+      <table class="ps-table">
+        ${thead}
+        <tbody>${tbody}</tbody>
+        <tfoot>${grandRow}</tfoot>
+      </table>
+    </div>`;
+}
+
+function printPaymentSchedule() {
+  const el = document.getElementById("paymentSchedulePrintArea");
+  if (!el) { showAlert("Generate the report first before printing", "warning"); return; }
+  const win = window.open("", "", "width=1100,height=800");
+  win.document.write(`
+    <html>
+      <head>
+        <title>Member Payment Schedule</title>
+        <style>
+          @page {
+            size: A4 landscape;
+            margin: 10mm 8mm;
+          }
+          * { box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; font-size: 12px; padding: 20px; }
+          table { border-collapse: collapse; width: 100%; }
+          td, th { border: 1px solid #555; padding: 5px 8px; }
+          th { background: #fff; font-weight: bold; text-align: center; }
+          .ps-amt { text-align: right; }
+          .ps-total { text-align: right; font-weight: bold; }
+          .ps-sn { text-align: center; font-weight: bold; }
+          .ps-name { font-weight: bold; white-space: nowrap; }
+          .ps-grand { text-align: right; font-weight: bold; }
+          .ps-grand-label { margin-right: 24px; }
+          tfoot {
+            display: table-row-group;
+          }
+          @media print { body { padding: 0; } }
+        </style>
+      </head>
+      <body>${el.outerHTML}</body>
+    </html>`);
+  win.document.close();
+  win.focus();
+  win.print();
+}
+
+function clearPaymentSchedule() {
+  document.getElementById("paymentScheduleResult").innerHTML = "";
+  document.getElementById("psFromYear").value = "";
+  document.getElementById("psToYear").value = "";
+  document.getElementById("psRemark").value = "ALL";
+}
+
+// Load dropdown when the tab is opened
+document.querySelectorAll(".tab-sub-button, .tab-button").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.tab === "payment-schedule") loadPaymentScheduleDropdown();
+  });
+});
 
 // admin-static tables
 const staticTypes = ["titles", "qualifications", "wards", "hontitles"];
@@ -3333,7 +3785,7 @@ function editRow(type, key1, key2, btn) {
 
 // Delete Row for all static tables
 async function deleteRow(type, key1, key2) {
-  if (!await showConfirm("Are you sure you want to delete this?")) return;
+  if (!(await showConfirm("Are you sure you want to delete this?"))) return;
 
   let url = `/admin/static/${type}`;
   let params = "";
@@ -3381,7 +3833,10 @@ document
       return;
     }
 
-    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Posting..."; }
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Posting...";
+    }
 
     try {
       const res = await fetch(`${BASE_URL}/admin/notices`, {
@@ -3404,7 +3859,10 @@ document
       console.error(err);
       showAlert("Failed to post notice/event");
     } finally {
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "Post"; }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Post";
+      }
     }
   });
 
@@ -3488,7 +3946,9 @@ function attachNoticeEventListeners() {
   document.querySelectorAll(".delete-notice-btn").forEach((button) => {
     button.onclick = async function () {
       const id = this.dataset.id;
-      if (await showConfirm("Are you sure you want to delete this notice/event?")) {
+      if (
+        await showConfirm("Are you sure you want to delete this notice/event?")
+      ) {
         await deleteNotice(id);
       }
     };
@@ -3589,7 +4049,9 @@ document.querySelectorAll(".tab-button").forEach((btn) => {
 async function loadContactUs() {
   try {
     const res = await fetch("/admin/contactus", {
-      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
     });
     if (res.ok) {
       const data = await res.json();
@@ -3609,7 +4071,10 @@ async function saveContactUs() {
   const btn = document.getElementById("saveContactUsBtn");
   const status = document.getElementById("contactUsStatus");
 
-  if (!title || !content) { showAlert("Title and content are required"); return; }
+  if (!title || !content) {
+    showAlert("Title and content are required");
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = "Saving...";
@@ -3624,7 +4089,9 @@ async function saveContactUs() {
       body: JSON.stringify({ title, content }),
     });
     const result = await res.json();
-    status.textContent = res.ok ? "✅ Saved successfully" : result.message || "Save failed";
+    status.textContent = res.ok
+      ? "✅ Saved successfully"
+      : result.message || "Save failed";
     status.className = `text-sm ${res.ok ? "text-green-600" : "text-red-500"}`;
     status.classList.remove("hidden");
     setTimeout(() => status.classList.add("hidden"), 3000);
@@ -3645,16 +4112,21 @@ async function loadFaqAdmin() {
 
   try {
     const res = await fetch("/admin/faq", {
-      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
     });
     const data = await res.json();
 
     if (!data.length) {
-      list.innerHTML = '<p class="text-sm text-gray-500">No FAQ entries yet.</p>';
+      list.innerHTML =
+        '<p class="text-sm text-gray-500">No FAQ entries yet.</p>';
       return;
     }
 
-    list.innerHTML = data.map((item) => `
+    list.innerHTML = data
+      .map(
+        (item) => `
       <div class="border rounded p-4 bg-white" id="faq-item-${item.id}">
         <div class="flex justify-between items-start gap-2">
           <div class="flex-1">
@@ -3669,7 +4141,9 @@ async function loadFaqAdmin() {
           </div>
         </div>
       </div>
-    `).join("");
+    `,
+      )
+      .join("");
   } catch (err) {
     console.error("Load FAQ admin error:", err);
     list.innerHTML = '<p class="text-red-500 text-sm">Failed to load FAQ</p>';
@@ -3681,7 +4155,10 @@ async function addFaqEntry() {
   const answer = document.getElementById("newFaqAnswer").value.trim();
   const btn = document.getElementById("addFaqBtn");
 
-  if (!question || !answer) { showAlert("Question and answer are required"); return; }
+  if (!question || !answer) {
+    showAlert("Question and answer are required");
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = "Adding...";
@@ -3718,7 +4195,8 @@ function editFaqEntry(id, question, answer) {
 
   const modal = document.createElement("div");
   modal.id = "faqEditModal";
-  modal.className = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
+  modal.className =
+    "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
   modal.innerHTML = `
     <div class="bg-white rounded-lg p-6 w-full max-w-lg shadow-xl">
       <h3 class="text-lg font-bold mb-4">Edit FAQ Entry</h3>
@@ -3746,7 +4224,10 @@ async function saveFaqEdit(id) {
   const answer = document.getElementById("editFaqAnswer").value.trim();
   const btn = document.getElementById("saveFaqEditBtn");
 
-  if (!question || !answer) { showAlert("Question and answer are required"); return; }
+  if (!question || !answer) {
+    showAlert("Question and answer are required");
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = "Saving...";
@@ -3772,16 +4253,21 @@ async function saveFaqEdit(id) {
     console.error("FAQ edit error:", err);
     showAlert("Server error");
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Save"; }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Save";
+    }
   }
 }
 
 async function deleteFaqEntry(id) {
-  if (!await showConfirm("Delete this FAQ entry?")) return;
+  if (!(await showConfirm("Delete this FAQ entry?"))) return;
   try {
     const res = await fetch(`/admin/faq/${id}`, {
       method: "DELETE",
-      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
     });
     const result = await res.json();
     if (res.ok) {
@@ -3794,8 +4280,6 @@ async function deleteFaqEntry(id) {
     showAlert("Server error");
   }
 }
-
-
 
 window.addEventListener("DOMContentLoaded", () => {
   staticTypes.forEach(loadStaticTable);

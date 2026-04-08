@@ -14,6 +14,10 @@
       font-family: 'Inter', sans-serif;
     }
 
+    html{
+      font-size: 85% !important;
+    }
+
     .active-tab {
       background-color: #1f2937;
       color: white;
@@ -25,16 +29,19 @@
       font-size: 14px;
       font-family: Arial, sans-serif;
     }
+
     .pdf-export-enhanced table {
       width: 100%;
       border-collapse: collapse;
     }
+
     .pdf-export-enhanced th,
     .pdf-export-enhanced td {
       border: 1px solid #333;
       padding: 8px;
       text-align: left;
     }
+
     .pdf-export-enhanced th {
       background-color: #f0f0f0;
     }
@@ -90,6 +97,7 @@
       .p-6 {
         padding-top: 7% !important;
       }
+
       html {
         font-size: 80% !important;
       }
@@ -164,10 +172,12 @@
     </button>
   </header>
 
-  <div class="flex flex-col lg:flex-row min-h-screen">
+  <div class="flex flex-col lg:flex-row h-screen overflow-hidden">
     <!-- Sidebar -->
     <aside id="sidebar"
-      class="bg-white w-64 fixed top-0 left-0 h-full shadow-md transform -translate-x-full transition-transform duration-300 z-50 lg:relative lg:translate-x-0 lg:h-auto lg:block hidden">
+      class="bg-[#1a1a1a] w-64 h-full border-r border-gray-800 z-50 overflow-y-auto 
+             fixed lg:relative transform -translate-x-full lg:translate-x-0 
+             transition-transform duration-300">
       <div class="p-6 text-xl font-bold text-gray-800 border-b">OCDA Admin</div>
       <nav class="p-4 space-y-3">
         <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="member-list">OCDA Members</button>
@@ -208,6 +218,10 @@
             <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
               data-tab="final-account">
               <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>Final Account
+            </button>
+            <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
+              data-tab="payment-schedule">
+              <i data-lucide="table" class="w-4 h-4 mr-2"></i>Payment Schedule
             </button>
           </div>
         </div>
@@ -383,20 +397,107 @@
       </section>
 
       <!-- Final Account Report (Item 4) -->
-      <section id="final-account" class="tab-content hidden p-4">
+      <section id="final-account" class="tab-content hidden">
         <h2 class="text-2xl font-semibold mb-4">Final Account Report</h2>
         <div class="bg-white p-6 rounded shadow-md max-w-md mb-6 space-y-4">
           <div>
-            <label class="block text-sm font-medium mb-1">Start Date <span class="text-gray-400 text-xs">(must be 1st of month)</span></label>
+            <label class="block text-sm font-medium mb-1">Start Date <span class="text-gray-400 text-xs">(must be 1st of
+                month)</span></label>
             <input type="date" id="finalAccountFrom" class="w-full p-2 border rounded text-sm" />
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">End Date</label>
             <input type="date" id="finalAccountTo" class="w-full p-2 border rounded text-sm" />
           </div>
-          <button onclick="loadFinalAccount()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Generate Report</button>
+          <button onclick="loadFinalAccount()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Generate
+            Report</button>
         </div>
         <div id="finalAccountResult"></div>
+      </section>
+
+      <!-- Member Payment Schedule Report -->
+      <section id="payment-schedule" class="tab-content hidden">
+        <h2 class="text-2xl font-semibold mb-4">Member Payment Schedule</h2>
+
+        <!-- Filter Form -->
+        <div class="bg-white p-6 rounded shadow-md mb-6">
+          <div class="flex flex-wrap gap-4 items-end">
+
+            <div>
+              <label class="block text-sm font-medium mb-1">From Month</label>
+              <select id="psFromMonth" class="border rounded px-3 py-2 text-sm">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-1">From Year</label>
+              <input type="number" id="psFromYear" placeholder="e.g. 2025" min="2000" max="2100"
+                class="border rounded px-3 py-2 text-sm w-28" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-1">To Month</label>
+              <select id="psToMonth" class="border rounded px-3 py-2 text-sm">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-1">To Year</label>
+              <input type="number" id="psToYear" placeholder="e.g. 2025" min="2000" max="2100"
+                class="border rounded px-3 py-2 text-sm w-28" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-1">Income Classification</label>
+              <select id="psRemark" class="border rounded px-3 py-2 text-sm min-w-[180px]">
+                <option value="ALL">All Classifications</option>
+                <!-- Populated by JS -->
+              </select>
+            </div>
+
+            <button onclick="loadPaymentSchedule()"
+              class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
+              Generate Report
+            </button>
+
+            <button onclick="printPaymentSchedule()"
+              class="bg-gray-600 text-white px-4 py-2 rounded text-sm hover:bg-gray-700">
+              Print
+            </button>
+
+            <button onclick="clearPaymentSchedule()"
+              class="bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-400">
+              Clear
+            </button>
+          </div>
+        </div>
+
+        <!-- Report Output -->
+        <div id="paymentScheduleResult" class="overflow-auto"></div>
       </section>
 
 
@@ -425,7 +526,8 @@
             <input type="text" name="code" class="p-2 border rounded" placeholder="e.g. 1010 or ALL" />
           </div>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Generate Report</button>
-          <button type="button" onclick="exportOCDAExpReportToPDF()" class="bg-green-600 text-white px-4 py-2 rounded" id="exportExpensesBtn">Export PDF</button>
+          <button type="button" onclick="exportOCDAExpReportToPDF()" class="bg-green-600 text-white px-4 py-2 rounded"
+            id="exportExpensesBtn">Export PDF</button>
         </form>
 
         <!-- Results Container -->
@@ -459,7 +561,8 @@
             <input type="text" name="code" class="p-2 border rounded" placeholder="e.g. ANNUAL DUES or ALL" />
           </div>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Generate Report</button>
-          <button type="button" onclick="exportOCDAReportToPDF()" class="bg-green-600 text-white px-4 py-2 rounded">Export PDF</button>
+          <button type="button" onclick="exportOCDAReportToPDF()"
+            class="bg-green-600 text-white px-4 py-2 rounded">Export PDF</button>
         </form>
         <div class="overflow-auto rounded shadow bg-white">
           <div id="ocdaIncomeAnalysisTable">
@@ -731,21 +834,29 @@
             <input type="date" id="endDate" class="border rounded px-3 py-2">
           </div>
           <div class="flex flex-wrap gap-2 mt-6">
-            <button onclick="loadAllMemberLedger()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7 sm:mr-2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+            <button onclick="loadAllMemberLedger()"
+              class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-7 h-7 sm:mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
               </svg>
               <span class="hidden sm:inline">Filter</span>
             </button>
-            <button onclick="clearDateFilters()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7 sm:mr-2">
+            <button onclick="clearDateFilters()"
+              class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-7 h-7 sm:mr-2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
               <span class="hidden sm:inline">Clear</span>
             </button>
-            <button onclick="loadCurrentMonth()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-7 h-7 sm:mr-2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <button onclick="loadCurrentMonth()"
+              class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-7 h-7 sm:mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span class="hidden sm:inline">Current Month</span>
             </button>
@@ -931,21 +1042,29 @@
           <input id="memberSearch" type="text" placeholder="Search..." class="p-2 border rounded w-full max-w-xs" />
 
           <div class="flex flex-wrap gap-2">
-            <button class="bg-blue-600 text-white px-3 py-2 rounded tab-button flex items-center gap-x-2" data-tab="create-member">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <button class="bg-blue-600 text-white px-3 py-2 rounded tab-button flex items-center gap-x-2"
+              data-tab="create-member">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
               </svg>
               <span class="hidden sm:inline">Add New Member</span>
             </button>
-            <button onclick="exportMembers('print')" class="bg-green-600 text-white px-3 py-2 rounded flex items-center gap-x-2 hover:bg-green-700 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18H4.5A2.25 2.25 0 012.25 15.75V9A2.25 2.25 0 014.5 6.75h15A2.25 2.25 0 0121.75 9v6.75A2.25 2.25 0 0119.5 18H18v-5.25A2.25 2.25 0 0015.75 10.5h-7.5a2.25 2.25 0 00-2.25 2.25V18zM18 12v3.75h3.75" />
+            <button onclick="exportMembers('print')"
+              class="bg-green-600 text-white px-3 py-2 rounded flex items-center gap-x-2 hover:bg-green-700 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M6 18H4.5A2.25 2.25 0 012.25 15.75V9A2.25 2.25 0 014.5 6.75h15A2.25 2.25 0 0121.75 9v6.75A2.25 2.25 0 0119.5 18H18v-5.25A2.25 2.25 0 0015.75 10.5h-7.5a2.25 2.25 0 00-2.25 2.25V18zM18 12v3.75h3.75" />
               </svg>
               <span class="hidden sm:inline">Print</span>
             </button>
-            <button onclick="exportMembers('pdf')" class="bg-red-600 text-white px-3 py-2 rounded flex items-center gap-x-2 hover:bg-red-700 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5l-7.5 7.5-7.5-7.5M21 15v4.5a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 19.5V15" />
+            <button onclick="exportMembers('pdf')"
+              class="bg-red-600 text-white px-3 py-2 rounded flex items-center gap-x-2 hover:bg-red-700 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 4.5v15m7.5-7.5l-7.5 7.5-7.5-7.5M21 15v4.5a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 19.5V15" />
               </svg>
               <span class="hidden sm:inline">Export PDF</span>
             </button>
@@ -1281,16 +1400,20 @@
       <section id="contactus-section" class="tab-content hidden p-4">
         <h2 class="text-xl font-semibold mb-4">Manage Contact Us Page</h2>
         <div class="bg-white p-6 rounded shadow-md max-w-2xl space-y-4">
-          <p class="text-sm text-gray-500">This content will appear on the public Contact Us page. Edit and save to update it.</p>
+          <p class="text-sm text-gray-500">This content will appear on the public Contact Us page. Edit and save to
+            update it.</p>
           <div>
             <label class="block text-sm font-medium mb-1">Title</label>
-            <input type="text" id="contactUsTitle" class="w-full p-2 border rounded text-sm" placeholder="e.g. Contact OCDA" />
+            <input type="text" id="contactUsTitle" class="w-full p-2 border rounded text-sm"
+              placeholder="e.g. Contact OCDA" />
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Content</label>
-            <textarea id="contactUsContent" rows="10" class="w-full p-2 border rounded text-sm font-mono" placeholder="Enter contact details, addresses, phone numbers, emails..."></textarea>
+            <textarea id="contactUsContent" rows="10" class="w-full p-2 border rounded text-sm font-mono"
+              placeholder="Enter contact details, addresses, phone numbers, emails..."></textarea>
           </div>
-          <button id="saveContactUsBtn" onclick="saveContactUs()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Save Changes</button>
+          <button id="saveContactUsBtn" onclick="saveContactUs()"
+            class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Save Changes</button>
           <p id="contactUsStatus" class="text-sm hidden"></p>
         </div>
       </section>
@@ -1304,13 +1427,16 @@
           <h3 class="font-semibold text-sm">Add New FAQ Entry</h3>
           <div>
             <label class="block text-sm font-medium mb-1">Question</label>
-            <input type="text" id="newFaqQuestion" class="w-full p-2 border rounded text-sm" placeholder="Enter question..." />
+            <input type="text" id="newFaqQuestion" class="w-full p-2 border rounded text-sm"
+              placeholder="Enter question..." />
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Answer</label>
-            <textarea id="newFaqAnswer" rows="4" class="w-full p-2 border rounded text-sm" placeholder="Enter answer..."></textarea>
+            <textarea id="newFaqAnswer" rows="4" class="w-full p-2 border rounded text-sm"
+              placeholder="Enter answer..."></textarea>
           </div>
-          <button id="addFaqBtn" onclick="addFaqEntry()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">Add FAQ Entry</button>
+          <button id="addFaqBtn" onclick="addFaqEntry()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">Add
+            FAQ Entry</button>
         </div>
 
         <!-- Existing FAQ list -->
@@ -1425,7 +1551,8 @@
         <p id="appModalMessage" class="text-sm text-gray-700"></p>
       </div>
       <div class="px-5 pb-4 flex justify-end gap-2">
-        <button id="appModalCancel" onclick="closeModal()" class="hidden px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">Cancel</button>
+        <button id="appModalCancel" onclick="closeModal()"
+          class="hidden px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300">Cancel</button>
         <button id="appModalConfirm" onclick="closeModal()" class="px-4 py-2 rounded text-sm text-white">OK</button>
       </div>
     </div>
