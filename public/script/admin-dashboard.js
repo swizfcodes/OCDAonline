@@ -254,26 +254,35 @@ window.addEventListener("DOMContentLoaded", () => {
   // Toggle sidebar
   if (menuToggle && sidebar && overlay) {
     menuToggle.addEventListener("click", () => {
-      const wasHidden = sidebar.classList.contains("hidden");
+      const isClosed = sidebar.classList.contains("-translate-x-full");
 
-      sidebar.classList.toggle("-translate-x-full");
-      sidebar.classList.toggle("hidden");
-      overlay.classList.toggle("hidden");
+      if (isClosed) {
+        // OPEN
+        sidebar.classList.remove("hidden");
+        setTimeout(() => {
+          sidebar.classList.remove("-translate-x-full");
+        }, 10); // allow render
 
-      // Auto-show dropdown if last active was a subtab
-      if (receiptDropdown) {
-        if (wasHidden && isSubtab(activeTab)) {
-          receiptDropdown.classList.remove("hidden");
-        } else if (wasHidden) {
-          receiptDropdown.classList.add("hidden");
-        }
+        overlay.classList.remove("hidden");
+      } else {
+        // CLOSE
+        sidebar.classList.add("-translate-x-full");
+        overlay.classList.add("hidden");
+
+        // wait for animation before hiding completely
+        setTimeout(() => {
+          sidebar.classList.add("hidden");
+        }, 300); // match your CSS transition duration
       }
     });
 
-    // Hide sidebar when clicking overlay
     overlay.addEventListener("click", () => {
-      sidebar.classList.add("-translate-x-full", "hidden");
+      sidebar.classList.add("-translate-x-full");
       overlay.classList.add("hidden");
+
+      setTimeout(() => {
+        sidebar.classList.add("hidden");
+      }, 300);
     });
   }
 

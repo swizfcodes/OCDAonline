@@ -2295,7 +2295,7 @@ router.get("/final-account", verifyToken, async (req, res) => {
     const incomeResult = await request(`
       SELECT IFNULL(SUM(amount), 0) AS totalIncome
       FROM memberledger
-      WHERE paydate >= @from AND paydate <= @to
+      WHERE transdate >= @from AND transdate <= @to
     `)
       .inputs({ from, to })
       .run();
