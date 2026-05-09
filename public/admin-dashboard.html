@@ -14,7 +14,7 @@
       font-family: 'Inter', sans-serif;
     }
 
-    html{
+    html {
       font-size: 85% !important;
     }
 
@@ -174,8 +174,7 @@
 
   <div class="flex flex-col lg:flex-row h-screen overflow-hidden">
     <!-- Sidebar -->
-    <aside id="sidebar"
-      class="bg-white w-64 h-full border-r border-gray-800 z-50 overflow-y-auto 
+    <aside id="sidebar" class="bg-white w-64 h-full border-r border-gray-800 z-50 overflow-y-auto 
              fixed lg:relative transform -translate-x-full lg:translate-x-0 
              transition-transform duration-300">
       <div class="p-6 text-xl font-bold text-gray-800 border-b">OCDA Admin</div>
@@ -376,7 +375,11 @@
             <option value="11">November</option>
             <option value="12">December</option>
           </select>
-          <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded">Generate Summary</button>
+          <div class="flex flex-wrap gap-2">
+            <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded">Generate Summary</button>
+            <button type="button" onclick="exportSummaryToPDF()"
+              class="bg-green-600 text-white px-4 py-2 rounded">Export PDF</button>
+          </div>
         </form>
 
         <!-- Summary Table -->
@@ -409,8 +412,12 @@
             <label class="block text-sm font-medium mb-1">End Date</label>
             <input type="date" id="finalAccountTo" class="w-full p-2 border rounded text-sm" />
           </div>
-          <button onclick="loadFinalAccount()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Generate
-            Report</button>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="loadFinalAccount()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Generate
+              Report</button>
+            <button onclick="exportFinalAccountToPDF()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">Export
+              PDF</button>
+          </div>
         </div>
         <div id="finalAccountResult"></div>
       </section>
@@ -859,6 +866,15 @@
                   d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span class="hidden sm:inline">Current Month</span>
+            </button>
+            <button onclick="exportMemberLedgerToPDF()"
+              class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-7 h-7 sm:mr-2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span class="hidden sm:inline">Export PDF</span>
             </button>
           </div>
         </div>

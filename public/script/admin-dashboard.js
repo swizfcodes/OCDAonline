@@ -1300,64 +1300,64 @@ window.addEventListener("DOMContentLoaded", function () {
 });
 
 // Export to Excel or PDF
-function exportMembers(type) {
-  const table = document.getElementById("memberTableExport");
+// function exportMembers(type) {
+//   const table = document.getElementById("memberTableExport");
 
-  if (type === "excel") {
-    const wb = XLSX.utils.table_to_book(table, { sheet: "Members" });
-    XLSX.writeFile(wb, "members.xlsx");
-  } else if (type === "pdf") {
-    const doc = new jspdf.jsPDF("landscape", "pt", "a4");
-    doc.autoTable({
-      html: "#memberTableExport",
-      styles: {
-        font: "helvetica",
-        fontSize: 10,
-        cellPadding: 5,
-        halign: "center",
-        valign: "middle",
-        lineColor: [220, 220, 220],
-        lineWidth: 0.2,
-      },
-      headStyles: {
-        fillColor: [240, 240, 240],
-        textColor: 33,
-        fontStyle: "bold",
-      },
-      alternateRowStyles: { fillColor: [248, 248, 248] },
-      margin: { top: 40 },
-      didDrawPage: function (data) {
-        doc.setFontSize(14);
-        doc.text("OCDA Member List", data.settings.margin.left, 30);
-      },
-    });
-    doc.save("members.pdf");
-  } else if (type === "print") {
-    const printContent = table.outerHTML;
-    const win = window.open("", "", "width=1000,height=800");
-    win.document.write(`
-      <html>
-        <head>
-          <title>Print Members</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            table { border-collapse: collapse; width: 100%; }
-            th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-            th { background-color: #f2f2f2; font-weight: bold; }
-            tr:nth-child(even) { background-color: #f9f9f9; }
-          </style>
-        </head>
-        <body>
-          <h2>OCDA Member List</h2>
-          ${printContent}
-        </body>
-      </html>
-    `);
-    win.document.close();
-    win.focus();
-    win.print();
-  }
-}
+//   if (type === "excel") {
+//     const wb = XLSX.utils.table_to_book(table, { sheet: "Members" });
+//     XLSX.writeFile(wb, "members.xlsx");
+//   } else if (type === "pdf") {
+//     const doc = new jspdf.jsPDF("landscape", "pt", "a4");
+//     doc.autoTable({
+//       html: "#memberTableExport",
+//       styles: {
+//         font: "helvetica",
+//         fontSize: 10,
+//         cellPadding: 5,
+//         halign: "center",
+//         valign: "middle",
+//         lineColor: [220, 220, 220],
+//         lineWidth: 0.2,
+//       },
+//       headStyles: {
+//         fillColor: [240, 240, 240],
+//         textColor: 33,
+//         fontStyle: "bold",
+//       },
+//       alternateRowStyles: { fillColor: [248, 248, 248] },
+//       margin: { top: 40 },
+//       didDrawPage: function (data) {
+//         doc.setFontSize(14);
+//         doc.text("OCDA Member List", data.settings.margin.left, 30);
+//       },
+//     });
+//     doc.save("members.pdf");
+//   } else if (type === "print") {
+//     const printContent = table.outerHTML;
+//     const win = window.open("", "", "width=1000,height=800");
+//     win.document.write(`
+//       <html>
+//         <head>
+//           <title>Print Members</title>
+//           <style>
+//             body { font-family: Arial, sans-serif; padding: 20px; }
+//             table { border-collapse: collapse; width: 100%; }
+//             th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+//             th { background-color: #f2f2f2; font-weight: bold; }
+//             tr:nth-child(even) { background-color: #f9f9f9; }
+//           </style>
+//         </head>
+//         <body>
+//           <h2>OCDA Member List</h2>
+//           ${printContent}
+//         </body>
+//       </html>
+//     `);
+//     win.document.close();
+//     win.focus();
+//     win.print();
+//   }
+// }
 
 // Show and populate member detail section
 async function viewMember(phone) {
@@ -2684,40 +2684,40 @@ function renderEnquiryResults(data, type, mode) {
 }
 
 // Export
-function exportEnquiry(type) {
-  const table = document.getElementById("enquiryTableExport");
+// function exportEnquiry(type) {
+//   const table = document.getElementById("enquiryTableExport");
 
-  if (type === "excel") {
-    const wb = XLSX.utils.table_to_book(table, { sheet: "Enquiry" });
-    XLSX.writeFile(wb, "enquiry.xlsx");
-  } else if (type === "pdf") {
-    const doc = new jspdf.jsPDF("landscape", "pt", "a4");
-    doc.autoTable({
-      html: "#enquiryTableExport",
-      styles: {
-        font: "helvetica",
-        fontSize: 10,
-        cellPadding: 5,
-        valign: "middle",
-        halign: "center",
-        lineColor: [200, 200, 200],
-        lineWidth: 0.2,
-      },
-      headStyles: {
-        fillColor: [240, 240, 240],
-        textColor: 20,
-        fontStyle: "bold",
-      },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-      margin: { top: 40 },
-      didDrawPage: function (data) {
-        doc.setFontSize(14);
-        doc.text("OCDA Enquiry Report", data.settings.margin.left, 30);
-      },
-    });
-    doc.save("enquiry.pdf");
-  }
-}
+//   if (type === "excel") {
+//     const wb = XLSX.utils.table_to_book(table, { sheet: "Enquiry" });
+//     XLSX.writeFile(wb, "enquiry.xlsx");
+//   } else if (type === "pdf") {
+//     const doc = new jspdf.jsPDF("landscape", "pt", "a4");
+//     doc.autoTable({
+//       html: "#enquiryTableExport",
+//       styles: {
+//         font: "helvetica",
+//         fontSize: 10,
+//         cellPadding: 5,
+//         valign: "middle",
+//         halign: "center",
+//         lineColor: [200, 200, 200],
+//         lineWidth: 0.2,
+//       },
+//       headStyles: {
+//         fillColor: [240, 240, 240],
+//         textColor: 20,
+//         fontStyle: "bold",
+//       },
+//       alternateRowStyles: { fillColor: [245, 245, 245] },
+//       margin: { top: 40 },
+//       didDrawPage: function (data) {
+//         doc.setFontSize(14);
+//         doc.text("OCDA Enquiry Report", data.settings.margin.left, 30);
+//       },
+//     });
+//     doc.save("enquiry.pdf");
+//   }
+// }
 
 //  Print
 function printEnquiry() {
@@ -3120,50 +3120,6 @@ async function toggleExpenseSummaryDrilldown(index) {
   }
 }
 
-function exportOCDAExpReportToPDF() {
-  const element = document.getElementById("ocdaExpensesAnalysisTable");
-  if (!element) {
-    console.error("ocdaExpensesAnalysisTable not found in DOM!");
-    return;
-  }
-  element.classList.add("pdf-export-enhanced");
-  html2pdf()
-    .set({
-      margin: 0.3,
-      filename: "OCDA_Expenses_Analysis.pdf",
-      image: { type: "jpeg", quality: 1 },
-      html2canvas: { scale: 4, useCORS: true },
-      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-    })
-    .from(element)
-    .save()
-    .then(() => {
-      element.classList.remove("pdf-export-enhanced");
-    });
-}
-
-function exportOCDAReportToPDF() {
-  const element = document.getElementById("ocdaIncomeAnalysisTable");
-  if (!element) {
-    console.error("ocdaIncomeAnalysisTable not found in DOM!");
-    return;
-  }
-  element.classList.add("pdf-export-enhanced");
-  html2pdf()
-    .set({
-      margin: 0.3,
-      filename: "OCDA_Income_Analysis.pdf",
-      image: { type: "jpeg", quality: 1 },
-      html2canvas: { scale: 4, useCORS: true },
-      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-    })
-    .from(element)
-    .save()
-    .then(() => {
-      element.classList.remove("pdf-export-enhanced");
-    });
-}
-
 document
   .getElementById("ocdaExpensesAnalysisForm")
   ?.addEventListener("submit", function (e) {
@@ -3427,28 +3383,38 @@ async function loadPaymentScheduleDropdown() {
 
 async function loadPaymentSchedule() {
   const fromMonth = document.getElementById("psFromMonth").value;
-  const fromYear  = document.getElementById("psFromYear").value;
-  const toMonth   = document.getElementById("psToMonth").value;
-  const toYear    = document.getElementById("psToYear").value;
+  const fromYear = document.getElementById("psFromYear").value;
+  const toMonth = document.getElementById("psToMonth").value;
+  const toYear = document.getElementById("psToYear").value;
   const remarkSel = document.getElementById("psRemark");
-  const remark    = remarkSel.value;
+  const remark = remarkSel.value;
   // Get display label for selected option
-  const remarkLabel = remark === "ALL"
-    ? "All Income"
-    : remarkSel.options[remarkSel.selectedIndex].text;
-  const result    = document.getElementById("paymentScheduleResult");
+  const remarkLabel =
+    remark === "ALL"
+      ? "All Income"
+      : remarkSel.options[remarkSel.selectedIndex].text;
+  const result = document.getElementById("paymentScheduleResult");
 
   if (!fromYear || !toYear) {
     showAlert("Please enter both From Year and To Year", "warning");
     return;
   }
 
-  result.innerHTML = '<p class="text-gray-400 text-sm p-4">Generating report...</p>';
+  result.innerHTML =
+    '<p class="text-gray-400 text-sm p-4">Generating report...</p>';
 
   try {
-    const params = new URLSearchParams({ fromMonth, fromYear, toMonth, toYear, remark });
+    const params = new URLSearchParams({
+      fromMonth,
+      fromYear,
+      toMonth,
+      toYear,
+      remark,
+    });
     const res = await fetch(`/admin/payment-schedule?${params}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
     });
     const data = await res.json();
 
@@ -3458,15 +3424,16 @@ async function loadPaymentSchedule() {
     }
 
     if (!data.members.length) {
-      result.innerHTML = '<p class="text-gray-500 p-4">No payment records found for the selected period.</p>';
+      result.innerHTML =
+        '<p class="text-gray-500 p-4">No payment records found for the selected period.</p>';
       return;
     }
 
     result.innerHTML = buildPaymentScheduleTable(data, remarkLabel);
-
   } catch (err) {
     console.error("Payment schedule error:", err);
-    result.innerHTML = '<p class="text-red-500 p-4">Server error generating report.</p>';
+    result.innerHTML =
+      '<p class="text-red-500 p-4">Server error generating report.</p>';
   }
 }
 
@@ -3487,20 +3454,22 @@ const MONTH_NAMES = [
 
 function buildPaymentScheduleTable(data, remarkLabel) {
   const { columns, members, grandTotal } = data;
-  const fmtAmt = n => n ? `₦${parseFloat(n).toLocaleString("en-NG", { minimumFractionDigits: 2 })}` : "";
+  const fmtAmt = (n) =>
+    n
+      ? `₦${parseFloat(n).toLocaleString("en-NG", { minimumFractionDigits: 2 })}`
+      : "";
 
   // Column headers — show month name, and year underneath if range spans two years
-  const spansTwoYears = columns.some(c => c.year !== columns[0].year);
-  const colHeaders = columns.map(c =>
+  const spansTwoYears = columns.some((c) => c.year !== columns[0].year);
+  const colHeaders = columns.map((c) =>
     spansTwoYears
       ? `${MONTH_NAMES[c.month - 1]}<br><span style="font-size:10px;font-weight:normal">${c.year}</span>`
-      : MONTH_NAMES[c.month - 1]
+      : MONTH_NAMES[c.month - 1],
   );
 
   // FIX 1: Use income label instead of "MONTHS"
-  const incomeLabel = remarkLabel && remarkLabel !== "ALL"
-    ? remarkLabel
-    : "All Income";
+  const incomeLabel =
+    remarkLabel && remarkLabel !== "ALL" ? remarkLabel : "All Income";
 
   // Column width: distribute evenly, min 65px per month col
   const colW = Math.max(65, Math.floor(700 / columns.length));
@@ -3514,18 +3483,22 @@ function buildPaymentScheduleTable(data, remarkLabel) {
         <th class="ps-cell ps-hdr" rowspan="2">TOTAL</th>
       </tr>
       <tr>
-        ${colHeaders.map(h => `<th class="ps-cell ps-hdr ps-month">${h}</th>`).join("")}
+        ${colHeaders.map((h) => `<th class="ps-cell ps-hdr ps-month">${h}</th>`).join("")}
       </tr>
     </thead>`;
 
-  const tbody = members.map((m, i) => `
+  const tbody = members
+    .map(
+      (m, i) => `
     <tr>
       <td class="ps-cell ps-sn">${i + 1}</td>
       <td class="ps-cell ps-name">${m.fullname}</td>
-      ${m.monthly.map(amt => `<td class="ps-cell ps-amt">${fmtAmt(amt)}</td>`).join("")}
+      ${m.monthly.map((amt) => `<td class="ps-cell ps-amt">${fmtAmt(amt)}</td>`).join("")}
       <td class="ps-cell ps-total">${fmtAmt(m.total)}</td>
     </tr>
-  `).join("");
+  `,
+    )
+    .join("");
 
   const grandRow = `
     <tr>
@@ -3565,7 +3538,10 @@ function buildPaymentScheduleTable(data, remarkLabel) {
 
 function printPaymentSchedule() {
   const el = document.getElementById("paymentSchedulePrintArea");
-  if (!el) { showAlert("Generate the report first before printing", "warning"); return; }
+  if (!el) {
+    showAlert("Generate the report first before printing", "warning");
+    return;
+  }
   const win = window.open("", "", "width=1100,height=800");
   win.document.write(`
     <html>
@@ -4433,3 +4409,1090 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.error("Error loading states:", err);
   }
 });
+
+// =============================================================
+// DATA-DRIVEN PDF EXPORT FUNCTIONS
+// Replace the corresponding old functions in admin-dashboard.js
+// =============================================================
+
+// Shared PDF styles injected into every export wrapper
+const PDF_STYLES = `
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 11px; color: #111; }
+    h1  { font-size: 15px; text-align: center; margin-bottom: 3px; }
+    .sub { text-align: center; font-size: 10px; color: #555; margin-bottom: 14px; }
+
+    table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+    thead { display: table-header-group; }        /* ✅ was table-row-group — breaks repeat on each page */
+    th, td { border: 1px solid #bbb; padding: 5px 7px; }
+    th { background: #efefef; font-weight: bold; text-align: center; font-size: 11px; }
+    td { text-align: left; }
+    td.center { text-align: center; }
+    td.amt { text-align: right; font-family: monospace; }
+    tfoot td { background: #f5f5f5; font-weight: bold; }
+    tfoot { display: table-footer-group; }        /* ✅ added — pins tfoot to bottom of each page */
+
+    tr { page-break-inside: avoid; break-inside: avoid; }          /* ✅ added break-inside (modern) */
+    tbody tr { page-break-inside: avoid; break-inside: avoid; }    /* ✅ target tbody rows explicitly */
+
+    .group { margin-bottom: 16px; page-break-inside: avoid; break-inside: avoid; }
+    .group-heading {
+      background: #e2e2e2; font-weight: bold; padding: 5px 8px;
+      border: 1px solid #bbb; font-size: 11px;
+      page-break-after: avoid; break-after: avoid;                  /* ✅ added break-after (modern) */
+    }
+
+    .page-break { page-break-after: always; break-after: page; }   /* ✅ added break-after: page */
+
+    .grand-total {
+      text-align: right; font-size: 12px; font-weight: bold;
+      margin-top: 10px; border-top: 2px solid #333; padding-top: 6px;
+      page-break-inside: avoid; break-inside: avoid;               /* ✅ added break-inside (modern) */
+    }
+    .section-title {
+      font-size: 12px; font-weight: bold; margin: 10px 0 4px;
+      border-bottom: 1px solid #ccc; padding-bottom: 3px;
+      page-break-after: avoid; break-after: avoid;                 /* ✅ added break-after (modern) */
+    }
+    .breakdown-table { margin: 4px 0 8px 0; }
+    .breakdown-table th { background: #dde8f5; font-size: 10px; }
+    .breakdown-table.expenses th { background: #fdebd0; }
+  </style>
+`;
+
+// Helper: Nigerian naira format
+function fmtN(n) {
+  return parseFloat(n || 0).toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+  });
+}
+
+// Helper: date display
+function fmtD(d) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("en-GB");
+}
+
+// Helper: build and trigger html2pdf download
+function triggerPDF(wrapper, filename, orientation = "portrait") {
+  html2pdf()
+    .set({
+      margin: 0.4,
+      filename,
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: { scale: 3, useCORS: true },
+      jsPDF: { unit: "in", format: "a4", orientation },
+    })
+    .from(wrapper)
+    .save();
+}
+
+// =============================================================
+// 1. MEMBER LIST  (replaces exportMembers for type "pdf")
+// =============================================================
+async function exportMembers(type) {
+  if (type === "excel") {
+    const table = document.getElementById("memberTableExport");
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Members" });
+    XLSX.writeFile(wb, "members.xlsx");
+    return;
+  }
+
+  if (type === "print") {
+    const table = document.getElementById("memberTableExport");
+    const win = window.open("", "", "width=1000,height=800");
+    win.document.write(`
+      <html><head><title>OCDA Members</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; }
+          table { border-collapse: collapse; width: 100%; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+          th { background-color: #f2f2f2; font-weight: bold; }
+          tr:nth-child(even) { background-color: #f9f9f9; }
+        </style>
+      </head><body>
+        <h2>OCDA Member List</h2>
+        ${table.outerHTML}
+      </body></html>`);
+    win.document.close();
+    win.focus();
+    win.print();
+    return;
+  }
+
+  // PDF — fetch fresh data
+  const btn = document.querySelector(
+    "button[onclick=\"exportMembers('pdf')\"]",
+  );
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Generating…";
+  }
+
+  try {
+    const res = await fetch("/admin/members", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    });
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      showAlert("No member data to export", "warning");
+      return;
+    }
+
+    const rows = data
+      .map(
+        (m) => `
+      <tr>
+        <td class="center">${m.PhoneNumber || ""}</td>
+        <td>${m.Surname || ""}</td>
+        <td>${m.othernames || ""}</td>
+        <td class="center">${m.Title || ""}</td>
+        <td class="center">${m.Sex || ""}</td>
+        <td class="center">${m.Quarters || ""}</td>
+        <td class="center">${m.Ward || ""}</td>
+        <td>${m.Town || ""}</td>
+        <td>${m.State || ""}</td>
+      </tr>`,
+      )
+      .join("");
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      ${PDF_STYLES}
+      <h1>OCDA Registered Members</h1>
+      <div class="sub">Total: ${data.length} members &nbsp;|&nbsp; Generated: ${new Date().toLocaleDateString("en-GB")}</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Phone No</th><th>Surname</th><th>Other Names</th>
+            <th>Title</th><th>Sex</th><th>Quarter</th>
+            <th>Ward</th><th>Town</th><th>State</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+
+    triggerPDF(wrapper, "OCDA_Member_List.pdf", "landscape");
+  } catch (err) {
+    console.error("Export Members PDF error:", err);
+    showAlert("Failed to export PDF", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Export PDF";
+    }
+  }
+}
+
+// =============================================================
+// 2. MEMBER LEDGER  (new function — call from Export PDF button)
+// =============================================================
+async function exportMemberLedgerToPDF() {
+  const startDate = document.getElementById("startDate")?.value || "";
+  const endDate = document.getElementById("endDate")?.value || "";
+
+  const btn = document.querySelector(
+    "button[onclick='exportMemberLedgerToPDF()']",
+  );
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Generating…";
+  }
+
+  try {
+    let url = "/admin/memberledger";
+    if (startDate && endDate) {
+      url = `/admin/member-recordledger?from=${startDate}&to=${endDate}`;
+    }
+
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    });
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      showAlert("Load the ledger first / no records in range", "warning");
+      return;
+    }
+
+    const totalAmt = data.reduce((s, r) => s + parseFloat(r.amount || 0), 0);
+    const dateRange =
+      startDate || endDate
+        ? `Period: ${fmtD(startDate)} – ${fmtD(endDate)}`
+        : "All Dates";
+
+    const rows = data
+      .map(
+        (r) => `
+      <tr>
+        <td class="center">${r.phoneno || ""}</td>
+        <td class="center">${fmtD(r.transdate)}</td>
+        <td class="amt">${fmtN(r.amount)}</td>
+        <td>${r.remark || "—"}</td>
+        <td class="center">${r.paydate ? fmtD(r.paydate) : "—"}</td>
+      </tr>`,
+      )
+      .join("");
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      ${PDF_STYLES}
+      <h1>OCDA Member Ledger</h1>
+      <div class="sub">${dateRange} &nbsp;|&nbsp; ${data.length} records</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Phone No</th><th>Trans. Date</th>
+            <th>Amount (₦)</th><th>Remark</th><th>Pay Date</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2"><strong>TOTAL</strong></td>
+            <td class="amt">₦${fmtN(totalAmt)}</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>`;
+
+    triggerPDF(
+      wrapper,
+      `OCDA_Member_Ledger_${startDate || "all"}_${endDate || "all"}.pdf`,
+      "landscape",
+    );
+  } catch (err) {
+    console.error("Export Ledger PDF error:", err);
+    showAlert("Failed to export PDF", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Export PDF";
+    }
+  }
+}
+
+// =============================================================
+// 3. MONTHLY SUMMARY  (new function — call from Export PDF button)
+// =============================================================
+async function exportSummaryToPDF() {
+  const btn = document.querySelector("button[onclick='exportSummaryToPDF()']");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Generating…";
+  }
+
+  try {
+    const res = await fetch("/admin/monthlysummary", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    });
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      showAlert("No summary data available to export", "warning");
+      return;
+    }
+
+    const rows = data
+      .map(
+        (r) => `
+      <tr>
+        <td class="center">${r.period || ""}</td>
+        <td class="amt">${fmtN(r.openbalance)}</td>
+        <td class="amt">${fmtN(r.Debitbalance)}</td>
+        <td class="amt">${fmtN(r.Creditbalance)}</td>
+        <td class="amt">${fmtN(r.Netbalance)}</td>
+      </tr>`,
+      )
+      .join("");
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      ${PDF_STYLES}
+      <h1>OCDA Monthly Summary</h1>
+      <div class="sub">Generated: ${new Date().toLocaleDateString("en-GB")} &nbsp;|&nbsp; ${data.length} period(s)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Period</th><th>Opening Balance (₦)</th>
+            <th>Debit (₦)</th><th>Credit (₦)</th><th>Net Balance (₦)</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+
+    triggerPDF(wrapper, "OCDA_Monthly_Summary.pdf", "portrait");
+  } catch (err) {
+    console.error("Export Summary PDF error:", err);
+    showAlert("Failed to export PDF", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Export PDF";
+    }
+  }
+}
+
+// =============================================================
+// 4. FINAL ACCOUNT  (new function — call from Export PDF button)
+// =============================================================
+async function exportFinalAccountToPDF() {
+  const from = document.getElementById("finalAccountFrom")?.value;
+  const to = document.getElementById("finalAccountTo")?.value;
+
+  if (!from || !to) {
+    showAlert("Generate the report first before exporting", "warning");
+    return;
+  }
+
+  const btn = document.querySelector(
+    "button[onclick='exportFinalAccountToPDF()']",
+  );
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Generating…";
+  }
+
+  try {
+    const authHeader = {
+      Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+    };
+
+    // Fetch all three in parallel
+    const [accountRes, incomeRes, expensesRes] = await Promise.all([
+      fetch(`/admin/final-account?from=${from}&to=${to}`, {
+        headers: authHeader,
+      }),
+      fetch(
+        `/admin/ocda-income-analysis?start=${from}&end=${to}&mode=summary`,
+        { headers: authHeader },
+      ),
+      fetch(
+        `/admin/ocda-expenses-analysis?start=${from}&end=${to}&mode=summary`,
+        { headers: authHeader },
+      ),
+    ]);
+
+    const data = await accountRes.json();
+    const income = await incomeRes.json();
+    const expenses = await expensesRes.json();
+
+    if (!accountRes.ok) {
+      showAlert(data.message || "Failed to load final account data", "error");
+      return;
+    }
+
+    // Build income breakdown sub-table
+    const incomeRows =
+      Array.isArray(income) && income.length
+        ? income
+            .map(
+              (r) => `
+          <tr>
+            <td>${r.description?.trim() || r.code || "—"}</td>
+            <td class="amt">₦${fmtN(r.amount)}</td>
+          </tr>`,
+            )
+            .join("")
+        : `<tr><td colspan="2" class="center">No income records found</td></tr>`;
+
+    const incomeTable = `
+      <table class="breakdown-table" style="margin:6px 0 10px 0;">
+        <thead>
+          <tr><th style="background:#dde8f5;">Income Description</th><th style="background:#dde8f5;">Amount (₦)</th></tr>
+        </thead>
+        <tbody>${incomeRows}</tbody>
+      </table>`;
+
+    // Build expenses breakdown sub-table
+    const expensesRows =
+      Array.isArray(expenses) && expenses.length
+        ? expenses
+            .map(
+              (r) => `
+          <tr>
+            <td>${r.description?.trim() || r.code || "—"}</td>
+            <td class="amt">₦${fmtN(r.amount)}</td>
+          </tr>`,
+            )
+            .join("")
+        : `<tr><td colspan="2" class="center">No expense records found</td></tr>`;
+
+    const expensesTable = `
+      <table class="breakdown-table expenses" style="margin:6px 0 10px 0;">
+        <thead>
+          <tr><th style="background:#fdebd0;">Expense Description</th><th style="background:#fdebd0;">Amount (₦)</th></tr>
+        </thead>
+        <tbody>${expensesRows}</tbody>
+      </table>`;
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      ${PDF_STYLES}
+      <h1>OCDA Final Account</h1>
+      <div class="sub">Period: ${fmtD(data.fromDate)} – ${fmtD(data.toDate)}</div>
+
+      <table style="max-width:560px; margin: 0 auto;">
+        <tbody>
+          <tr>
+            <td colspan="2" style="padding:10px 8px; font-weight:bold; border-top:1px solid #ccc; border-bottom:1px solid #ccc;">
+              OPENING BALANCE AS AT ${fmtD(data.fromDate)}
+            </td>
+            <td class="amt" style="padding:10px 8px; border-top:1px solid #ccc; border-bottom:1px solid #ccc;">
+              ₦${fmtN(data.openingBalance)}
+            </td>
+          </tr>
+
+          <tr>
+            <td colspan="2" style="padding:10px 8px; font-weight:bold; border-bottom:1px solid #aaa;">
+              TOTAL INCOME
+            </td>
+            <td class="amt" style="padding:10px 8px; border-bottom:1px solid #aaa;">
+              ₦${fmtN(data.totalIncome)}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0; border:none;"></td>
+            <td colspan="2" style="padding:0 8px 8px 0; border:none; border-bottom:1px solid #ccc;">
+              ${incomeTable}
+            </td>
+          </tr>
+
+          <tr>
+            <td colspan="2" style="padding:10px 8px; font-weight:bold; border-bottom:1px solid #aaa;">
+              TOTAL EXPENSES
+            </td>
+            <td class="amt" style="padding:10px 8px; border-bottom:1px solid #aaa;">
+              ₦${fmtN(data.totalExpenses)}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0; border:none;"></td>
+            <td colspan="2" style="padding:0 8px 8px 0; border:none; border-bottom:1px solid #ccc;">
+              ${expensesTable}
+            </td>
+          </tr>
+
+          <tr style="border-top:2px solid #111;">
+            <td colspan="2" style="padding:12px 8px; font-weight:bold; font-size:12px;">
+              CURRENT BALANCE AS AT ${fmtD(data.toDate)}
+            </td>
+            <td class="amt" style="padding:12px 8px; font-weight:bold; font-size:12px;">
+              ₦${fmtN(data.currentBalance)}
+            </td>
+          </tr>
+        </tbody>
+      </table>`;
+
+    triggerPDF(wrapper, `OCDA_Final_Account_${from}_${to}.pdf`, "portrait");
+  } catch (err) {
+    console.error("Export Final Account PDF error:", err);
+    showAlert("Failed to export PDF", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Export PDF";
+    }
+  }
+}
+
+// =============================================================
+// 5. ENQUIRY  (replaces exportEnquiry for type "pdf")
+// =============================================================
+async function exportEnquiry(type) {
+  if (type === "excel") {
+    const table = document.getElementById("enquiryTableExport");
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Enquiry" });
+    XLSX.writeFile(wb, "enquiry.xlsx");
+    return;
+  }
+
+  if (type !== "pdf") return;
+
+  const form = document.getElementById("enquiryForm");
+  if (!form) return;
+
+  const enquiryType = form.enquiryType.value;
+  const mode = form.detail.checked ? "detail" : "summary";
+  const start = form.start.value;
+  const end = form.end.value;
+
+  let param = "ALL";
+  if (enquiryType === "member")
+    param = document.getElementById("enquiry-member").value;
+  if (enquiryType === "ward")
+    param = document.getElementById("enquiry-ward").value;
+  if (enquiryType === "quarter")
+    param = document.getElementById("enquiry-quarter").value;
+
+  const pdfBtn = document.querySelector(
+    "button[onclick=\"exportEnquiry('pdf')\"]",
+  );
+  if (pdfBtn) {
+    pdfBtn.disabled = true;
+    pdfBtn.textContent = "Generating…";
+  }
+
+  try {
+    const params = new URLSearchParams({ type: enquiryType, param, mode });
+    if (start) params.append("start", start);
+    if (end) params.append("end", end);
+
+    const res = await fetch(`/admin/enquiry?${params}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showAlert(data.message || "Enquiry failed", "error");
+      return;
+    }
+
+    const summary = Array.isArray(data.summary) ? data.summary : [];
+    const detail = Array.isArray(data.detail) ? data.detail : [];
+
+    const dateRange =
+      start || end ? `Period: ${fmtD(start)} – ${fmtD(end)}` : "All Dates";
+
+    // ---- SUMMARY HTML ----
+    let summaryHTML = "";
+    if (enquiryType === "member") {
+      summaryHTML = `
+        <div class="section-title">Member Summary</div>
+        <table>
+          <thead><tr><th>Phone No</th><th>Name</th><th>Total (₦)</th></tr></thead>
+          <tbody>
+            ${summary
+              .map(
+                (r) => `
+              <tr>
+                <td class="center">${r.PhoneNumber || r.phoneno || ""}</td>
+                <td>${r.fullname || ""}</td>
+                <td class="amt">${fmtN(r.total)}</td>
+              </tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>`;
+    } else if (enquiryType === "ward") {
+      summaryHTML = `
+        <div class="section-title">Ward Summary</div>
+        <table>
+          <thead><tr><th>Ward</th><th>Total (₦)</th></tr></thead>
+          <tbody>
+            ${summary
+              .map(
+                (r) => `
+              <tr>
+                <td>${r.Ward || ""}</td>
+                <td class="amt">${fmtN(r.total)}</td>
+              </tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>`;
+    } else if (enquiryType === "quarter") {
+      summaryHTML = `
+        <div class="section-title">Quarter Summary</div>
+        <table>
+          <thead><tr><th>Quarter</th><th>Total (₦)</th></tr></thead>
+          <tbody>
+            ${summary
+              .map(
+                (r) => `
+              <tr>
+                <td>${r.Quarters || r.Quarter || ""}</td>
+                <td class="amt">${fmtN(r.total)}</td>
+              </tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>`;
+    }
+
+    // ---- DETAIL HTML ----
+    let detailHTML = "";
+    if (mode === "detail" && detail.length > 0) {
+      if (enquiryType === "member") {
+        // detail is flat array of transactions — group by phoneno
+        const grouped = {};
+        detail.forEach((tx) => {
+          const key = tx.phoneno;
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(tx);
+        });
+
+        detailHTML = `<div class="section-title">Member Transaction Detail</div>`;
+        detailHTML += Object.entries(grouped)
+          .map(([phoneno, txs]) => {
+            const memberTotal = txs.reduce(
+              (s, t) => s + parseFloat(t.amount || 0),
+              0,
+            );
+            return `
+            <div class="group">
+              <div class="group-heading">${phoneno} — ${txs[0]?.fullname || ""} &nbsp;(${txs.length} transactions)</div>
+              <table>
+                <thead><tr><th>Date</th><th>Amount (₦)</th><th>Remark</th></tr></thead>
+                <tbody>
+                  ${txs
+                    .map(
+                      (tx) => `
+                    <tr>
+                      <td class="center">${fmtD(tx.transdate)}</td>
+                      <td class="amt">${fmtN(tx.amount)}</td>
+                      <td>${tx.remark || ""}</td>
+                    </tr>`,
+                    )
+                    .join("")}
+                </tbody>
+                <tfoot>
+                  <tr><td colspan="1">Subtotal</td><td class="amt">₦${fmtN(memberTotal)}</td><td></td></tr>
+                </tfoot>
+              </table>
+            </div>`;
+          })
+          .join("");
+      } else if (enquiryType === "ward") {
+        detailHTML = `<div class="section-title">Ward Transaction Detail</div>`;
+        detailHTML += detail
+          .map((w) => {
+            const members = Array.isArray(w.members) ? w.members : [];
+            // Group by member and sum
+            const grouped = {};
+            members.forEach((tx) => {
+              if (!grouped[tx.phoneno])
+                grouped[tx.phoneno] = {
+                  phoneno: tx.phoneno,
+                  fullname: tx.fullname,
+                  total: 0,
+                };
+              grouped[tx.phoneno].total += parseFloat(tx.amount || 0);
+            });
+            const wardTotal = Object.values(grouped).reduce(
+              (s, m) => s + m.total,
+              0,
+            );
+
+            return `
+            <div class="group">
+              <div class="group-heading">Ward: ${w.ward}</div>
+              <table>
+                <thead><tr><th>Phone</th><th>Name</th><th>Total (₦)</th></tr></thead>
+                <tbody>
+                  ${Object.values(grouped)
+                    .map(
+                      (m) => `
+                    <tr>
+                      <td class="center">${m.phoneno}</td>
+                      <td>${m.fullname}</td>
+                      <td class="amt">${fmtN(m.total)}</td>
+                    </tr>`,
+                    )
+                    .join("")}
+                </tbody>
+                <tfoot>
+                  <tr><td colspan="2">Ward Total</td><td class="amt">₦${fmtN(wardTotal)}</td></tr>
+                </tfoot>
+              </table>
+            </div>`;
+          })
+          .join("");
+      } else if (enquiryType === "quarter") {
+        detailHTML = `<div class="section-title">Quarter Transaction Detail</div>`;
+        detailHTML += detail
+          .map((q) => {
+            const wards = Array.isArray(q.wards) ? q.wards : [];
+            const quarterTotal = wards.reduce((s, w) => {
+              const members = Array.isArray(w.members) ? w.members : [];
+              return (
+                s +
+                members.reduce((ms, tx) => ms + parseFloat(tx.amount || 0), 0)
+              );
+            }, 0);
+
+            return `
+            <div class="group">
+              <div class="group-heading">Quarter: ${q.quarter} &nbsp;— Total: ₦${fmtN(quarterTotal)}</div>
+              ${wards
+                .map((w) => {
+                  const members = Array.isArray(w.members) ? w.members : [];
+                  const grouped = {};
+                  members.forEach((tx) => {
+                    if (!grouped[tx.phoneno])
+                      grouped[tx.phoneno] = {
+                        phoneno: tx.phoneno,
+                        fullname: tx.fullname,
+                        total: 0,
+                      };
+                    grouped[tx.phoneno].total += parseFloat(tx.amount || 0);
+                  });
+                  const wardTotal = Object.values(grouped).reduce(
+                    (s, m) => s + m.total,
+                    0,
+                  );
+
+                  return `
+                  <table style="margin-left:16px; width:calc(100% - 16px);">
+                    <thead>
+                      <tr>
+                        <th colspan="3" style="text-align:left; background:#dde;">Ward: ${w.ward} — ₦${fmtN(wardTotal)}</th>
+                      </tr>
+                      <tr><th>Phone</th><th>Name</th><th>Total (₦)</th></tr>
+                    </thead>
+                    <tbody>
+                      ${Object.values(grouped)
+                        .map(
+                          (m) => `
+                        <tr>
+                          <td class="center">${m.phoneno}</td>
+                          <td>${m.fullname}</td>
+                          <td class="amt">${fmtN(m.total)}</td>
+                        </tr>`,
+                        )
+                        .join("")}
+                    </tbody>
+                  </table>`;
+                })
+                .join("")}
+            </div>`;
+          })
+          .join("");
+      }
+    }
+
+    // Grand total from summary
+    const grandTotal = summary
+      .filter(
+        (r) => (r.PhoneNumber || r.Ward || r.Quarters || r.Quarter) !== "ALL",
+      )
+      .reduce((s, r) => s + parseFloat(r.total || 0), 0);
+
+    const labelMap = { member: "Member", ward: "Ward", quarter: "Quarter" };
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      ${PDF_STYLES}
+      <h1>OCDA Enquiry Report — ${labelMap[enquiryType]}</h1>
+      <div class="sub">
+        ${dateRange} &nbsp;|&nbsp; Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}
+        &nbsp;|&nbsp; Filter: ${param}
+      </div>
+      ${summaryHTML}
+      ${detailHTML}
+      <div class="grand-total">GRAND TOTAL: ₦${fmtN(grandTotal)}</div>`;
+
+    triggerPDF(
+      wrapper,
+      `OCDA_Enquiry_${enquiryType}_${mode}_${start || "all"}_${end || "all"}.pdf`,
+      mode === "detail" ? "landscape" : "portrait",
+    );
+  } catch (err) {
+    console.error("Export Enquiry PDF error:", err);
+    showAlert("Failed to export PDF", "error");
+  } finally {
+    if (pdfBtn) {
+      pdfBtn.disabled = false;
+      pdfBtn.textContent = "Export PDF";
+    }
+  }
+}
+
+// =============================================================
+// 6. OCDA EXPENSES ANALYSIS  (replaces exportOCDAExpReportToPDF)
+// =============================================================
+async function exportOCDAExpReportToPDF() {
+  const form = document.getElementById("ocdaExpensesAnalysisForm");
+  if (!form) return;
+
+  const mode = form.mode.value;
+  const start = form.start.value;
+  const end = form.end.value;
+  const code = form.code.value || "ALL";
+
+  const btn = document.getElementById("exportExpensesBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Generating…";
+  }
+
+  try {
+    const params = new URLSearchParams({ start, end, code, mode });
+    const res = await fetch(`/admin/ocda-expenses-analysis?${params}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    });
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      showAlert("No data to export", "warning");
+      return;
+    }
+
+    const dateRange =
+      start || end ? `Period: ${fmtD(start)} – ${fmtD(end)}` : "All Dates";
+    const grandTotal = data.reduce((s, r) => s + parseFloat(r.amount || 0), 0);
+
+    let bodyHTML = "";
+
+    if (mode === "summary") {
+      const rows = data
+        .map(
+          (r) => `
+        <tr>
+          <td class="center">${r.code || ""}</td>
+          <td>${r.description || ""}</td>
+          <td class="amt">₦${fmtN(r.amount)}</td>
+        </tr>`,
+        )
+        .join("");
+
+      bodyHTML = `
+        <table>
+          <thead><tr><th>Code</th><th>Description</th><th>Amount (₦)</th></tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2">TOTAL</td>
+              <td class="amt">₦${fmtN(grandTotal)}</td>
+            </tr>
+          </tfoot>
+        </table>`;
+    } else {
+      // Detail: flat array — group by code+description
+      const grouped = {};
+      data.forEach((r) => {
+        const key = `${r.description || r.code} (${r.code})`;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(r);
+      });
+
+      bodyHTML = Object.entries(grouped)
+        .map(([heading, rows]) => {
+          const groupTotal = rows.reduce(
+            (s, r) => s + parseFloat(r.amount || 0),
+            0,
+          );
+          return `
+          <div class="group">
+            <div class="group-heading">${heading}</div>
+            <table>
+              <thead><tr><th>Date</th><th>Voucher No</th><th>Remark</th><th>Amount (₦)</th></tr></thead>
+              <tbody>
+                ${rows
+                  .map(
+                    (r) => `
+                  <tr>
+                    <td class="center">${fmtD(r.date)}</td>
+                    <td class="center">${r.voucher || ""}</td>
+                    <td>${r.remark || ""}</td>
+                    <td class="amt">₦${fmtN(r.amount)}</td>
+                  </tr>`,
+                  )
+                  .join("")}
+              </tbody>
+              <tfoot>
+                <tr><td colspan="3">Subtotal</td><td class="amt">₦${fmtN(groupTotal)}</td></tr>
+              </tfoot>
+            </table>
+          </div>`;
+        })
+        .join("");
+    }
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      ${PDF_STYLES}
+      <h1>OCDA Expenses Analysis</h1>
+      <div class="sub">${dateRange} &nbsp;|&nbsp; Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)} &nbsp;|&nbsp; Code: ${code}</div>
+      ${bodyHTML}
+      <div class="grand-total">GRAND TOTAL: ₦${fmtN(grandTotal)}</div>`;
+
+    triggerPDF(
+      wrapper,
+      `OCDA_Expenses_Analysis_${mode}_${start || "all"}_${end || "all"}.pdf`,
+      mode === "detail" ? "landscape" : "portrait",
+    );
+  } catch (err) {
+    console.error("Export Expenses PDF error:", err);
+    showAlert("Failed to export PDF", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Export PDF";
+    }
+  }
+}
+
+// =============================================================
+// 7. OCDA INCOME ANALYSIS  (replaces exportOCDAReportToPDF)
+//    FIX: detail mode iterates group.transactions, not group directly
+// =============================================================
+async function exportOCDAReportToPDF() {
+  const form = document.getElementById("ocdaIncomeAnalysisForm");
+  if (!form) return;
+
+  const mode = form.mode.value;
+  const start = form.start.value;
+  const end = form.end.value;
+  const code = form.code.value || "ALL";
+
+  const btn = document.querySelector(
+    "#ocda-income-analysis button[onclick='exportOCDAReportToPDF()']",
+  );
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Generating…";
+  }
+
+  try {
+    const params = new URLSearchParams({ start, end, code, mode });
+    const res = await fetch(`/admin/ocda-income-analysis?${params}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+      },
+    });
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      showAlert("No data to export", "warning");
+      return;
+    }
+
+    const dateRange =
+      start || end ? `Period: ${fmtD(start)} – ${fmtD(end)}` : "All Dates";
+
+    let bodyHTML = "";
+
+    if (mode === "summary") {
+      // Summary: flat array of { code, description, amount, transaction_count }
+      const grandTotal = data.reduce(
+        (s, r) => s + parseFloat(r.amount || 0),
+        0,
+      );
+
+      const rows = data
+        .map(
+          (r) => `
+        <tr>
+          <td class="center">${r.code || "No Code"}</td>
+          <td>${r.description?.trim() || r.code || "N/A"}</td>
+          <td class="center">${r.transaction_count || ""}</td>
+          <td class="amt">₦${fmtN(r.amount)}</td>
+        </tr>`,
+        )
+        .join("");
+
+      bodyHTML = `
+        <table>
+          <thead>
+            <tr><th>Code</th><th>Description</th><th>Transactions</th><th>Amount (₦)</th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3">TOTAL</td>
+              <td class="amt">₦${fmtN(grandTotal)}</td>
+            </tr>
+          </tfoot>
+        </table>`;
+
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = `
+        ${PDF_STYLES}
+        <h1>OCDA Income Analysis</h1>
+        <div class="sub">${dateRange} &nbsp;|&nbsp; Mode: Summary &nbsp;|&nbsp; Filter: ${code}</div>
+        ${bodyHTML}
+        <div class="grand-total">GRAND TOTAL: ₦${fmtN(grandTotal)}</div>`;
+
+      triggerPDF(
+        wrapper,
+        `OCDA_Income_Analysis_summary_${start || "all"}_${end || "all"}.pdf`,
+        "portrait",
+      );
+    } else {
+      // Detail: array of { code, transactions: [{ date, phoneno_name, amount, comment }] }
+      // Each group is one income classification; transactions are the individual ledger entries
+      const grandTotal = data.reduce((s, group) => {
+        return (
+          s +
+          (group.transactions || []).reduce(
+            (gs, t) => gs + parseFloat(t.amount || 0),
+            0,
+          )
+        );
+      }, 0);
+
+      bodyHTML = data
+        .map((group) => {
+          const txs = Array.isArray(group.transactions)
+            ? group.transactions
+            : [];
+          const groupTotal = txs.reduce(
+            (s, t) => s + parseFloat(t.amount || 0),
+            0,
+          );
+
+          return `
+          <div class="group">
+            <div class="group-heading">${group.code} &nbsp;— ${txs.length} transaction(s)</div>
+            <table>
+              <thead>
+                <tr><th>Date</th><th>Phone (Name)</th><th>Comment</th><th>Amount (₦)</th></tr>
+              </thead>
+              <tbody>
+                ${txs
+                  .map(
+                    (t) => `
+                  <tr>
+                    <td class="center">${fmtD(t.date)}</td>
+                    <td>${t.phoneno_name || ""}</td>
+                    <td>${t.comment || ""}</td>
+                    <td class="amt">₦${fmtN(t.amount)}</td>
+                  </tr>`,
+                  )
+                  .join("")}
+              </tbody>
+              <tfoot>
+                <tr><td colspan="3">Subtotal</td><td class="amt">₦${fmtN(groupTotal)}</td></tr>
+              </tfoot>
+            </table>
+          </div>`;
+        })
+        .join("");
+
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = `
+        ${PDF_STYLES}
+        <h1>OCDA Income Analysis</h1>
+        <div class="sub">${dateRange} &nbsp;|&nbsp; Mode: Detail &nbsp;|&nbsp; Filter: ${code}</div>
+        ${bodyHTML}
+        <div class="grand-total">GRAND TOTAL: ₦${fmtN(grandTotal)}</div>`;
+
+      triggerPDF(
+        wrapper,
+        `OCDA_Income_Analysis_detail_${start || "all"}_${end || "all"}.pdf`,
+        "landscape",
+      );
+    }
+  } catch (err) {
+    console.error("Export Income PDF error:", err);
+    showAlert("Failed to export PDF", "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Export PDF";
+    }
+  }
+}
