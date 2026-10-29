@@ -2,202 +2,193 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OCDA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register — OCDA</title>
+  <meta name="description" content="Registering gives you a member account where you can keep your details current and see your dues receipts.">
+  <meta name="theme-color" content="#081b29">
+  <link rel="icon" href="/photos/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/photos/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/site.css">
 </head>
-<link rel="stylesheet" href="styles/index.css">
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="icon" type="image/png" href="/photos/favicon.ico" sizes="32x32">
-<link  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-
 <body>
-  <div class="form-wrapper">
-    <div class="container-form">
-      <form class="form active" id="signupForm">
-        <h2 class="title">Create Account</h2>
-
-        
-        <div class="form-container">
-          <!-- Success Message -->
-          <div class="success-message" id="successMessage">
+  <div class="auth">
+    <aside class="auth-aside">
+      <div class="auth-aside-inner">
+        <a class="auth-back" href="/">&larr; Back to the website</a>
+        <div class="auth-aside-body">
+          <a href="/" aria-label="OCDA home"><img src="/photos/ocda-seal-480.webp" alt="OCDA seal" width="168" height="168"></a>
+          <p class="auth-org">Oyin-Akoko Community Development Association</p>
+          <h2>Join the association.</h2>
+          <p>Registering gives you a member account where you can keep your details current and see your dues receipts.</p>
         </div>
-
-        <!-- Row: Surname + Other Names -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="surname">Surname <span class="required">*</span></label>
-            <input type="text" id="surname" name="surname" required>
-            <div class="error" id="surnameError"></div>
-          </div>
-          <div class="form-group">
-            <label for="otherNames">OtherNames <span class="required">*</span></label>
-            <input type="text" id="otherNames" name="otherNames" required>
-            <div class="error" id="otherNamesError"></div>
-          </div>
-        </div>
-
-        <!-- Phone Numbers -->
-        <div class="form-row">
-            <div class="form-group">
-                <label for="phoneNumber">Phone Number <span class="required">*</span></label>
-                <input type="tel" id="phoneNumber" name="phoneNumber" required placeholder="e.g., 08012345678">
+        <small>&copy; <span data-year></span> OCDA</small>
+      </div>
+      <svg class="hills" viewBox="0 0 1440 150" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <path fill="#0e2a3e" d="M0 74 C 150 26, 290 30, 420 60 S 690 18, 860 46 S 1170 8, 1440 50 V150 H0Z"/>
+    <path fill="#163a54" d="M0 106 C 190 72, 360 94, 520 100 S 820 64, 1000 90 S 1300 72, 1440 94 V150 H0Z"/>
+  </svg>
+    </aside>
+    <main class="auth-main" id="main">
+      <div class="auth-card wide">
+        <a class="brand auth-mobile-brand" href="/">
+      <img src="/photos/ocda-seal-96.webp" alt="" width="44" height="44">
+      <span class="brand-name"><strong>OCDA</strong><span>Oyin-Akoko Community Development Association</span></span>
+    </a>
+        <h1>Register as a member</h1>
+        <p class="lede">Fields marked <span class="req" style="color:var(--danger)">*</span> are required. Your phone number becomes your sign-in ID.</p>
+        <div id="successMessage" class="alert"></div>
+        <form id="signupForm" novalidate>
+          <fieldset class="form-section">
+            <legend>About you</legend>
+            <div class="form-grid">
+            <div class="field">
+              <label for="surname">Surname <span class="req" aria-hidden="true">*</span></label>
+              <input type="text" id="surname" name="surname" autocomplete="family-name" required>
+              <div class="error" id="surnameError"></div>
             </div>
-            <div class="form-group">
-                <label for="phoneNo2">Secondary Phone</label>
-                <input type="tel" id="phoneNo2" name="phoneNo2" placeholder="Optional">
+            <div class="field">
+              <label for="otherNames">Other names <span class="req" aria-hidden="true">*</span></label>
+              <input type="text" id="otherNames" name="otherNames" autocomplete="given-name" required>
+              <div class="error" id="otherNamesError"></div>
             </div>
-        </div>
-
-        <!-- Row: Title + HonTitle -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="title">Title</label>
-            <select id="title" name="title"> 
-              <option value="">Select Title</option>
-            </select>
+            <div class="field">
+              <label for="title">Title</label>
+              <select id="title" name="title">
+                <option value="">Select title</option>
+              </select>
+              <div class="error" id="titleError"></div>
+            </div>
+            <div class="field">
+              <label for="honTitle">Honorary title</label>
+              <select id="honTitle" name="honTitle">
+                <option value="">Select honorary title</option>
+              </select>
+              <div class="error" id="honTitleError"></div>
+            </div>
+            <div class="field">
+              <label for="sex">Sex <span class="req" aria-hidden="true">*</span></label>
+              <select id="sex" name="sex" required>
+                <option value="">Select</option><option value="M">Male</option><option value="F">Female</option>
+              </select>
+              <div class="error" id="sexError"></div>
+            </div>
+            <div class="field">
+              <label for="dob">Date of birth <span class="req" aria-hidden="true">*</span></label>
+              <input type="date" id="dob" name="dob" autocomplete="bday" required>
+              <div class="error" id="dobError"></div>
+            </div>
+            <div class="field">
+              <label for="qualifications">Qualification</label>
+              <select id="qualifications" name="qualifications">
+                <option value="">Select qualification</option>
+              </select>
+              <div class="error" id="qualificationsError"></div>
+            </div>
+            <div class="field">
+              <label for="profession">Profession</label>
+              <input type="text" id="profession" name="profession" autocomplete="organization-title">
+              <div class="error" id="professionError"></div>
+            </div>
+            </div>
+          </fieldset>
+          <fieldset class="form-section">
+            <legend>Where you belong</legend>
+            <div class="form-grid">
+            <div class="field">
+              <label for="quarters">Quarter <span class="req" aria-hidden="true">*</span></label>
+              <select id="quarters" name="quarters" required>
+                <option value="">Select quarter</option>
+              </select>
+              <div class="error" id="quartersError"></div>
+            </div>
+            <div class="field">
+              <label for="ward">Ward <span class="req" aria-hidden="true">*</span></label>
+              <select id="ward" name="ward" required>
+                <option value="">Choose a quarter first</option>
+              </select>
+              <div class="error" id="wardError"></div>
+            </div>
+            <div class="field">
+              <label for="state">State of residence <span class="req" aria-hidden="true">*</span></label>
+              <select id="state" name="state" required>
+                <option value="">Select state</option>
+              </select>
+              <div class="error" id="stateError"></div>
+            </div>
+            <div class="field">
+              <label for="town">Town of residence <span class="req" aria-hidden="true">*</span></label>
+              <input type="text" id="town" name="town" autocomplete="address-level2" required>
+              <div class="error" id="townError"></div>
+            </div>
+            </div>
+          </fieldset>
+          <fieldset class="form-section">
+            <legend>Contact</legend>
+            <div class="form-grid">
+            <div class="field">
+              <label for="phoneNumber">Phone number <span class="req" aria-hidden="true">*</span></label>
+              <input type="tel" id="phoneNumber" name="phoneNumber" autocomplete="tel" placeholder="e.g. 08012345678" required>
+              <div class="error" id="phoneNumberError"></div>
+            </div>
+            <div class="field">
+              <label for="phoneNo2">Second phone number</label>
+              <input type="tel" id="phoneNo2" name="phoneNo2" autocomplete="tel" placeholder="Optional">
+              <div class="error" id="phoneNo2Error"></div>
+            </div>
+            <div class="field">
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" autocomplete="email" placeholder="Optional">
+              <div class="error" id="emailError"></div>
+            </div>
+            <div class="field">
+              <label for="exitDate">Exit date</label>
+              <input type="date" id="exitDate" name="exitDate">
+              <span class="hint">Leave blank unless you are leaving the association.</span>
+              <div class="error" id="exitDateError"></div>
+            </div>
+            </div>
+          </fieldset>
+          <fieldset class="form-section">
+            <legend>Password</legend>
+            <div class="form-grid">
+            <div class="field">
+              <label for="password">Password <span class="req" aria-hidden="true">*</span></label>
+              <div class="password-wrap">
+                <input type="password" id="password" name="password" autocomplete="new-password" required>
+                <button type="button" class="password-toggle" data-password-toggle="password" aria-label="Show password" aria-pressed="false"><svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-closed" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.7 21.7 0 0 1 4.6-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19M1 1l22 22"/><path d="M9.5 9.5a3 3 0 0 0 4 4"/></svg></button>
+              </div>
+              <span class="hint">At least 6 characters.</span>
+              <div class="error" id="passwordError"></div>
+            </div>
+            <div class="field">
+              <label for="retypePassword">Confirm password <span class="req" aria-hidden="true">*</span></label>
+              <div class="password-wrap">
+                <input type="password" id="retypePassword" name="retypePassword" autocomplete="new-password" required>
+                <button type="button" class="password-toggle" data-password-toggle="retypePassword" aria-label="Show password" aria-pressed="false"><svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-closed" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.7 21.7 0 0 1 4.6-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19M1 1l22 22"/><path d="M9.5 9.5a3 3 0 0 0 4 4"/></svg></button>
+              </div>
+              
+              <div class="error" id="retypePasswordError"></div>
+            </div>
+            </div>
+          </fieldset>
+          <div class="field">
+            <label class="check" for="acceptRules">
+              <input type="checkbox" id="acceptRules" name="acceptRules">
+              <span>I agree to abide by the rules and regulations of the association.</span>
+            </label>
+            <div class="error" id="acceptRulesError"></div>
           </div>
-
-          <div class="form-group">
-            <label for="honTitle">Honorary Title</label>
-            <select id="honTitle" name="honTitle"> 
-              <option value="">Select Honorary Title</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Row: Sex + DOB -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="sex">Sex <span class="required">*</span></label>
-            <select id="sex" name="sex" required> 
-              <option value="">Select Sex</option>
-              <option value="M">M</option>
-              <option value="F">F</option>
-            </select>
-            <div class="error" id="sexError"></div>
-          </div>
-          <div class="form-group">
-            <label for="dob">Date of Birth <span class="required">*</span></label>
-            <input type="date" id="dob" name="dob" required>
-            <div class="error" id="dobError"></div>
-          </div>
-        </div>
-
-        <!-- Quarters + Ward-->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="quarters">Quarters<span class="required">*</span></label>
-            <select id="quarters" name="quarters" required> 
-              <option value="">Select Quaters</option>
-            </select>
-            <div class="error" id="quartersError"></div>
-          </div>
-
-          <div class="form-group">
-            <label for="ward">Ward <span class="required">*</span></label>
-            <select id="ward" name="ward" required> 
-              <option value="">Select Ward</option>
-            </select>
-            <div class="error" id="wardError"></div>
-          </div>
-        </div>
-        
-        <!-- Row: State + Town -->
-        <div class="form-row">
-          <!-- State -->
-          <div class="form-group">
-            <label for="state">State <span class="required">*</span></label>
-            <select id="state" name="state" required> 
-              <option value="">Select State</option>
-            </select>
-            <div class="error" id="stateError"></div>
-          </div>
-
-          <div class="form-group">
-            <label for="town">Town <span class="required">*</span></label>
-            <input type="text" id="town" name="town" required>
-            <div class="error" id="townError"></div>
-          </div>
-        </div>
-
-        <!-- Row: Qualifications + Profession -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="qualifications">Qualification</label>
-            <select id="qualifications" name="qualifications"> 
-              <option value="">Select Qualification</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="profession">Profession</label>
-            <input type="text" id="profession" name="profession">
-          </div>
-        </div>
-
-        <!-- Row: Email  + Exit Date-->
-        <!-- Email-->
-        <div class="form-row">
-          <div class="form-group">
-              <label for="email">Email Address</label>
-              <input type="email" id="email" name="email" placeholder="example@domain.com">
-          </div>
-
-          <!-- Exit Date -->
-          <div class="form-group">
-            <label for="exitDate">Exit Date</label>
-            <input type="date" id="exitDate" name="exitDate">
-          </div>
-        </div>
-
-        <!-- Row: Passwords -->
-        <div class="form-row">
-          <div class="form-group">
-            <label for="password">Password <span class="required">*</span></label>
-            <input type="password" id="password" name="password" required>
-            <div class="error" id="passwordError"></div>
-          </div>
-          <div class="form-group">
-            <label for="retypePassword">Retype Password <span class="required">*</span></label>
-            <input type="password" id="retypePassword" name="retypePassword" required>
-            <div class="error" id="retypePasswordError"></div>
-          </div>
-        </div>
-
-        <!-- T & C -->
-        <div class="form-group">
-          <label class="inline-flex items-start gap-2">
-            <input type="checkbox" id="acceptRules" name="acceptRules" class="form-checkbox text-blue-600 mt-1 w-auto"> 
-            <span class="text-sm text-black-800 font-medium">
-              I ACCEPT TO ABIDE BY THE RULES AND REGULATIONS OF THE ASSOCIATION
-            </span>
-          </label>
-        </div>
-
-        <button type="submit" class="submit-btn hidden" id="submitBtn">Create Account</button>
-      </form>
-    </div>
+          <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Create my account</button>
+        </form>
+        <p class="auth-foot">Already registered? <a href="/member.html">Sign in</a></p>
+      </div>
+    </main>
   </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const checkbox = document.getElementById('acceptRules');
-      const submitBtn = document.getElementById('submitBtn');
-
-      checkbox.addEventListener('change', function () {
-        if (checkbox.checked) {
-          // Remove the 'hidden' class to make the button visible
-          submitBtn.classList.remove('hidden');
-          // Enable the button
-          submitBtn.disabled = false;
-        } else {
-          // Add the 'hidden' class to hide the button
-          submitBtn.classList.add('hidden');
-          // Disable the button (optional, as it's hidden)
-          submitBtn.disabled = true;
-        }
-      });
-    });
-  </script>
+  <script src="/script/site.js" defer></script>
+  <script src="/script/signup.js" defer></script>
 </body>
-<script src="script/signup.js"></script>
 </html>

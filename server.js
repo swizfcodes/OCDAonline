@@ -1,515 +1,429 @@
+const path = require("path");
 const express = require("express");
 const session = require("express-session");
-const bodyParser = require("body-parser");
-const serveIndex = require("serve-index");
-const { request } = require("./db-wrapper");
-const pool = require("./db");
-const path = require("path");
 const cors = require("cors");
-const app = express();
+
+const config = require("./lib/config");
+const { request } = require("./db-wrapper");
+const { hashPassword, verifyPassword } = require("./lib/passwords");
+const { rateLimit } = require("./lib/rateLimit");
 const adminRoutes = require("./routes/admin");
-const PORT = process.env.PORT || 5500;
+
+const app = express();
+const PUBLIC_DIR = path.join(__dirname, "public");
+
+// ---------------------------------------------------------------------------
+// Platform middleware
+// ---------------------------------------------------------------------------
+app.set("trust proxy", 1); // behind LiteSpeed / reverse proxy: needed for secure cookies and client IPs
+app.disable("x-powered-by");
+
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  next();
+});
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5500", // local frontend
-      "http://127.0.0.1:5500",
-      "https://oyinakokocda.org",
-      // production
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: config.ALLOWED_ORIGINS,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   }),
 );
 
 app.use(
   session({
-    secret: "super-secret",
+    name: "ocda.sid",
+    secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    rolling: true,
     cookie: {
-      secure: false, // true for HTTPS
-      sameSite: "lax", // important for cookies across origin
+      httpOnly: true,
+      sameSite: "lax",
+      secure: "auto", // secure over HTTPS, still works on http://localhost
+      maxAge: 1000 * 60 * 60 * 8, // 8 hours of inactivity
     },
   }),
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+const clean = (v) => (typeof v === "string" ? v.trim() : v);
+const emptyToNull = (v) => {
+  const c = clean(v);
+  return c === "" || c === undefined ? null : c;
+};
+const PHONE_RE = /^(\+234|234|0)[789][01]\d{8}$/;
+const normalisePhone = (p) => String(p || "").replace(/\s+/g, "");
+
+function requireMember(req, res, next) {
+  if (req.session && req.session.member && req.session.member.phone) return next();
+  return res.status(401).json({ message: "Your session has ended. Sign in again." });
+}
+
+function startMemberSession(req, member) {
+  return new Promise((resolve, reject) => {
+    req.session.regenerate((err) => {
+      if (err) return reject(err);
+      req.session.member = { id: member.Id, phone: member.PhoneNumber };
+      req.session.save((e) => (e ? reject(e) : resolve()));
+    });
+  });
+}
+
+function ageFrom(dob) {
+  if (!dob) return null;
+  const d = new Date(dob);
+  if (isNaN(d)) return null;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age;
+}
+
+const authLimiter = rateLimit({ max: 10 });
+const resetLimiter = rateLimit({ max: 5, message: "Too many reset attempts. Wait 15 minutes and try again." });
+
+// ---------------------------------------------------------------------------
+// Admin API
+// ---------------------------------------------------------------------------
 app.use("/admin", adminRoutes);
 
-// Signup Endpoint
-app.post("/signup", async (req, res) => {
+// ---------------------------------------------------------------------------
+// Member: sign up / sign in / sign out / reset
+// ---------------------------------------------------------------------------
+app.post("/signup", authLimiter, async (req, res) => {
   try {
-    const userData = req.body;
-    console.log("Signup data received:", userData);
-
-    const checkResult = await request(`
-      SELECT * FROM members WHERE PhoneNumber = @PhoneNumber
-    `)
-      .inputs({ PhoneNumber: userData.phoneNumber })
-      .run();
-
-    if (checkResult.recordset.length > 0) {
-      return res
-        .status(400)
-        .json({ field: "phoneNumber", message: "Phone number already exists" });
+    const b = req.body || {};
+    const phone = normalisePhone(b.phoneNumber);
+    const required = { surname: b.surname, otherNames: b.otherNames, sex: b.sex, dob: b.dob, quarters: b.quarters, ward: b.ward, town: b.town, state: b.state };
+    for (const [field, value] of Object.entries(required)) {
+      if (!clean(value)) return res.status(400).json({ field, message: "This field is required." });
+    }
+    if (!PHONE_RE.test(phone)) {
+      return res.status(400).json({ field: "phoneNumber", message: "Enter a Nigerian mobile number, e.g. 08012345678." });
+    }
+    if (!b.password || String(b.password).length < 6) {
+      return res.status(400).json({ field: "password", message: "Use at least 6 characters." });
     }
 
-    const insertInputs = {
-      othernames: userData.otherNames,
-      Surname: userData.surname,
-      email: userData.email || "",
-      Sex: userData.sex,
-      DOB: userData.dob,
-      Quarters: userData.quarters,
-      Ward: userData.ward,
-      Town: userData.town,
-      State: userData.state,
-      PhoneNumber: userData.phoneNumber,
-      phoneno2: userData.phoneNo2 || null,
-      Password: userData.password,
-      Title: userData.title,
-      HonTitle: userData.honTitle,
-      Qualifications: userData.qualifications || null,
-      Profession: userData.profession,
-      exitdate: userData.exitDate || null,
+    const exists = await request("SELECT Id FROM members WHERE PhoneNumber = @PhoneNumber")
+      .inputs({ PhoneNumber: phone })
+      .run();
+    if (exists.recordset.length > 0) {
+      return res.status(400).json({ field: "phoneNumber", message: "This phone number is already registered. Sign in instead." });
+    }
+
+    const inputs = {
+      othernames: clean(b.otherNames),
+      Surname: clean(b.surname),
+      email: emptyToNull(b.email),
+      Sex: clean(b.sex),
+      DOB: clean(b.dob),
+      Quarters: clean(b.quarters),
+      Ward: clean(b.ward),
+      Town: clean(b.town),
+      State: clean(b.state),
+      PhoneNumber: phone,
+      phoneno2: emptyToNull(b.phoneNo2) ? normalisePhone(b.phoneNo2) : null,
+      Password: await hashPassword(b.password),
+      Title: emptyToNull(b.title),
+      HonTitle: emptyToNull(b.honTitle),
+      Qualifications: emptyToNull(b.qualifications),
+      Profession: emptyToNull(b.profession),
+      exitdate: emptyToNull(b.exitDate),
       CreatedAt: new Date(),
     };
 
-    const insertQuery = `
-      INSERT INTO members 
-      (othernames, Surname, email, Sex, DOB, Quarters, Ward, Town, State, PhoneNumber, Password, CreatedAt, phoneno2, Title, HonTitle, Qualifications, Profession, exitdate)
-      VALUES 
-      (@othernames, @Surname, @email, @Sex, @DOB, @Quarters, @Ward, @Town, @State, @PhoneNumber, @Password, @CreatedAt, @phoneno2, @Title, @HonTitle, @Qualifications, @Profession, @exitdate)
-    `;
+    await request(`
+      INSERT INTO members
+        (othernames, Surname, email, Sex, DOB, Quarters, Ward, Town, State, PhoneNumber, Password, CreatedAt,
+         phoneno2, Title, HonTitle, Qualifications, Profession, exitdate)
+      VALUES
+        (@othernames, @Surname, @email, @Sex, @DOB, @Quarters, @Ward, @Town, @State, @PhoneNumber, @Password, @CreatedAt,
+         @phoneno2, @Title, @HonTitle, @Qualifications, @Profession, @exitdate)
+    `).inputs(inputs).run();
 
-    await request(insertQuery).inputs(insertInputs).run();
+    const created = await request("SELECT Id, PhoneNumber FROM members WHERE PhoneNumber = @p").inputs({ p: phone }).run();
+    if (created.recordset[0]) await startMemberSession(req, created.recordset[0]);
 
-    if (req.session) {
-      req.session.phoneNumber = userData.phoneNumber;
-    } else {
-      console.warn("⚠️ Session middleware is missing.");
-    }
-
-    res.status(201).json({
-      message: "Signup successful!",
-      phoneNumber: userData.phoneNumber,
-    });
+    res.status(201).json({ message: "Account created.", phoneNumber: phone, id: created.recordset[0]?.Id });
   } catch (error) {
     console.error("Signup error:", error);
-    res.status(500).json({ message: "Signup failed. Try again later." });
+    if (error.code === "ER_DUP_ENTRY") {
+      return res.status(400).json({ field: "phoneNo2", message: "One of these phone numbers or the email is already used by another member." });
+    }
+    res.status(500).json({ message: "Registration failed. Try again later." });
   }
 });
 
-// Login Endpoint
-app.post("/login", async (req, res) => {
-  let conn;
+app.post("/login", authLimiter, async (req, res) => {
   try {
-    const { identifier, password } = req.body;
-    console.log("Login request received:", identifier, password);
-
-    conn = await pool.getConnection();
-    console.log("DB connection established");
-
-    let field, value;
-    if (/^\d+$/.test(identifier) && Number(identifier) <= 2147483647) {
-      field = "Id";
-      value = parseInt(identifier, 10);
-    } else {
-      field = "PhoneNumber";
-      value = identifier;
+    const identifier = clean(req.body?.identifier);
+    const password = req.body?.password;
+    if (!identifier || !password) {
+      return res.status(400).json({ message: "Enter your phone number (or member ID) and password." });
     }
 
-    console.log(`Searching by ${field}:`, value);
-
-    const [rows] = await conn.execute(
-      `SELECT * FROM members WHERE ${field} = ? LIMIT 1`,
-      [value],
-    );
-
-    if (rows.length === 0) {
-      console.log("❌ No user found");
-      return res
-        .status(400)
-        .json({ field: "identifier", message: `${field} not found` });
-    }
-
-    const user = rows[0];
-    console.log("👤 User found:", user);
-
-    if (user.Password !== password) {
-      console.log("Password mismatch");
-      return res
-        .status(400)
-        .json({ field: "password", message: "Incorrect password" });
-    }
-
-    req.session.userId = user.Id;
-    console.log("Login successful");
-
-    res.status(200).json({
-      message: "Login successful",
-      id: user.Id,
-      phoneNumber: user.PhoneNumber,
-    });
-  } catch (err) {
-    console.error("❌ Login error:", err); // full error
-    res.status(500).json({ message: "Login failed, server error" });
-  } finally {
-    if (conn) conn.release();
-  }
-});
-
-// Middleware
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
-
-app.use("/public", serveIndex(path.join(__dirname, "public"), { icons: true }));
-
-app.get("/dashboard", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
-});
-
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  next();
-});
-
-// Dummy login endpoint
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body;
-  if (username && password) {
-    res.json({ success: true, token: "fake-jwt-token" });
-  } else {
-    res.status(400).json({ success: false, message: "Missing credentials" });
-  }
-});
-
-// dashboard Endpoint//
-
-app.post("/api/profile", async (req, res) => {
-  try {
-    const { phoneNumber } = req.body;
-    if (!phoneNumber) {
-      return res.status(400).json({ message: "Phone number required" });
-    }
-
-    const result = await request`
-      SELECT 
-        othernames,
-        Surname,
-        PhoneNumber,
-        phoneno2,
-        Town,
-        email,
-        State,
-        Ward,
-        Quarters,
-        DOB,
-        Title,
-        HonTitle,
-        exitdate,
-        Qualifications
-      FROM members
-      WHERE PhoneNumber = ${phoneNumber}
-    `.run();
-
-    if (result.recordset.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    const user = result.recordset[0];
-    const dob = new Date(user.DOB);
-    const age = new Date().getFullYear() - dob.getFullYear();
-
-    res.status(200).json({
-      othernames: user.othernames,
-      surname: user.Surname,
-      phoneNumber: user.PhoneNumber,
-      phoneNo2: user.phoneno2,
-      email: user.email,
-      town: user.Town,
-      state: user.State,
-      ward: user.Ward,
-      quarters: user.Quarters,
-      age: age,
-      title: user.Title,
-      honTitle: user.HonTitle,
-      exitDate: user.exitdate,
-      qualifications: user.Qualifications,
-    });
-  } catch (err) {
-    console.error("Error loading user profile:", err);
-    res.status(500).json({ message: "Server error while loading profile" });
-  }
-});
-
-// Serve the dashboard HTML file
-
-app.get("/dashboard", (req, res) => {
-  const filePath = path.join(__dirname, "public", "dashboard.html");
-  res.sendFile(filePath);
-});
-
-//update profile route
-app.post("/api/update-profile", async (req, res) => {
-  const {
-    oldPhoneNumber,
-    phone,
-    phoneNo2,
-    surname,
-    othernames,
-    email,
-    State,
-    sex,
-    title,
-    honTitle,
-    Quarters,
-    Ward,
-    town,
-    qualifications,
-    profession,
-    exitDate,
-  } = req.body;
-
-  if (!oldPhoneNumber) {
-    return res
-      .status(400)
-      .json({ message: "Current phone number is required" });
-  }
-
-  try {
-    const updates = [];
-    const inputs = [];
-
-    if (phone) {
-      updates.push("PhoneNumber = @newPhone");
-      inputs.push({ name: "newPhone", value: phone });
-    }
-    if (phoneNo2) {
-      updates.push("phoneno2 = @phoneNo2");
-      inputs.push({ name: "phoneNo2", value: phoneNo2 });
-    }
-    if (surname) {
-      updates.push("Surname = @surname");
-      inputs.push({ name: "surname", value: surname });
-    }
-    if (othernames) {
-      updates.push("othernames = @othernames");
-      inputs.push({ name: "othernames", value: othernames });
-    }
-    if (email) {
-      updates.push("email = @email");
-      inputs.push({ name: "email", value: email });
-    }
-    if (State) {
-      updates.push("State = @state");
-      inputs.push({ name: "state", value: State });
-    }
-    if (sex) {
-      updates.push("Sex = @sex");
-      inputs.push({ name: "sex", value: sex });
-    }
-    if (title) {
-      updates.push("Title = @title");
-      inputs.push({ name: "title", value: title });
-    }
-    if (honTitle) {
-      updates.push("HonTitle = @honTitle");
-      inputs.push({ name: "honTitle", value: honTitle });
-    }
-    if (Quarters) {
-      updates.push("Quarters = @quarters");
-      inputs.push({ name: "quarters", value: Quarters });
-    }
-    if (Ward) {
-      updates.push("Ward = @ward");
-      inputs.push({ name: "ward", value: Ward });
-    }
-    if (town) {
-      updates.push("Town = @town");
-      inputs.push({ name: "town", value: town });
-    }
-    if (qualifications) {
-      updates.push("Qualifications = @qualifications");
-      inputs.push({ name: "qualifications", value: qualifications });
-    }
-    if (profession) {
-      updates.push("Profession = @profession");
-      inputs.push({ name: "profession", value: profession });
-    }
-    if (exitDate) {
-      updates.push("exitdate = @exitDate");
-      inputs.push({ name: "exitDate", value: exitDate });
-    }
-
-    if (updates.length === 0) {
-      return res.status(400).json({ message: "No fields to update" });
-    }
-
-    inputs.push({ name: "oldPhoneNumber", value: oldPhoneNumber });
-
-    const query = `
-      UPDATE members
-      SET ${updates.join(", ")}
-      WHERE PhoneNumber = @oldPhoneNumber
-    `;
-
-    const paramObject = Object.fromEntries(
-      inputs.map((i) => [i.name, i.value]),
-    );
-
-    const result = await request(query).inputs(paramObject).run();
-
-    if (result.rowsAffected[0] === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json({ success: true, message: "Profile updated successfully" });
-  } catch (err) {
-    console.error("Update error:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to update profile" });
-  }
-});
-
-// Forgot Password Route
-app.post("/api/reset-password", async (req, res) => {
-  const { phoneNumber, newPassword } = req.body;
-
-  if (!phoneNumber || !newPassword) {
-    return res
-      .status(400)
-      .json({ message: "Phone number and new password are required" });
-  }
-
-  try {
-    const result = await request`
-      UPDATE members
-      SET Password = ${newPassword}
-      WHERE PhoneNumber = ${phoneNumber}
-    `.run();
-
-    if (result.rowsAffected[0] === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.json({ message: "Password updated successfully" });
-  } catch (error) {
-    console.error("Reset Password Error:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
-
-//Fetch Individual Ledger Receipts
-
-app.get("/api/ledger-entry/:phoneno", async (req, res) => {
-  const { phoneno } = req.params;
-  try {
-    const result = await request`
-        SELECT 
-          phoneno, 
-          amount, 
-          remark, 
-          DATE_FORMAT(transdate, '%Y-%m-%d') AS transdate, 
-          paydate 
-        FROM memberledger 
-        WHERE phoneno = ${phoneno}
-      `.run();
-
-    res.json(result.recordset);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch ledger entries" });
-  }
-});
-
-app.get("/api/member/ledger-entry/monthly-total", async (req, res) => {
-  const { month, phoneno } = req.query;
-
-  if (!month || !phoneno) {
-    return res.status(400).json({ message: "Missing month or phone number" });
-  }
-
-  try {
-    // Using your adapter's correct syntax
-    const result = await request(`
-      SELECT SUM(amount) AS totalAmount
-      FROM memberledger
-      WHERE phoneno = @phoneno
-      AND DATE_FORMAT(transdate, '%Y-%m') = @month
-    `)
-      .inputs({ phoneno, month })
+    // Short numbers are member IDs; anything that looks like a phone number is a phone number.
+    const byId = /^\d{1,9}$/.test(identifier);
+    const result = await request(
+      `SELECT Id, PhoneNumber, Password FROM members WHERE ${byId ? "Id" : "PhoneNumber"} = @value LIMIT 1`,
+    )
+      .inputs({ value: byId ? parseInt(identifier, 10) : normalisePhone(identifier) })
       .run();
 
-    const total = result.recordset[0]?.totalAmount || 0;
-    res.json({ total });
+    const user = result.recordset[0];
+    if (!user) {
+      return res.status(400).json({ field: "identifier", message: "We couldn't find a member with that phone number or ID." });
+    }
+
+    const { ok, needsUpgrade } = await verifyPassword(password, user.Password);
+    if (!ok) return res.status(400).json({ field: "password", message: "That password is incorrect." });
+
+    if (needsUpgrade) {
+      await request("UPDATE members SET Password = @pw WHERE Id = @id")
+        .inputs({ pw: await hashPassword(password), id: user.Id })
+        .run();
+    }
+
+    await startMemberSession(req, user);
+    res.json({ message: "Signed in.", id: user.Id, phoneNumber: user.PhoneNumber });
   } catch (err) {
-    console.error("Monthly total error:", err);
-    res.status(500).json({ message: "Server error calculating monthly total" });
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Sign in failed because of a server error. Try again shortly." });
   }
 });
 
-//. Fetch Enquiries by Ward
-app.get("/api/enquiry/:type/:value", async (req, res) => {
-  const { type, value } = req.params;
-  const { from, to } = req.query;
-
-  if (!["ward", "quarters"].includes(type)) {
-    return res.status(400).json({ message: "Invalid filter type" });
-  }
-
-  try {
-    let query = `
-      SELECT ml.*, m.ward FROM memberledger ml
-      JOIN members m ON ml.phoneno = m.PhoneNumber
-      WHERE m.${type} = @value
-    `;
-
-    if (from) query += ` AND ml.transdate >= @from `;
-    if (to) query += ` AND ml.transdate <= @to `;
-
-    // Build inputs object
-    const inputs = { value };
-    if (from) inputs.from = from;
-    if (to) inputs.to = to;
-
-    // Use your custom wrapper correctly
-    const result = await request(query).inputs(inputs).run();
-    res.json(result.recordset);
-  } catch (err) {
-    console.error("Enquiry error:", err);
-    res.status(500).json({ message: "Server error during enquiry" });
-  }
-});
-
-//logout
 app.post("/logout", (req, res) => {
+  if (!req.session) return res.json({ message: "Signed out." });
   req.session.destroy((err) => {
     if (err) {
       console.error("Logout failed:", err);
-      return res.status(500).json({ message: "Logout failed" });
+      return res.status(500).json({ message: "Sign out failed." });
     }
-    res.clearCookie("connect.sid");
-    res.status(200).json({ message: "Logged out successfully" });
+    res.clearCookie("ocda.sid");
+    res.json({ message: "Signed out." });
   });
 });
 
+// Member password reset: phone number + new password.
+app.post("/api/reset-password", resetLimiter, async (req, res) => {
+  const phoneNumber = normalisePhone(req.body?.phoneNumber);
+  const newPassword = req.body?.newPassword;
+
+  if (!phoneNumber || !newPassword) {
+    return res.status(400).json({ message: "Enter your phone number and a new password." });
+  }
+  if (String(newPassword).length < 6) {
+    return res.status(400).json({ message: "Use at least 6 characters for the new password." });
+  }
+
+  try {
+    const result = await request("UPDATE members SET Password = @pw WHERE PhoneNumber = @phone")
+      .inputs({ pw: await hashPassword(newPassword), phone: phoneNumber })
+      .run();
+
+    if (result.rowsAffected[0] === 0) {
+      return res.status(404).json({ message: "We couldn't find a member with that phone number." });
+    }
+    res.json({ message: "Password updated." });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ message: "Password reset failed because of a server error." });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Member portal API — always scoped to the signed-in member
+// ---------------------------------------------------------------------------
+app.get("/api/me", requireMember, async (req, res) => {
+  try {
+    const result = await request(`
+      SELECT m.Id, m.othernames, m.Surname, m.PhoneNumber, m.phoneno2, m.email, m.Sex, m.DOB,
+             m.Town, m.State, s.statename AS StateName, m.Ward, m.Quarters, m.Title, m.HonTitle,
+             m.Qualifications, m.Profession, m.exitdate, m.CreatedAt
+      FROM members m
+      LEFT JOIN state s ON s.statecode = m.State
+      WHERE m.PhoneNumber = @phone
+      LIMIT 1
+    `)
+      .inputs({ phone: req.session.member.phone })
+      .run();
+
+    const u = result.recordset[0];
+    if (!u) {
+      req.session.destroy(() => {});
+      return res.status(401).json({ message: "Your account could not be found. Sign in again." });
+    }
+
+    res.json({
+      id: u.Id,
+      othernames: u.othernames,
+      surname: u.Surname,
+      phoneNumber: u.PhoneNumber,
+      phoneNo2: u.phoneno2,
+      email: u.email,
+      sex: u.Sex,
+      dob: u.DOB,
+      age: ageFrom(u.DOB),
+      town: u.Town,
+      state: u.State,
+      stateName: u.StateName || u.State,
+      ward: u.Ward,
+      quarters: u.Quarters,
+      title: u.Title,
+      honTitle: u.HonTitle,
+      qualifications: u.Qualifications,
+      profession: u.Profession,
+      exitDate: u.exitdate,
+      memberSince: u.CreatedAt,
+    });
+  } catch (err) {
+    console.error("Profile error:", err);
+    res.status(500).json({ message: "Your profile couldn't be loaded." });
+  }
+});
+
+app.put("/api/me", requireMember, async (req, res) => {
+  // Map request fields -> columns. The primary phone number is changed by an administrator only.
+  const editable = {
+    surname: { col: "Surname", required: true },
+    othernames: { col: "othernames", required: true },
+    sex: { col: "Sex", required: true },
+    quarters: { col: "Quarters", required: true },
+    ward: { col: "Ward", required: true },
+    state: { col: "State", required: true },
+    town: { col: "Town", required: true },
+    phoneNo2: { col: "phoneno2" },
+    email: { col: "email" },
+    title: { col: "Title" },
+    honTitle: { col: "HonTitle" },
+    qualifications: { col: "Qualifications" },
+    profession: { col: "Profession" },
+    exitDate: { col: "exitdate" },
+  };
+
+  const sets = [];
+  const inputs = { phone: req.session.member.phone };
+  for (const [key, def] of Object.entries(editable)) {
+    if (!(key in (req.body || {}))) continue;
+    const value = emptyToNull(req.body[key]);
+    if (def.required && !value) return res.status(400).json({ field: key, message: "This field can't be empty." });
+    if (key === "phoneNo2" && value && !PHONE_RE.test(normalisePhone(value))) {
+      return res.status(400).json({ field: key, message: "Enter a Nigerian mobile number, or leave this blank." });
+    }
+    if (key === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      return res.status(400).json({ field: key, message: "Enter a valid email address, or leave this blank." });
+    }
+    sets.push(`${def.col} = @${key}`);
+    inputs[key] = key === "phoneNo2" && value ? normalisePhone(value) : value;
+  }
+
+  if (sets.length === 0) return res.status(400).json({ message: "There were no changes to save." });
+
+  try {
+    await request(`UPDATE members SET ${sets.join(", ")} WHERE PhoneNumber = @phone`).inputs(inputs).run();
+    res.json({ message: "Profile saved." });
+  } catch (err) {
+    console.error("Profile update error:", err);
+    if (err.code === "ER_DUP_ENTRY") {
+      return res.status(400).json({ message: "That second phone number or email is already used by another member." });
+    }
+    res.status(500).json({ message: "Your changes couldn't be saved." });
+  }
+});
+
+app.get("/api/me/receipts", requireMember, async (req, res) => {
+  try {
+    const result = await request(`
+      SELECT id, amount, remark,
+             DATE_FORMAT(transdate, '%Y-%m-%d') AS transdate,
+             DATE_FORMAT(paydate, '%Y-%m-%d') AS paydate
+      FROM memberledger
+      WHERE phoneno = @phone
+      ORDER BY transdate DESC, id DESC
+    `)
+      .inputs({ phone: req.session.member.phone })
+      .run();
+    res.json(result.recordset);
+  } catch (err) {
+    console.error("Receipts error:", err);
+    res.status(500).json({ message: "Your receipts couldn't be loaded." });
+  }
+});
+
+// Community totals by ward or quarter. Returns totals only — never other members' payments.
+app.get("/api/enquiry/:type/:value", requireMember, async (req, res) => {
+  const { type, value } = req.params;
+  const { from, to } = req.query;
+  const column = { ward: "Ward", quarters: "Quarters" }[type];
+  if (!column) return res.status(400).json({ message: "Choose ward or quarter." });
+
+  let sql = `
+    SELECT m.Ward AS ward, SUM(ml.amount) AS amount, COUNT(DISTINCT ml.phoneno) AS members
+    FROM memberledger ml
+    JOIN members m ON ml.phoneno = m.PhoneNumber
+    WHERE m.${column} = @value`;
+  const inputs = { value };
+  if (from) { sql += " AND ml.transdate >= @from"; inputs.from = from; }
+  if (to) { sql += " AND ml.transdate <= @to"; inputs.to = to; }
+  sql += " GROUP BY m.Ward ORDER BY m.Ward";
+
+  try {
+    const result = await request(sql).inputs(inputs).run();
+    res.json(result.recordset.map((r) => ({ ward: r.ward, amount: Number(r.amount || 0), members: Number(r.members || 0) })));
+  } catch (err) {
+    console.error("Enquiry error:", err);
+    res.status(500).json({ message: "The enquiry couldn't be run." });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Pages & static files
+// ---------------------------------------------------------------------------
+app.get("/dashboard", (req, res) => res.sendFile(path.join(PUBLIC_DIR, "dashboard.html")));
+
+app.use(
+  express.static(PUBLIC_DIR, {
+    extensions: ["html"],
+    setHeaders(res, filePath) {
+      if (filePath.includes(`${path.sep}photos${path.sep}`)) {
+        res.setHeader("Cache-Control", "public, max-age=604800"); // 7 days
+      } else if (/\.(html|css|js)$/.test(filePath)) {
+        // Always revalidate pages, styles and scripts so updates show up straight away
+        res.setHeader("Cache-Control", "no-cache");
+      }
+    },
+  }),
+);
+
+app.use("/api", (req, res) => res.status(404).json({ message: "Not found." }));
+app.use((req, res) => res.status(404).sendFile(path.join(PUBLIC_DIR, "404.html")));
+
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  if (res.headersSent) return;
+  res.status(500).json({ message: "Something went wrong on the server." });
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled rejection:", reason && reason.stack ? reason.stack : reason);
+});
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err.stack || err);
+  console.error("Uncaught exception:", err.stack || err);
 });
 
-process.on("unhandledRejection", (reason, promise) => {
-  console.error(
-    "Unhandled Rejection at:",
-    promise,
-    "reason:",
-    reason.stack || reason,
-  );
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(config.PORT, () => {
+  console.log(`OCDA server running on http://localhost:${config.PORT}`);
 });

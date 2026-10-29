@@ -1,24 +1,18 @@
 {
-  "name": "chief-prj-assign",
+  "name": "ocda-online",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
-    "body-parser": "^2.2.0",
-    "connect-mssql-v2": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
-    "mssql": "^11.0.1",
-    "mysql2": "^3.14.2",
-    "mysqldump": "^3.2.0",
-    "pg": "^8.16.3",
-    "rss-parser": "^3.13.0",
-    "serve-index": "^1.9.1"
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.14.2"
   },
   "repository": {
     "type": "git",
@@ -31,5 +25,9 @@
     "url": "https://github.com/swizfcodes/chief-prj-assign/issues"
   },
   "homepage": "https://github.com/swizfcodes/chief-prj-assign#readme",
-  "description": ""
+  "description": "Oyin-Akoko Community Development Association \u2014 website, member portal and admin console",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
 }

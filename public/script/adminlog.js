@@ -1,76 +1,43 @@
-// admin logih form handler
-  document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const form = e.target;
-  const data = {
-    email: form.email.value,
-    password: form.password.value
-  };
+/* Administrator sign in. */
+document.addEventListener("DOMContentLoaded", () => {
+  const O = window.OCDA;
+  const form = document.getElementById("adminLoginForm");
+  const params = new URLSearchParams(location.search);
+  if (params.get("expired")) O.showAlert("adminAlert", "Your session ended. Sign in again to continue.", "info");
+  if (params.get("reset")) O.showAlert("adminAlert", "Password updated. Sign in with your new password.", "success");
 
-  try {
-    const res = await fetch('/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-
-    const contentType = res.headers.get("content-type");
-
-    if (!contentType || !contentType.includes("application/json")) {
-      const text = await res.text();
-      throw new Error("Expected JSON but got:\n" + text.slice(0, 200)); // Show first 200 chars
-    }
-
-    const result = await res.json();
-
-    if (res.ok) {
-      localStorage.setItem('adminToken', result.token);
-
-      if (result.admin) {
-        // ✅ Store adminId
-        localStorage.setItem('adminId', result.admin.Id);
-
-        // ✅ Optionally store role
-        if (result.admin.role) {
-          localStorage.setItem('adminRole', result.admin.role);
-        }
-      }
-
-      alert('Login successful!');
-      if (result.admin.role === 'VIEWADMIN') {
-        window.location.href = '/viewadmin-dashboard.html';
-      } else {
-        window.location.href = '/admin-dashboard.html';
-      }
-    } else {
-      alert(result.message || 'Login failed');
-    }
-  } catch (err) {
-    console.error('Login error:', err);
-    alert('An error occurred: ' + err.message);
-  }
+  // Carry the email over to the reset page
+  document.getElementById("adminForgotLink")?.addEventListener("click", () => {
+    const v = document.getElementById("loginEmail").value.trim();
+    if (v) sessionStorage.setItem("prefillEmail", v);
   });
 
-    const passwordInput = document.getElementById("loginPassword");
-    const togglePassword = document.getElementById("togglePassword");
-    const eyeOpen = document.getElementById("eyeOpen");
-    const eyeClosed = document.getElementById("eyeClosed");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    O.clearFieldErrors(form);
+    O.hideAlert("adminAlert");
 
-    togglePassword.addEventListener("click", () => {
-        const isPassword = passwordInput.type === "password";
-        passwordInput.type = isPassword ? "text" : "password";
-        
-        // Toggle SVG display
-        eyeOpen.style.display = isPassword ? "none" : "inline";
-        eyeClosed.style.display = isPassword ? "inline" : "none";
-    });
+    const email = form.email.value.trim();
+    const password = form.password.value;
+    let ok = true;
+    if (!email) { O.setFieldError("loginEmail", "Enter your email address."); ok = false; }
+    if (!password) { O.setFieldError("loginPassword", "Enter your password."); ok = false; }
+    if (!ok) return;
 
-function handleForgotPasswordClick() {
-  const loginEmail = document.getElementById('loginEmail')?.value.trim() || '';
-
-  if (loginEmail) {
-    sessionStorage.setItem('prefillEmail', loginEmail);
-  }
-
-  window.location.href = 'adminforgotpassword.html';
-}
+    const btn = form.querySelector("button[type=submit]");
+    O.setBusy(btn, true, "Signing in…");
+    try {
+      const result = await O.api("/admin/login", { method: "POST", body: { email, password } });
+      localStorage.setItem("adminToken", result.token);
+      if (result.admin) {
+        localStorage.setItem("adminId", result.admin.id ?? result.admin.Id ?? "");
+        localStorage.setItem("adminRole", result.admin.role || "");
+        localStorage.setItem("adminName", result.admin.fullname || "");
+      }
+      location.href = result.admin && result.admin.role === "VIEWADMIN" ? "/viewadmin-dashboard.html" : "/admin-dashboard.html";
+    } catch (err) {
+      O.setBusy(btn, false);
+      O.showAlert("adminAlert", err.message || "Sign in failed.", "error");
+    }
+  });
+});

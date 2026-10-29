@@ -1,1204 +1,501 @@
-const isLocal = window.location.hostname === 'localhost';
-const BASE_URL = isLocal ? 'http://localhost:5500' : 'https://oyinakokocda.org';
+/* Member portal. All data is scoped to the signed-in member by the server session. */
+(function () {
+  "use strict";
+  const O = window.OCDA;
+  const $ = (id) => document.getElementById(id);
+  const esc = O.escapeHtml;
 
-function formatDate(dateString) {
-  if (!dateString) return '';
-  return dateString.split('T')[0];
-}
-
-async function fetchAPI(endpoint, method = 'GET', data = null) {
-  const options = {
-    method,
-    headers: {
-      'Content-Type': 'application/json'
-    }
+  const state = {
+    me: null,
+    receipts: [],
+    filtered: [],
+    wards: [],
+    lookups: { titles: [], hontitles: [], qualifications: [], states: [] },
+    amountsHidden: (() => { try { return localStorage.getItem("ocdaHideAmounts") === "1"; } catch (_) { return false; } })(),
+    notices: [],
   };
 
-  if (data) {
-    options.body = JSON.stringify(data);
-  }
+  // ------------------------------------------------------------------ shell
+  const views = ["overview", "profile", "receipts", "community", "notices"];
 
-  const fullUrl = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`;
-
-  try {
-    const res = await fetch(fullUrl, options);
-    const result = await res.json();
-    if (!res.ok) throw result;
-    return result;
-  } catch (err) {
-    console.error('API error:', err);
-    throw err;
-  }
-}
-
-const phone = localStorage.getItem('loggedInPhone');
-if (!phone) window.location.href = '/';
-
-  // On page load: collapse if screen is <= 1400px
-const sidebar = document.getElementById('sidebar');
-const mainContent = document.getElementById('mainContent');
-const screenWidth = () => window.innerWidth;
-
-function toggleSidebar() {
-  if (screenWidth() < 768) {
-    // Mobile: toggle visibility
-    if (sidebar.classList.contains('hidden')) {
-      // Show sidebar with text
-      sidebar.classList.remove('hidden');
-      sidebar.className = sidebar.className.replace(/w-\d+|md:w-\d+|xl:w-\d+/g, '');
-      sidebar.classList.add('w-60');
-      // Show text labels
-      sidebar.querySelectorAll('span').forEach(span => {
-        span.className = span.className.replace(/hidden|xl:inline/g, '');
-        span.classList.add('inline');
-      });
-    } else {
-      // Hide sidebar
-      sidebar.classList.add('hidden');
-    }
-  } else if (screenWidth() < 1200) {
-    // Tablet: toggle between collapsed and expanded
-    if (sidebar.classList.contains('w-11') || !sidebar.classList.contains('w-60')) {
-      // Expand
-      sidebar.className = sidebar.className.replace(/w-\d+|md:w-\d+|xl:w-\d+/g, '');
-      sidebar.classList.add('w-60');
-      mainContent.className = mainContent.className.replace(/md:pl-\d+|xl:pl-\d+/g, '');
-      mainContent.classList.add('md:pl-60');
-      // Show text labels
-      sidebar.querySelectorAll('span').forEach(span => {
-        span.className = span.className.replace(/hidden|xl:inline/g, '');
-        span.classList.add('inline');
-      });
-    } else {
-      // Collapse
-      sidebar.className = sidebar.className.replace(/w-\d+|md:w-\d+|xl:w-\d+/g, '');
-      sidebar.classList.add('w-11');
-      mainContent.className = mainContent.className.replace(/md:pl-\d+|xl:pl-\d+/g, '');
-      mainContent.classList.add('md:pl-11');
-      // Hide text labels
-      sidebar.querySelectorAll('span').forEach(span => {
-        span.className = span.className.replace(/inline|xl:inline/g, '');
-        span.classList.add('hidden');
-      });
-    }
-  } else {
-    // Desktop: toggle between collapsed and expanded
-    if (sidebar.classList.contains('w-11') || !sidebar.classList.contains('w-60')) {
-      // Expand
-      sidebar.className = sidebar.className.replace(/w-\d+|md:w-\d+|xl:w-\d+/g, '');
-      sidebar.classList.add('w-60');
-      mainContent.className = mainContent.className.replace(/md:pl-\d+|xl:pl-\d+/g, '');
-      mainContent.classList.add('xl:pl-60');
-      // Show text labels
-      sidebar.querySelectorAll('span').forEach(span => {
-        span.className = span.className.replace(/hidden|xl:inline/g, '');
-        span.classList.add('inline');
-      });
-    } else {
-      // Collapse
-      sidebar.className = sidebar.className.replace(/w-\d+|md:w-\d+|xl:w-\d+/g, '');
-      sidebar.classList.add('w-11');
-      mainContent.className = mainContent.className.replace(/md:pl-\d+|xl:pl-\d+/g, '');
-      mainContent.classList.add('xl:pl-11');
-      // Hide text labels
-      sidebar.querySelectorAll('span').forEach(span => {
-        span.className = span.className.replace(/inline|xl:inline/g, '');
-        span.classList.add('hidden');
-      });
-    }
-  }
-}
-
-function handleTabClick(sectionId) {
-  // Hide all sections
-  document.querySelectorAll('section').forEach(sec => sec.classList.add('hidden'));
-
-  // Show selected section
-  const targetSection = document.getElementById(sectionId);
-  if (targetSection) {
-    targetSection.classList.remove('hidden');
-  }
-
-  // Auto-collapse/hide sidebar based on screen size
-  if (screenWidth() < 768) {
-    // Mobile: hide sidebar completely
-    sidebar.classList.add('hidden');
-  } else if (screenWidth() < 1200) {
-    // Tablet: collapse to narrow
-    sidebar.className = sidebar.className.replace(/w-\d+|md:w-\d+|xl:w-\d+/g, '');
-    sidebar.classList.add('w-11');
-    mainContent.className = mainContent.className.replace(/md:pl-\d+|xl:pl-\d+/g, '');
-    mainContent.classList.add('md:pl-11');
-    // Hide text labels
-    sidebar.querySelectorAll('span').forEach(span => {
-      span.className = span.className.replace(/inline|xl:inline/g, '');
-      span.classList.add('hidden');
+  function show(view) {
+    if (!views.includes(view)) view = "overview";
+    views.forEach((v) => ($(`view-${v}`).hidden = v !== view));
+    document.querySelectorAll(".portal-nav [data-view]").forEach((b) => {
+      if (b.dataset.view === view) b.setAttribute("aria-current", "page");
+      else b.removeAttribute("aria-current");
     });
-  }
-  // For >1200 (desktop): do nothing - let user toggle manually
-}
-
-// Initialize sidebar state based on screen size
-function initializeSidebar() {
-  if (screenWidth() < 768) {
-    // Mobile: hidden by default
-    sidebar.classList.add('hidden');
-  } else if (screenWidth() < 1200) {
-    // Tablet: show collapsed
-    sidebar.classList.remove('hidden');
-    sidebar.className = sidebar.className.replace(/w-\d+|md:w-\d+|xl:w-\d+/g, '');
-    sidebar.classList.add('w-11');
-    mainContent.className = mainContent.className.replace(/md:pl-\d+|xl:pl-\d+/g, '');
-    mainContent.classList.add('md:pl-11');
-    // Hide text labels
-    sidebar.querySelectorAll('span').forEach(span => {
-      span.className = span.className.replace(/inline|xl:inline/g, '');
-      span.classList.add('hidden');
-    });
-  } else {
-    // Desktop: show expanded
-    sidebar.classList.remove('hidden');
-    sidebar.className = sidebar.className.replace(/w-\d+|md:w-\d+|xl:w-\d+/g, '');
-    sidebar.classList.add('w-60');
-    mainContent.className = mainContent.className.replace(/md:pl-\d+|xl:pl-\d+/g, '');
-    mainContent.classList.add('xl:pl-60');
-    // Show text labels
-    sidebar.querySelectorAll('span').forEach(span => {
-      span.className = span.className.replace(/hidden|xl:inline/g, '');
-      span.classList.add('inline');
-    });
-  }
-}
-
-// Handle window resize with debouncing
-let resizeTimeout;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    initializeSidebar();
-  }, 150);
-});
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', initializeSidebar);
-
-
-  function toggleDropdown() {
-  const type = document.querySelector('input[name="filterType"]:checked').value;
-  document.getElementById('wardSelect').classList.toggle('hidden', type !== 'ward');
-  document.getElementById('quartersSelect').classList.toggle('hidden', type !== 'quarters');
-
-  // Animation effect on switch
-  const results = document.getElementById('enquiryResults');
-  results.style.opacity = 0;
-  setTimeout(() => {
-    results.innerHTML = 'Please select a ' + type + ' to view enquiries.';
-    results.style.opacity = 1;
-  }, 200);
-}
-
-
-  async function loadUserProfile() {
-    const phone = localStorage.getItem('loggedInPhone');
-
-    try {
-      const user = await fetchAPI('/api/profile', 'POST', { phoneNumber: phone });
-      currentUser = user;
-      document.getElementById('username').textContent = `${user.othernames || ''} ${user.surname || ''}`;
-      document.getElementById('phone').textContent = user.phoneNumber || '';
-      document.getElementById('phoneNo2').textContent = user.phoneNo2 || '';
-      document.getElementById('email').textContent = user.email || '';
-      document.getElementById('town').textContent = user.town || '';
-      document.getElementById('state').textContent = user.state || '';
-      document.getElementById('ward').textContent = user.ward || '';
-      document.getElementById('quarters').textContent = user.quarters || '';
-      document.getElementById('age').textContent = user.age || '';
-      document.getElementById('title').textContent = user.title || 'None';
-      document.getElementById('honTitle').textContent = user.honTitle || 'None';
-      document.getElementById('exitDate').textContent = user.exitDate || 'N/A';
-      document.getElementById('qualifications').textContent = user.qualifications || 'None';
-
-      // Show landing section,
-      showLandingSection();
-    } catch (e) {
-      alert('Profile load failed.');
-      window.location.href = '/';
-    }
+    if (location.hash !== `#${view}`) history.replaceState(null, "", `#${view}`);
+    closeMenu();
+    window.scrollTo(0, 0);
   }
 
-
-  function showLandingSection() {
-    document.getElementById('landingSection').classList.remove('hidden');
-    document.getElementById('profileSection').classList.add('hidden');
-    document.getElementById('receiptSection').classList.add('hidden');
-    document.getElementById('enquirySection').classList.add('hidden');
+  function openMenu() {
+    $("sidebar").classList.add("is-open");
+    $("scrim").hidden = false;
+    $("menuToggle").setAttribute("aria-expanded", "true");
+  }
+  function closeMenu() {
+    $("sidebar").classList.remove("is-open");
+    $("scrim").hidden = true;
+    $("menuToggle").setAttribute("aria-expanded", "false");
   }
 
-  function showSection(sectionId) {
-    // Hide all main sections
-    document.getElementById('landingSection').classList.add('hidden');
-    document.getElementById('profileSection').classList.add('hidden');
-    document.getElementById('receiptSection').classList.add('hidden');
-    document.getElementById('enquirySection').classList.add('hidden');
-    // Show the requested section
-    document.getElementById(sectionId).classList.remove('hidden');
+  async function signOut() {
+    try { await O.api("/logout", { method: "POST" }); } catch (_) { /* ignore */ }
+    try { ["loggedInPhone", "loggedInUserId", "phoneno"].forEach((k) => localStorage.removeItem(k)); } catch (_) {}
+    location.href = "/member.html";
   }
 
-// Month filter (auto populate)
-// Function to ensure user is logged in
-function ensureUserLoggedIn() {
-  const phoneno = getPhoneNumber();
-  
-  if (!phoneno) {
-    // Redirect to login page if no phone number found
-    alert('Session expired. Please log in again.');
-    window.location.href = '/login.html'; // Adjust path as needed
-    return false;
-  }
-  
-  return true;
-}
-
-// Month filter setup
-function getPhoneNumber() {
-  // Try localStorage with different possible keys
-  let phoneno = localStorage.getItem('phoneno') || 
-                localStorage.getItem('loggedInPhone') || 
-                localStorage.getItem('phoneNumber');
-  
-  // If not in localStorage, try sessionStorage
-  if (!phoneno) {
-    phoneno = sessionStorage.getItem('phoneno') || 
-              sessionStorage.getItem('loggedInPhone') || 
-              sessionStorage.getItem('phoneNumber');
-  }
-  
-  // If still not found, try to get from URL parameters
-  if (!phoneno) {
-    const urlParams = new URLSearchParams(window.location.search);
-    phoneno = urlParams.get('phoneno') || urlParams.get('phone');
-  }
-  
-  // If still not found, try to get from a hidden input or data attribute
-  if (!phoneno) {
-    const phoneInput = document.querySelector('input[name="phoneno"]');
-    if (phoneInput) {
-      phoneno = phoneInput.value;
-    }
-  }
-  
-  // If found from alternative source, store it in localStorage for future use
-  if (phoneno) {
-    localStorage.setItem('phoneno', phoneno);
-  }
-  
-  return phoneno;
-}
-
-// Function to ensure user is logged in
-function ensureUserLoggedIn() {
-  const phoneno = getPhoneNumber();
-  
-  if (!phoneno) {
-    // Redirect to login page if no phone number found
-    alert('Session expired. Please log in again.');
-    window.location.href = '/login.html'; // Adjust path as needed
-    return false;
-  }
-  
-  return true;
-}
-
-// Month filter setup
-const monthFilter = document.getElementById('monthFilter');
-const yearFilter = document.getElementById('yearFilter');
-
-// Check if elements exist before proceeding
-if (!monthFilter || !yearFilter) {
-  console.error('Required filter elements not found in DOM');
-  throw new Error('monthFilter or yearFilter elements not found');
-}
-
-// Add default "Select Month" option
-const defaultMonthOption = document.createElement('option');
-defaultMonthOption.value = '';
-defaultMonthOption.textContent = 'Select Month';
-defaultMonthOption.disabled = true;
-defaultMonthOption.selected = true;
-monthFilter.appendChild(defaultMonthOption);
-
-// Populate months (Jan to Dec)
-const monthNames = Array.from({ length: 12 }, (_, i) =>
-  new Date(0, i).toLocaleString('default', { month: 'long' })
-);
-monthNames.forEach((month, i) => {
-  const opt = document.createElement('option');
-  opt.value = String(i + 1).padStart(2, '0'); // e.g., "01"
-  opt.textContent = month;
-  monthFilter.appendChild(opt);
-});
-
-// Add default "Select Year" option
-const defaultYearOption = document.createElement('option');
-defaultYearOption.value = '';
-defaultYearOption.textContent = 'Select Year';
-defaultYearOption.disabled = true;
-defaultYearOption.selected = true;
-yearFilter.appendChild(defaultYearOption);
-
-// Populate years from current year back to 10 years ago
-const now = new Date();
-for (let y = now.getFullYear(); y >= now.getFullYear() - 10; y--) {
-  const opt = document.createElement('option');
-  opt.value = y;
-  opt.textContent = y;
-  yearFilter.appendChild(opt);
-}
-
-// Event listener to fetch total when both month and year are selected
-async function fetchMonthlyTotal() {
-  const month = monthFilter.value;
-  const year = yearFilter.value;
-
-  // Clear previous results if either filter is empty
-  if (!month || !year) {
-    const monthlyTotalEl = document.getElementById('monthlyTotal');
-    if (monthlyTotalEl) {
-      monthlyTotalEl.textContent = '';
-      delete monthlyTotalEl.dataset.amount;
-    }
-    return;
-  }
-
-  const phoneno = getPhoneNumber();
-  if (!phoneno) {
-    alert('Session expired. Please log in again.');
-    window.location.href = '/login.html';
-    return;
-  }
-
-  try {
-    const monthlyTotalEl = document.getElementById('monthlyTotal');
-    if (!monthlyTotalEl) {
-      console.error('monthlyTotal element not found');
-      return;
-    }
-
-    monthlyTotalEl.textContent = 'Loading...';
-
-    const res = await fetch(`/api/member/ledger-entry/monthly-total?month=${year}-${month}&phoneno=${encodeURIComponent(phoneno)}`);
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-
-    const data = await res.json();
-    const total = data.total || 0;
-    const formattedAmount = `₦${(+total).toLocaleString()}`;
-    
-    monthlyTotalEl.textContent = formattedAmount;
-    monthlyTotalEl.dataset.amount = formattedAmount;
-
-  } catch (error) {
-    console.error('Error fetching monthly total:', error);
-    const monthlyTotalEl = document.getElementById('monthlyTotal');
-    if (monthlyTotalEl) {
-      monthlyTotalEl.textContent = '₦0';
-    }
-    alert('Error loading monthly total. Please try again.');
-  }
-}
-
-// Add event listeners
-monthFilter.addEventListener('change', fetchMonthlyTotal);
-yearFilter.addEventListener('change', fetchMonthlyTotal);
-
-// Toggle eye functionality
-let amountVisible = true;
-
-function toggleAmountVisibility() {
-  amountVisible = !amountVisible;
-  const amt = document.getElementById('monthlyTotal');
-  const icon = document.getElementById('eyeIcon');
-  
-  if (amountVisible) {
-    // Show the actual amount
-    amt.textContent = amt.dataset.amount || '₦0';
-    amt.style.color = 'rgb(21 128 61)';
-    amt.style.textShadow = 'none';
-    
-    icon.innerHTML = `
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M2.458 12C3.732 7.943 7.523 5 12 5
-           c4.477 0 8.268 2.943 9.542 7
-           -1.274 4.057-5.065 7-9.542 7
-           -4.477 0-8.268-2.943-9.542-7z" />`;
-  } else {
-    // Save the current amount and hide it
-    amt.dataset.amount = amt.textContent;
-    amt.textContent = '₦••••••';
-    amt.style.color = 'rgb(21 128 61)';
-    amt.style.textShadow = '0 0 8px rgba(0,0,0,0.5)';
-    
-    icon.innerHTML = `
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M13.875 18.825A10.05 10.05 0 0112 19
-           c-4.477 0-8.268-2.943-9.542-7
-           a9.956 9.956 0 012.982-4.419M9.88 9.88a3 3 0 104.24 4.24" />
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M3 3l18 18" />`;
-  }
-}
-
-// Initialize dashboard
-document.addEventListener('DOMContentLoaded', () => {
-  if (!ensureUserLoggedIn()) return;
-
-  yearFilter.value = now.getFullYear();
-  monthFilter.value = String(now.getMonth() + 1).padStart(2, '0');
-
-  fetchMonthlyTotal(); // Load initial data
-});
-
-
-//News nd Events section
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const res = await fetch('/admin/notices');
-    const newsItems = await res.json();
-    const newsList = document.getElementById('newsList');
-    
-    newsList.innerHTML = ''; 
-
-    if (newsItems.length === 0) {
-      newsList.innerHTML = `<li>No news or events available at this time.</li>`;
-      return;
-    }
-
-    newsItems.forEach(item => {
-      const li = document.createElement('li');
-      const date = new Date(item.created_at).toLocaleDateString();
-      li.innerHTML = `<span class="font-medium">${item.title}</span> <span class="text-xs text-gray-400 ml-2">(${date})</span>`;
-      newsList.appendChild(li);
-    });
-  } catch (err) {
-    console.error('Failed to load news:', err);
-    document.getElementById('newsList').innerHTML = '<li>Error loading news.</li>';
-  }
-});
-
-
-  //user edit enable
-  function toggleEdit() {
-    const profileDisplay = document.getElementById('profileDisplay');
-    const profileEditForm = document.getElementById('profileEditForm');
-    
-    if (profileEditForm.style.display === 'none' || profileEditForm.style.display === '') {
-      profileEditForm.style.display = 'block';
-      profileDisplay.style.display = 'none';
-    } else {
-      profileEditForm.style.display = 'none';
-      profileDisplay.style.display = 'block';
-    }
-  }
-
-  //load dropdowns
-  document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('profileEditForm');
-  if (!form) return;
-
-  const titleSelect = form.querySelector('#title');
-  const honTitleSelect = form.querySelector('#honTitle');
-  const qualificationSelect = form.querySelector('#qualifications');
-
-  const loadDropdown = async (endpoint, selectElement, valueKey) => {
-    try {
-      const res = await fetch(`/admin/static/${endpoint}`);
-      const data = await res.json();
-
-      if (!Array.isArray(data)) throw new Error(`Invalid data: ${JSON.stringify(data)}`);
-
-      data.forEach(item => {
-        const val = item[valueKey];
-        const option = document.createElement('option');
-        option.value = val;
-        option.textContent = val;
-        selectElement.appendChild(option);
-      });
-    } catch (err) {
-      console.error(`Error loading ${endpoint}:`, err);
-    }
-  };
-
-  // Load dropdowns
-  loadDropdown('titles', titleSelect, 'title');
-  loadDropdown('hontitles', honTitleSelect, 'Htitle');
-  loadDropdown('qualifications', qualificationSelect, 'qualification');
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('profileEditForm');
-  if (!form) return;
-  const stateSelect = document.getElementById('State');
-
-  fetch('/admin/static/states')
-    .then(res => res.json())
-    .then(states => {
-      if (!Array.isArray(states)) throw new Error('Invalid states response');
-
-      states.forEach(state => {
-        const option = document.createElement('option');
-        option.value = state.statecode; 
-        option.textContent = state.statename; 
-        stateSelect.appendChild(option);
-      });
-    })
-    .catch(err => {
-      console.error('Error loading states:', err);
-    });
-});
-
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const form = document.getElementById('profileEditForm');
-  if (!form) return;
-
-  const quarterDropdown = document.getElementById('Quarters');
-  const wardDropdown = document.getElementById('Ward');
-
-  let wardData = [];
-
-  try {
-    const res = await fetch('/admin/static/wards');
-    wardData = await res.json();
-
-    // Populate quarter dropdown (unique quarters only)
-    const uniqueQuarters = [...new Set(wardData.map(item => item.Quarter))];
-
-    uniqueQuarters.forEach(quarter => {
-      const option = document.createElement('option');
-      option.value = quarter;
-      option.textContent = quarter;
-      quarterDropdown.appendChild(option);
-    });
-
-    // Filter and populate wards when a quarter is selected
-    quarterDropdown.addEventListener('change', () => {
-      const selectedQuarter = quarterDropdown.value;
-
-      // Clear existing ward options except default
-      wardDropdown.innerHTML = '<option value="">Select Ward</option>';
-
-      const filteredWards = wardData.filter(item => item.Quarter === selectedQuarter);
-      filteredWards.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.ward;
-        option.textContent = item.ward;
-        wardDropdown.appendChild(option);
-      });
-    });
-
-  } catch (err) {
-    console.error('Failed to fetch wards:', err);
-  }
-});
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const form = document.getElementById('selectForm');
-  if (!form) return;
-
-  const quarterDropdown = document.getElementById('quartersSelect');
-  const wardDropdown = document.getElementById('wardSelect');
-
-  let wardData = [];
-
-  try {
-    const res = await fetch('/admin/static/wards');
-    wardData = await res.json();
-
-    // Populate quarter dropdown (unique quarters only)
-    const uniqueQuarters = [...new Set(wardData.map(item => item.Quarter))];
-    uniqueQuarters.forEach(quarter => {
-      const option = document.createElement('option');
-      option.value = quarter;
-      option.textContent = quarter;
-      quarterDropdown.appendChild(option);
-    });
-
-    // Populate ward dropdown (all wards regardless of quarter)
-    const uniqueWards = [...new Set(wardData.map(item => item.ward))];
-    uniqueWards.forEach(ward => {
-      const option = document.createElement('option');
-      option.value = ward;
-      option.textContent = ward;
-      wardDropdown.appendChild(option);
-    });
-
-  } catch (err) {
-    console.error('Failed to fetch wards:', err);
-  }
-});
-
-
-
-  function enableEditMode() {
-    document.querySelectorAll('#profileSection select, #profileSection input:not([id=phone]):not([id=age]):not([id=exitDate])')
-      .forEach(el => el.disabled = false);
-    document.getElementById('editBtn').style.display = 'none';
-    document.getElementById('saveBtn').style.display = 'inline-block';
-    document.getElementById('cancelBtn').style.display = 'inline-block';
-  }
-
-  function cancelEdit() {
-    document.querySelectorAll('#profileSection select, #profileSection input')
-      .forEach(el => el.disabled = true);
-    document.getElementById('editBtn').style.display = 'inline-block';
-    document.getElementById('saveBtn').style.display = 'none';
-    document.getElementById('cancelBtn').style.display = 'none';
-    loadUserProfile();
-  }
-
-  async function populateEditForm() {
-    const loggedInPhone = localStorage.getItem('loggedInPhone');
-    console.log('Populating form for phone:', loggedInPhone);
-    
-    if (!loggedInPhone) {
-      alert("You're not logged in.");
-      return false;
-    }
-
-    try {
-      console.log('Fetching profile data...');
-      const res = await fetch('/api/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: loggedInPhone })
-      });
-      
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
-      const profileData = await res.json();
-      console.log('Profile data received:', profileData);
-      
-      const form = document.getElementById('profileEditForm');
-      
-      if (!form) {
-        console.error('Profile edit form not found');
-        return false;
-      }
-
-      // Map of form field IDs to profile data keys
-      const fieldMapping = {
-        'phone': 'phone',
-        'phoneNo2': 'phoneNo2', 
-        'othernames': 'othernames',
-        'surname': 'surname',
-        'email': 'email',
-        'State': 'State',
-        'sex': 'sex',
-        'title': 'title',
-        'honTitle': 'honTitle',
-        'Quarters': 'Quarters',
-        'Ward': 'Ward',
-        'town': 'town',
-        'qualifications': 'qualifications',
-        'profession': 'profession',
-        'exitDate': 'exitDate'
-      };
-
-      // Populate each field
-      Object.entries(fieldMapping).forEach(([fieldId, dataKey]) => {
-        // Try different case variations to find the input
-        let input = form.querySelector(`#${fieldId}`) || 
-                    form.querySelector(`#${fieldId.toLowerCase()}`) || 
-                    form.querySelector(`#${fieldId.toUpperCase()}`);
-        
-        if (input && profileData[dataKey] !== undefined) {
-          // Handle different input types
-          if (input.type === 'checkbox') {
-            input.checked = Boolean(profileData[dataKey]);
-          } else if (input.tagName === 'SELECT') {
-            input.value = profileData[dataKey] || '';
-          } else {
-            input.value = profileData[dataKey] || '';
-          }
-          console.log(`Populated ${fieldId} with:`, profileData[dataKey]);
-        } else if (input) {
-          console.log(`No data found for field: ${fieldId}`);
-        } else {
-          console.log(`Input not found for field: ${fieldId}`);
-        }
-      });
-
-      console.log('Form population completed successfully');
+  function handleAuthError(err) {
+    if (err && err.status === 401) {
+      location.href = "/member.html?expired=1";
       return true;
-    } catch (err) {
-      console.error('Error populating edit form:', err);
-      alert("Failed to load current profile data: " + err.message);
-      return false;
     }
+    return false;
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
-    // Add CSS styles to handle button visibility
-    const style = document.createElement('style');
-    style.textContent = `
-      .profile-button-hidden {
-        display: none !important;
-      }
-      .profile-button-visible {
-        display: inline-block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-      }
-    `;
-    document.head.appendChild(style);
-    // Load and populate form with current data
-    populateEditForm();
-  });
-
-  console.log("UpdateProfile triggered");
-  async function updateProfile(event) {
-    event.preventDefault();
-    const oldPhone = localStorage.getItem('loggedInPhone');
-    if (!oldPhone) return alert("You're not logged in.");
-
-    const form = document.getElementById('profileEditForm');
-
-    // Get current data
-    let currentData;
-    try {
-      const res = await fetch('/api/profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber: oldPhone })
-      });
-      
-      currentData = await res.json();
-    } catch (err) {
-      console.error('Error fetching current profile:', err);
-      return alert("Failed to retrieve current profile.");
+  // ------------------------------------------------------------------ helpers
+  const money = (n) => (state.amountsHidden ? "₦ •••••" : O.naira(n));
+  // Large figure: smaller currency sign and decimals so the number reads first
+  function moneyHtml(n) {
+    if (state.amountsHidden) {
+      return '<span class="cur">₦</span><span class="masked" aria-label="Amount hidden">•••••</span>';
     }
+    const [whole, dec] = Number(n || 0).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).split(".");
+    return `<span class="cur">₦</span>${esc(whole)}<span class="dec">.${esc(dec)}</span>`;
+  }
+  const count = (n) => (n ? `${n} payment${n === 1 ? "" : "s"}` : "No payments yet");
+  const sum = (rows) => rows.reduce((t, r) => t + Number(r.amount || 0), 0);
+  const fullName = (me) => [me.title, me.othernames, me.surname].filter(Boolean).join(" ");
 
-    // Compare form values to current data
-    const updatedData = { oldPhoneNumber: oldPhone };
-    const fields = [
-      'phone', 'phoneNo2', 'othernames', 'surname','email', 'State', 'sex', 'title',
-      'honTitle', 'Quarters', 'Ward', 'town',
-      'qualifications', 'profession', 'exitDate'
+  function lookupLabel(list, key, labelKey, value) {
+    const hit = list.find((x) => String(x[key]) === String(value));
+    return hit ? hit[labelKey] : value;
+  }
+
+  function fillSelect(select, items, placeholder) {
+    const current = select.value;
+    select.innerHTML = `<option value="">${esc(placeholder)}</option>` +
+      items.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join("");
+    if (current) select.value = current;
+  }
+
+  // ------------------------------------------------------------------ profile
+  async function loadProfile() {
+    const me = await O.api("/api/me");
+    state.me = me;
+    const first = (me.othernames || "").split(/\s+/)[0];
+    $("username").textContent = first ? `, ${first}` : "";
+    $("sideName").textContent = fullName(me) || "Member";
+    $("sidePhone").textContent = `Member ID ${me.id} · ${me.phoneNumber}`;
+    renderProfile();
+  }
+
+  function renderProfile() {
+    const me = state.me;
+    const sexLabel = { M: "Male", F: "Female" }[me.sex] || me.sex;
+    const rows = [
+      ["Full name", [me.othernames, me.surname].filter(Boolean).join(" ")],
+      ["Member ID", me.id],
+      ["Phone number", me.phoneNumber],
+      ["Second phone", me.phoneNo2],
+      ["Email", me.email],
+      ["Sex", sexLabel],
+      ["Age", me.age != null ? `${me.age}` : ""],
+      ["Title", me.title],
+      ["Honorary title", me.honTitle],
+      ["Quarter", me.quarters],
+      ["Ward", me.ward],
+      ["Town", me.town],
+      ["State", me.stateName],
+      ["Qualification", me.qualifications],
+      ["Profession", me.profession],
+      ["Member since", O.formatDate(me.memberSince)],
+      ["Exit date", O.formatDate(me.exitDate)],
     ];
+    $("profileList").innerHTML = rows
+      .map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${v ? esc(v) : '<span class="muted">Not provided</span>'}</dd></div>`)
+      .join("");
+  }
 
-    fields.forEach(field => {
-      const input = form.querySelector(`#${field}`) || form.querySelector(`#${field.toLowerCase()}`) || form.querySelector(`#${field.toUpperCase()}`);
-      if (input && input.value.trim() !== (currentData[field] || '').trim()) {
-        updatedData[field] = input.value.trim();
+  async function loadLookups() {
+    const get = (t) => O.api(`/admin/static/${t}`).catch(() => []);
+    const [titles, hontitles, qualifications, states, wards] = await Promise.all([
+      get("titles"), get("hontitles"), get("qualifications"), get("states"), get("wards"),
+    ]);
+    Object.assign(state.lookups, { titles, hontitles, qualifications, states });
+    state.wards = Array.isArray(wards) ? wards : [];
+
+    fillSelect($("pf-title"), titles.map((x) => [x.title, x.title]), "None");
+    fillSelect($("pf-honTitle"), hontitles.map((x) => [x.Htitle, x.Htitle]), "None");
+    fillSelect($("pf-qualifications"), qualifications.map((x) => [x.qualification, x.qualification]), "None");
+    fillSelect($("pf-state"), states.map((x) => [x.statecode, x.statename]), "Select state");
+
+    const quarters = [...new Set(state.wards.map((w) => w.Quarter).filter(Boolean))].sort();
+    const wardsAll = [...new Set(state.wards.map((w) => w.ward).filter(Boolean))].sort();
+    fillSelect($("pf-quarters"), quarters.map((q) => [q, q]), "Select quarter");
+    fillSelect($("quartersSelect"), quarters.map((q) => [q, q]), "Select quarter");
+    fillSelect($("wardSelect"), wardsAll.map((w) => [w, w]), "Select ward");
+  }
+
+  function wardsForQuarter(quarter, keep) {
+    const list = state.wards.filter((w) => w.Quarter === quarter).map((w) => [w.ward, w.ward]);
+    // Keep the member's existing ward visible even if the lookup table has changed
+    if (keep && !list.some(([w]) => w === keep)) list.unshift([keep, keep]);
+    fillSelect($("pf-ward"), list, "Select ward");
+  }
+
+  function openEdit() {
+    const me = state.me;
+    const set = (id, v) => { const el = $(id); if (el) el.value = v ?? ""; };
+    const ensureOption = (id, v) => {
+      const sel = $(id);
+      if (v && ![...sel.options].some((o) => o.value === String(v))) {
+        sel.insertAdjacentHTML("beforeend", `<option value="${esc(v)}">${esc(v)}</option>`);
       }
-    });
+      sel.value = v ?? "";
+    };
+    set("pf-surname", me.surname);
+    set("pf-othernames", me.othernames);
+    set("pf-phone", me.phoneNumber);
+    set("pf-phoneNo2", me.phoneNo2);
+    set("pf-email", me.email);
+    set("pf-sex", me.sex);
+    ensureOption("pf-title", me.title);
+    ensureOption("pf-honTitle", me.honTitle);
+    ensureOption("pf-qualifications", me.qualifications);
+    ensureOption("pf-state", me.state);
+    ensureOption("pf-quarters", me.quarters);
+    wardsForQuarter(me.quarters, me.ward);
+    $("pf-ward").value = me.ward ?? "";
+    set("pf-town", me.town);
+    set("pf-profession", me.profession);
+    set("pf-exitDate", O.isoDate(me.exitDate));
 
-    if (Object.keys(updatedData).length === 1) {
-      alert("No changes detected.");
-      toggleEdit(false);
+    O.clearFieldErrors($("profileEditForm"));
+    O.hideAlert("profileAlert");
+    $("profileDisplay").hidden = true;
+    $("profileEditForm").hidden = false;
+    $("editProfileBtn").hidden = true;
+    $("pf-surname").focus();
+  }
+
+  function closeEdit() {
+    $("profileEditForm").hidden = true;
+    $("profileDisplay").hidden = false;
+    $("editProfileBtn").hidden = false;
+  }
+
+  async function saveProfile(e) {
+    e.preventDefault();
+    const form = $("profileEditForm");
+    O.clearFieldErrors(form);
+    O.hideAlert("profileAlert");
+
+    const data = Object.fromEntries([...new FormData(form).entries()].map(([k, v]) => [k, String(v).trim()]));
+    const required = { surname: "Enter your surname.", othernames: "Enter your other names.", sex: "Select your sex.", quarters: "Select your quarter.", ward: "Select your ward.", state: "Select your state.", town: "Enter your town." };
+    let bad = null;
+    for (const [k, msg] of Object.entries(required)) {
+      if (!data[k]) { O.setFieldError(`pf-${k}`, msg); bad = bad || `pf-${k}`; }
+    }
+    if (data.phoneNo2 && !O.validPhone(data.phoneNo2)) { O.setFieldError("pf-phoneNo2", "Enter a Nigerian mobile number, or leave this blank."); bad = bad || "pf-phoneNo2"; }
+    if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { O.setFieldError("pf-email", "Enter a valid email address, or leave this blank."); bad = bad || "pf-email"; }
+    if (bad) { $(bad).focus(); return; }
+
+    // Only send what changed
+    const me = state.me;
+    const current = {
+      surname: me.surname, othernames: me.othernames, phoneNo2: me.phoneNo2, email: me.email, sex: me.sex,
+      title: me.title, honTitle: me.honTitle, quarters: me.quarters, ward: me.ward, state: me.state, town: me.town,
+      qualifications: me.qualifications, profession: me.profession, exitDate: O.isoDate(me.exitDate),
+    };
+    const changes = {};
+    Object.keys(current).forEach((k) => {
+      if ((data[k] ?? "") !== String(current[k] ?? "")) changes[k] = data[k] ?? "";
+    });
+    if (Object.keys(changes).length === 0) {
+      O.showAlert("profileAlert", "Nothing has changed yet.", "info");
       return;
     }
 
+    const btn = $("saveProfileBtn");
+    O.setBusy(btn, true, "Saving…");
     try {
-      const res = await fetch('/api/update-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData)
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        //Update localStorage phone number before reload
-        if (updatedData.phone && updatedData.phone !== oldPhone) {
-          localStorage.setItem('loggedInPhone', updatedData.phone);
-        }
-
-        alert("Profile updated successfully!");
-        toggleEdit(false);
-        loadUserProfile(); // Now pulls updated phone
-      } else {
-        alert(data.message || "Failed to update profile.");
-      }
+      await O.api("/api/me", { method: "PUT", body: changes });
+      await loadProfile();
+      closeEdit();
+      O.showAlert("pageAlert", "Profile saved.", "success");
+      setTimeout(() => O.hideAlert("pageAlert"), 4000);
     } catch (err) {
-      console.error('Update failed:', err);
-      alert("Something went wrong updating profile.");
+      if (handleAuthError(err)) return;
+      if (err.field && $(`pf-${err.field}`)) O.setFieldError(`pf-${err.field}`, err.message);
+      else O.showAlert("profileAlert", err.message, "error");
+    } finally {
+      O.setBusy(btn, false);
     }
   }
 
-  // Store all fetched receipts for advanced filtering and exporting
-  let allReceipts = [];
+  // ------------------------------------------------------------------ receipts
+  async function loadReceipts() {
+    const rows = await O.api("/api/me/receipts");
+    state.receipts = Array.isArray(rows) ? rows : [];
+    state.filtered = state.receipts.slice();
+    renderTotals();
+    renderRecent();
+    renderReceipts();
+  }
 
-  // Show receipts section and load data
-  async function showReceipts() {
-    showSection('receiptSection');
+  function renderTotals() {
+    const now = new Date();
+    const y = String(now.getFullYear());
+    const ym = `${y}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const all = state.receipts;
+    const inYear = all.filter((r) => (r.transdate || "").startsWith(y));
+    const inMonth = all.filter((r) => (r.transdate || "").startsWith(ym));
+    $("totalAll").innerHTML = moneyHtml(sum(all));
+    $("totalYear").innerHTML = moneyHtml(sum(inYear));
+    $("totalMonth").innerHTML = moneyHtml(sum(inMonth));
+    $("yearMeta").textContent = count(inYear.length);
+    $("monthMeta").textContent = count(inMonth.length);
+    $("yearLabel").textContent = `In ${y}`;
+    $("monthLabel").textContent = `In ${now.toLocaleDateString("en-GB", { month: "long" })}`;
+    $("totalMeta").textContent = all.length
+      ? `${all.length} payment${all.length === 1 ? "" : "s"} recorded. Last on ${O.formatDate(all[0].transdate)}.`
+      : "No payments recorded yet.";
+  }
+
+  const titleCase = (t) => String(t || "").toLowerCase().replace(/\b([a-z])/g, (m) => m.toUpperCase());
+  const PAY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+
+  function renderRecent() {
+    const rows = state.receipts.slice(0, 5);
+    $("recentBody").innerHTML = rows.length
+      ? rows.map((r) => `<li class="pay-row">
+          <span class="pay-icon">${PAY_ICON}</span>
+          <span class="pay-main"><strong>${esc(titleCase(r.remark))}</strong><time datetime="${esc(r.transdate)}">${esc(O.formatDate(r.transdate))}</time></span>
+          <span class="pay-amount">${esc(money(r.amount))}</span>
+        </li>`).join("")
+      : '<li class="pay-empty">No payments recorded yet. Payments appear here once the treasurer records them.</li>';
+  }
+
+  function renderReceipts() {
+    const rows = state.filtered;
+    $("receiptBody").innerHTML = rows.length
+      ? rows.map((r) => `<tr>
+          <td>${esc(O.formatDate(r.transdate))}</td>
+          <td class="wrap">${esc(titleCase(r.remark))}</td>
+          <td class="num">${esc(money(r.amount))}</td>
+          <td class="muted">${esc(O.formatDate(r.paydate))}</td>
+        </tr>`).join("")
+      : `<tr><td colspan="4" class="muted">${state.receipts.length ? "No payments in this date range." : "No payments recorded yet."}</td></tr>`;
+    $("receiptFoot").innerHTML = rows.length
+      ? `<tr><td colspan="2">${rows.length} payment${rows.length === 1 ? "" : "s"}</td><td class="num">${esc(money(sum(rows)))}</td><td></td></tr>`
+      : "";
+  }
+
+  function applyFilter(e) {
+    if (e) e.preventDefault();
+    const from = $("fromDate").value;
+    const to = $("toDate").value;
+    state.filtered = state.receipts.filter((r) => {
+      const d = (r.transdate || "").slice(0, 10);
+      return (!from || d >= from) && (!to || d <= to);
+    });
+    renderReceipts();
+  }
+
+  function printStatement() {
+    if (!window.OCDAReports) {
+      O.showAlert("pageAlert", "The PDF tools didn't load. Refresh the page and try again.", "error");
+      return;
+    }
+    O.hideAlert("pageAlert");
+    window.OCDAPDF.run(
+      $("printReceipts"),
+      () => window.OCDAReports.memberStatement({ me: state.me, rows: state.filtered, from: $("fromDate").value, to: $("toDate").value }),
+      (msg) => O.showAlert("pageAlert", msg, "error"),
+    );
+  }
+
+  function downloadCsv() {
+    const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const lines = [["Date", "Description", "Amount", "Recorded"].map(q).join(",")]
+      .concat(state.filtered.map((r) => [r.transdate, r.remark, r.amount, r.paydate].map(q).join(",")));
+    const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `ocda-receipts-${state.me ? state.me.phoneNumber : "member"}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  // ------------------------------------------------------------------ notices
+  async function loadNotices() {
+    const mini = $("newsList");
+    const full = $("noticeFullList");
     try {
-      const data = await fetchAPI(`/api/ledger-entry/${phone}`);
-      allReceipts = data;
-      renderReceipts(allReceipts);
-    } catch {
-      document.getElementById('receiptTable').innerHTML = 'Could not load receipts.';
-    }
-  }
-
-  // Render receipts in the table
-  function renderReceipts(receipts) {
-    if (!receipts || receipts.length === 0) {
-      document.getElementById('receiptTable').innerHTML = '<p>No transactions found.</p>';
+      const items = await O.api("/admin/notices");
+      state.notices = Array.isArray(items) ? items : [];
+    } catch (_) {
+      mini.innerHTML = '<li class="muted">Notices couldn\'t be loaded.</li>';
+      full.innerHTML = '<li class="empty">Notices couldn\'t be loaded. Refresh the page to try again.</li>';
       return;
     }
-
-    const table = `
-      <div id="receiptTable" class="bg-white rounded-xl p-5 font-sans text-[15px] text-gray-800 shadow-md max-h-[400px] overflow-y-auto transition-all duration-300 ease-in-out">
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="bg-blue-100 text-blue-900">
-              <th class="py-2 px-4 text-left">#</th>
-              <th class="py-2 px-4 text-left">Date</th>
-              <th class="py-2 px-4 text-left">Amount (₦)</th>
-              <th class="py-2 px-4 text-left">Remark</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${receipts.map((r, i) => `
-              <tr class="hover:bg-blue-50 transition-all">
-                <td class="py-2 px-4">${i + 1}</td>
-                <td class="py-2 px-4">${formatDate(r.transdate)}</td>
-                <td class="py-2 px-4">₦${Number(r.amount).toLocaleString()}</td>
-                <td class="py-2 px-4">${r.remark}</td>
-              </tr>
-            `).join('')}
-            <tr class="bg-green-100 font-semibold">
-              <td class="py-2 px-4 text-green-900" colspan="2">Total Receipts: ${receipts.length}</td>
-              <td class="py-2 px-4 text-green-900" colspan="2">₦${receipts.reduce((sum, r) => sum + Number(r.amount), 0).toLocaleString()}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    `;
-
-    document.getElementById('receiptTable').innerHTML = table;
+    const items = state.notices;
+    mini.innerHTML = items.length
+      ? items.slice(0, 4).map((n) => {
+          const d = new Date(n.created_at);
+          const day = isNaN(d) ? "" : d.getDate();
+          const mon = isNaN(d) ? "" : d.toLocaleDateString("en-GB", { month: "short" });
+          return `<li><button type="button" class="mini-notice" data-notice="${esc(n.id)}">
+            <time class="date-chip" datetime="${esc(O.isoDate(n.created_at))}"><b>${esc(day)}</b><span>${esc(mon)}</span></time>
+            <span class="mini-notice-text"><strong>${esc(n.title)}</strong><small>${n.type === "event" ? "Event" : "Notice"} · ${esc(O.formatDate(n.created_at, { year: "numeric", month: "long" }))}</small></span>
+          </button></li>`;
+        }).join("")
+      : '<li class="muted">No notices yet.</li>';
+    full.innerHTML = items.length
+      ? items.map((n) => {
+          const id = `pn-${esc(n.id)}`;
+          return `<li class="notice" id="${id}">
+            <button type="button" aria-expanded="false" aria-controls="${id}-body">
+              <time datetime="${esc(O.isoDate(n.created_at))}">${esc(O.formatDate(n.created_at))}</time>
+              <span class="notice-title">${esc(n.title)}</span>
+              <span class="notice-kind" data-kind="${esc(n.type)}">${n.type === "event" ? "Event" : "Notice"}</span>
+            </button>
+            <div class="notice-body" id="${id}-body" hidden>${esc(n.content || "No further details.")}</div>
+          </li>`;
+        }).join("")
+      : '<li class="empty">No notices or events have been posted yet.</li>';
   }
 
-
-  // Filter receipts by date range
-  function filterReceipts() {
-    const from = document.getElementById('fromDate').value;
-    const to = document.getElementById('toDate').value;
-
-    if (!from && !to) {
-      renderReceipts(allReceipts);
-      return;
-    }
-
-    const filtered = allReceipts.filter(r => {
-      const d = new Date(r.transdate);
-      const fromDate = from ? new Date(from) : null;
-      const toDate = to ? new Date(to) : null;
-      return (!fromDate || d >= fromDate) && (!toDate || d <= toDate);
-    });
-
-    renderReceipts(filtered);
+  function setNotice(btn, open) {
+    btn.setAttribute("aria-expanded", String(open));
+    $(btn.getAttribute("aria-controls")).hidden = !open;
   }
 
-  // Clear receipts view and filters
-  function clearReceipts() {
-    // Clear HTML content of the receipt table and result container
-    document.getElementById('receiptTable').innerHTML = '';
-    document.getElementById('enquiryResults').innerHTML = '<p>Select a ward or quarters to begin.</p>'; // <-- also clear enquiry result container
-
-    // Reset input fields
-    document.getElementById('fromDate').value = '';
-    document.getElementById('toDate').value = '';
-    document.getElementById('enquiryFrom').value = '';
-    document.getElementById('enquiryTo').value = '';
-    document.getElementById('wardSelect').value = '';
-    document.getElementById('quartersSelect').value = '';
-
-    // Hide or reset all other sections (if applicable)
-    showSection('landingSection'); // switch to landing or default section
+  // One notice open at a time
+  function toggleNotice(btn, forceOpen) {
+    const open = forceOpen === true || btn.getAttribute("aria-expanded") !== "true";
+    if (open) $("noticeFullList").querySelectorAll('button[aria-expanded="true"]').forEach((b) => setNotice(b, false));
+    setNotice(btn, open);
   }
 
-  // Export filtered receipts as CSV
-  function exportReceiptsToCSV() {
-    const from = document.getElementById('fromDate').value;
-    const to = document.getElementById('toDate').value;
-    const filtered = filterByDateRange(from, to);
-
-    let csv = 'Date,Amount,Remark\n';
-    filtered.forEach(r => {
-      const row = `${r.transdate},${r.amount},${r.remark}`;
-      csv += row + '\n';
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'receipts.csv';
-    link.click();
-    URL.revokeObjectURL(url);
+  function openNotice(id) {
+    show("notices");
+    const item = $(`pn-${id}`);
+    if (!item) return;
+    toggleNotice(item.querySelector("button"), true);
+    item.scrollIntoView({ block: "start" });
   }
 
-  // Print/Download PDF of receipts
-function printReceiptsPDF() {
-  const fromDate = document.getElementById('fromDate').value;
-  const toDate = document.getElementById('toDate').value;
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-
-  let filteredReceipts = allReceipts || [];
-
-  if (fromDate || toDate) {
-    filteredReceipts = filteredReceipts.filter(r => {
-      const date = new Date(r.transdate);
-      const iso = date.toISOString().split('T')[0];
-      if (fromDate && toDate) return iso >= fromDate && iso <= toDate;
-      if (fromDate) return iso >= fromDate;
-      if (toDate) return iso <= toDate;
-    });
-  }
-
-  let dateHeading;
-  if (!fromDate && !toDate) {
-    dateHeading = `Date: ${today.toLocaleDateString('en-US', {
-      year: 'numeric', month: 'long', day: 'numeric'
-    })}`;
-  } else if (fromDate === toDate) {
-    dateHeading = `Date: ${fromDate}`;
-  } else {
-    dateHeading = `FROM ${fromDate || todayStr} TO ${toDate || todayStr}`;
-  }
-
-  const phone = localStorage.getItem('loggedInPhone') || '';
-  const userName = document.getElementById('username')?.textContent || 'User';
-
-  const html = `
-    <html>
-      <head>
-        <title>OCDA Receipt</title>
-        <style>
-          body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 40px;
-            background: #fff;
-            color: #222;
-          }
-          h1, h2, h4 {
-            text-align: center;
-            margin-bottom: 10px;
-          }
-          h1 {
-            font-size: 24px;
-            font-weight: bold;
-          }
-          h2 {
-            font-size: 20px;
-            color: #555;
-          }
-          h4 {
-            margin-top: 0;
-            font-size: 16px;
-            font-weight: normal;
-            color: #777;
-          }
-          hr {
-            margin: 20px 0;
-            border: none;
-            border-top: 2px solid #888;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-          }
-          th, td {
-            padding: 12px;
-            border: 1px solid #ccc;
-            text-align: left;
-          }
-          th {
-            background-color: #f4f4f4;
-            font-weight: bold;
-          }
-          .no-data {
-            text-align: center;
-            color: #999;
-            margin-top: 40px;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>OYIN-AKOKO COMMUNITY DEVELOPMENT ASSOCIATION (OCDA)</h1>
-        <h2>Receipt for ${userName} (${phone})</h2>
-        <h4>${dateHeading}</h4>
-        <hr />
-        ${filteredReceipts.length === 0
-          ? `<p class="no-data">No transactions found.</p>`
-          : `
-            <table>
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Amount (₦)</th>
-                  <th>Remark</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${filteredReceipts.map(r => `
-                  <tr>
-                    <td>${formatDate(r.transdate)}</td>
-                    <td>${r.amount}</td>
-                    <td>${r.remark}</td>
-                  </tr>
-                `).join('')}
-            <th> Total Amount</th>
-          
-          <td>₦${filteredReceipts.reduce((sum, r) => sum + Number(r.amount), 0).toLocaleString()}</td>
-              </tbody>
-            </table>
-          `}
-      </body>
-    </html>
-  `;
-
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(html);
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
-}
-
-
-  // Utility to filter by current range
-  function filterByDateRange(from, to) {
-    const fromDate = from ? new Date(from) : null;
-    const toDate = to ? new Date(to) : null;
-
-    return allReceipts.filter(r => {
-      const d = new Date(r.transdate);
-      return (!fromDate || d >= fromDate) && (!toDate || d <= toDate);
-    });
-  }
-
-
-  async function toggleEnquiry() {
-    showSection('enquirySection');
-    const wards = ["Select Ward", "Awanji", "Ayagama", "Ayasu/Ayaya", "Igoho", "Igonu", "Igukan", "IkanOlotu", "Okoko", "Uhon"];
-    const quarters = ["Select Quarters", "Ogotun", "Ogunna", "Ogosi"];
-
-    wardSelect.innerHTML = wards.map(w => `<option value="${w}">${w}</option>`).join('');
-    quartersSelect.innerHTML = quarters.map(q => `<option value="${q}">${q}</option>`).join('');
-
-    wardSelect.onchange = () => fetchEnquiry('ward', wardSelect.value);
-    quartersSelect.onchange = () => fetchEnquiry('quarters', quartersSelect.value);
-  }
-
-  function toggleDropdown() {
+  // ------------------------------------------------------------------ community totals
+  function syncEnquiryType() {
     const type = document.querySelector('input[name="filterType"]:checked').value;
-    document.getElementById('wardSelect').classList.toggle('hidden', type !== 'ward');
-    document.getElementById('quartersSelect').classList.toggle('hidden', type !== 'quarters');
+    $("wardField").hidden = type !== "ward";
+    $("quarterField").hidden = type !== "quarters";
+    // Belt and braces: never show both pickers, even if a stylesheet overrides [hidden]
+    $("wardField").style.display = type === "ward" ? "" : "none";
+    $("quarterField").style.display = type === "quarters" ? "" : "none";
   }
 
-
-  //  Now define fetchEnquiry
-async function fetchEnquiry(type, value) {
-  console.log("fetchEnquiry called");
-  const fromDate = document.getElementById('enquiryFrom').value;
-  const toDate = document.getElementById('enquiryTo').value;
-
-  try {
-    const queryParams = new URLSearchParams();
-    if (fromDate) queryParams.append('from', fromDate);
-    if (toDate) queryParams.append('to', toDate);
-
-    const res = await fetch(`/api/enquiry/${type}/${encodeURIComponent(value)}?${queryParams.toString()}`);
-    const data = await res.json();
-
-    if (!res.ok || !Array.isArray(data) || data.length === 0) {
-      document.getElementById('enquiryResults').innerHTML = '<p>No results found.</p>';
+  async function runEnquiry(e) {
+    e.preventDefault();
+    const type = document.querySelector('input[name="filterType"]:checked').value;
+    const value = type === "ward" ? $("wardSelect").value : $("quartersSelect").value;
+    const out = $("enquiryResults");
+    if (!value) {
+      out.innerHTML = `<p class="alert alert-info is-visible">Select a ${type === "ward" ? "ward" : "quarter"} first.</p>`;
       return;
     }
+    const params = new URLSearchParams();
+    if ($("enquiryFrom").value) params.set("from", $("enquiryFrom").value);
+    if ($("enquiryTo").value) params.set("to", $("enquiryTo").value);
 
-    let html = '';
-
-    if (type === 'ward') {
-      const total = data.reduce((sum, r) => sum + Number(r.amount), 0);
-      html = `
-        <h2 class="text-xl font-bold mb-2">Selected Ward: ${value}</h2>
-        <p class="text-lg font-semibold text-green-700 mb-4">Total = ₦${total.toLocaleString()}</p>
-      `;
-    } else if (type === 'quarters') {
-      const wardGroups = {};
-      data.forEach(r => {
-        const ward = r.ward || r.wardname || 'Unknown';
-        if (!wardGroups[ward]) wardGroups[ward] = [];
-        wardGroups[ward].push(r);
-      });
-
-      let quarterTotal = 0;
-      html = `<h2 class="text-xl font-bold mb-4">Quarter: ${value}</h2>`;
-
-      Object.entries(wardGroups).forEach(([ward, records]) => {
-        const wardTotal = records.reduce((sum, r) => sum + Number(r.amount), 0);
-        quarterTotal += wardTotal;
-        html += `
-          <div class="overflow-x-auto rounded-lg shadow-md my-6">
-            <table class="min-w-full divide-y divide-gray-300 bg-white">
-              <thead class="bg-gray-100">
-                <tr>
-                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Ward</th>
-                  <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Total</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200">
-                <tr>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${ward}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-green-700 font-semibold">₦${wardTotal.toLocaleString()}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        `;
-      });
-
-      html += `<p class="mt-6 text-xl font-bold text-blue-700">Quarter Total = ₦${quarterTotal.toLocaleString()}</p>`;
-    }
-
-    document.getElementById('enquiryResults').innerHTML = html;
-
-  } catch (err) {
-    console.error('Fetch enquiry failed:', err);
-    document.getElementById('enquiryResults').innerHTML = '<p class="text-red-500">Error fetching records.</p>';
-  }
-}
-
-  //  Bind event listeners AFTER fetchEnquiry is defined
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('applyEnquiryBtn').addEventListener('click', () => {
-      const type = document.querySelector('input[name="filterType"]:checked')?.value;
-      const value = type === 'ward'
-        ? document.getElementById('wardSelect').value
-        : document.getElementById('quartersSelect').value;
-
-      if (!value) {
-        alert(`Please select a ${type}.`);
+    out.innerHTML = '<div class="skeleton-line" style="width:50%"></div>';
+    try {
+      const rows = await O.api(`/api/enquiry/${type}/${encodeURIComponent(value)}?${params}`);
+      if (!rows.length) {
+        out.innerHTML = `<p class="empty">No contributions recorded for ${esc(value)} in this period.</p>`;
         return;
       }
-
-      fetchEnquiry(type, value);
-    });
-  });
-
-  async function logout() {
-    await fetch('/logout', { method: 'POST', credentials: 'include' });
-    localStorage.clear();
-    window.location.href = '/';
+      const total = rows.reduce((t, r) => t + Number(r.amount || 0), 0);
+      const label = type === "ward" ? "Ward" : `Wards in ${esc(value)}`;
+      out.innerHTML = `
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>${label}</th><th class="num">Contributing members</th><th class="num">Total</th></tr></thead>
+            <tbody>${rows.map((r) => `<tr><td>${esc(r.ward || "Unassigned")}</td><td class="num">${esc(r.members)}</td><td class="num">${esc(O.naira(r.amount))}</td></tr>`).join("")}</tbody>
+            ${rows.length > 1 ? `<tfoot><tr><td colspan="2">Total for ${esc(value)}</td><td class="num">${esc(O.naira(total))}</td></tr></tfoot>` : ""}
+          </table>
+        </div>`;
+    } catch (err) {
+      if (handleAuthError(err)) return;
+      out.innerHTML = `<p class="alert alert-error is-visible">${esc(err.message)}</p>`;
+    }
   }
 
-  loadUserProfile();
+  // ------------------------------------------------------------------ boot
+  document.addEventListener("DOMContentLoaded", async () => {
+    document.querySelectorAll(".portal-nav [data-view]").forEach((b) => b.addEventListener("click", () => show(b.dataset.view)));
+    document.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => show(b.dataset.goto)));
+    $("menuToggle").addEventListener("click", openMenu);
+    $("scrim").addEventListener("click", closeMenu);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
+    $("logoutBtn").addEventListener("click", signOut);
 
+    $("editProfileBtn").addEventListener("click", openEdit);
+    $("cancelEditBtn").addEventListener("click", closeEdit);
+    $("profileEditForm").addEventListener("submit", saveProfile);
+    $("pf-quarters").addEventListener("change", (e) => wardsForQuarter(e.target.value));
+
+    $("receiptFilter").addEventListener("submit", applyFilter);
+    $("clearFilter").addEventListener("click", () => { $("fromDate").value = ""; $("toDate").value = ""; applyFilter(); });
+    $("printReceipts").addEventListener("click", printStatement);
+    $("csvReceipts").addEventListener("click", downloadCsv);
+
+    const syncAmountToggle = () => {
+      const btn = $("toggleAmounts");
+      btn.setAttribute("aria-pressed", String(state.amountsHidden));
+      btn.classList.toggle("is-hidden", state.amountsHidden);
+      $("toggleAmountsLabel").textContent = state.amountsHidden ? "Show" : "Hide";
+    };
+    syncAmountToggle();
+    $("toggleAmounts").addEventListener("click", () => {
+      state.amountsHidden = !state.amountsHidden;
+      try { localStorage.setItem("ocdaHideAmounts", state.amountsHidden ? "1" : "0"); } catch (_) {}
+      syncAmountToggle();
+      renderTotals(); renderRecent(); renderReceipts();
+    });
+
+    $("newsList").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-notice]");
+      if (b) openNotice(b.dataset.notice);
+    });
+    $("noticeFullList").addEventListener("click", (e) => {
+      const b = e.target.closest("button[aria-controls]");
+      if (b) toggleNotice(b);
+    });
+
+    document.querySelectorAll('input[name="filterType"]').forEach((r) => r.addEventListener("change", syncEnquiryType));
+    syncEnquiryType();
+    $("enquiryForm").addEventListener("submit", runEnquiry);
+
+    show((location.hash || "#overview").slice(1));
+
+    try {
+      await loadProfile();
+    } catch (err) {
+      if (!handleAuthError(err)) O.showAlert("pageAlert", err.message, "error");
+      return;
+    }
+    loadNotices();
+    loadLookups();
+    loadReceipts().catch((err) => {
+      if (handleAuthError(err)) return;
+      $("recentBody").innerHTML = `<li class="pay-empty">${esc(err.message)}</li>`;
+      $("receiptBody").innerHTML = `<tr><td colspan="4" class="muted">${esc(err.message)}</td></tr>`;
+    });
+  });
+})();

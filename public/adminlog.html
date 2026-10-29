@@ -1,83 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OCDA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administrator sign in — OCDA</title>
+  <meta name="description" content="Records, dues, expenses and reports for the OCDA executive. Access is limited to authorised administrators.">
+  <meta name="theme-color" content="#081b29">
+  <link rel="icon" href="/photos/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/photos/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/site.css">
 </head>
-<link rel="stylesheet" href="styles/index.css">
-<link rel="icon" type="image/png" href="/photos/favicon.ico" sizes="32x32">
-<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-
-
 <body>
-  <!--- header design -->
-  <header class="hicad-header">
-    <a href="index.html" class="hicad-logo">
-      <img src="/photos/OCDA-Logo3.png" alt="ocda-logo" class="ocda-logoIdentity">
+  <div class="auth">
+    <aside class="auth-aside">
+      <div class="auth-aside-inner">
+        <a class="auth-back" href="/">&larr; Back to the website</a>
+        <div class="auth-aside-body">
+          <a href="/" aria-label="OCDA home"><img src="/photos/ocda-seal-480.webp" alt="OCDA seal" width="168" height="168"></a>
+          <p class="auth-org">Oyin-Akoko Community Development Association</p>
+          <h2>Association administration.</h2>
+          <p>Records, dues, expenses and reports for the OCDA executive. Access is limited to authorised administrators.</p>
+        </div>
+        <small>&copy; <span data-year></span> OCDA</small>
+      </div>
+      <svg class="hills" viewBox="0 0 1440 150" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <path fill="#0e2a3e" d="M0 74 C 150 26, 290 30, 420 60 S 690 18, 860 46 S 1170 8, 1440 50 V150 H0Z"/>
+    <path fill="#163a54" d="M0 106 C 190 72, 360 94, 520 100 S 820 64, 1000 90 S 1300 72, 1440 94 V150 H0Z"/>
+  </svg>
+    </aside>
+    <main class="auth-main" id="main">
+      <div class="auth-card">
+        <a class="brand auth-mobile-brand" href="/">
+      <img src="/photos/ocda-seal-96.webp" alt="" width="44" height="44">
+      <span class="brand-name"><strong>OCDA</strong><span>Oyin-Akoko Community Development Association</span></span>
     </a>
-
-    <nav class="hicad-navbar" id="navbar">
-      <a href="aboutus.html">About Us</a>
-      <a href="news.html">News & Events</a>
-      <a href="contact.html">Contact Us</a>
-      <a href="member.html">Members</a>
-      <a href="adminlog.html" class="home-active">Admin</a>
-      <a href="faq.html">FAQ</a>
-    </nav>
-
-    <div class="hamburger" id="hamburger">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-  </header>
-
-  <div class="form-wrapper">
-    <div class="container-form">
-      <form id="adminLoginForm" class="form active">
-        <h2 class="title">OCDA Admin Login</h2>
-
-        <div class="form-group">
-          <label for="loginEmail">Email<span class="required">*</span></label>
-          <input type="email" id="loginEmail" name="email" placeholder="Email" required
-            class="w-full p-3 border rounded" />
-        </div>
-
-        <div class="form-group" style="position: relative;">
-          <label for="loginPassword">Password<span class="required">*</span></label>
-          <input type="password" id="loginPassword" name="password" placeholder="Password" required
-            class="w-full p-3 border rounded" />
-          <span id="togglePassword" style="position: absolute; top: 36px; right: 10px; cursor: pointer;">
-            <!-- Eye Open SVG -->
-            <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <!-- Eye Closed SVG -->
-            <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-              <path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-8-11-8a21.7 21.7 0 014.6-5.94M1 1l22 22" />
-              <path d="M9.5 9.5a3 3 0 004 4" />
-            </svg>
-          </span>
-        </div>
-
-        <button type="submit" class="submit-btn">Login</button>
-        <p class="text-sm text-center  mt-4" style="margin-top: 3%; color: #fff;">Only authorized admins are allowed.
-        </p>
-
-        <div style="text-align: right; margin-bottom: 2%; margin-top: 2%;">
-          <a style="color: var(--main-color);" href="#" onclick="handleForgotPasswordClick()">Forgot Password?</a>
-        </div>
-      </form>
-    </div>
+        <h1>Administrator sign in</h1>
+        <p class="lede">Only authorised OCDA administrators can sign in here.</p>
+        <div id="adminAlert" class="alert"></div>
+        <form id="adminLoginForm" novalidate>
+          <div class="field">
+              <label for="loginEmail">Email address <span class="req" aria-hidden="true">*</span></label>
+              <input type="email" id="loginEmail" name="email" autocomplete="username" required>
+              <div class="error" id="loginEmailError"></div>
+            </div>
+          <div class="field">
+              <label for="loginPassword">Password <span class="req" aria-hidden="true">*</span></label>
+              <div class="password-wrap">
+                <input type="password" id="loginPassword" name="password" autocomplete="current-password" required>
+                <button type="button" class="password-toggle" data-password-toggle="loginPassword" aria-label="Show password" aria-pressed="false"><svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-closed" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.7 21.7 0 0 1 4.6-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a21.8 21.8 0 0 1-2.16 3.19M1 1l22 22"/><path d="M9.5 9.5a3 3 0 0 0 4 4"/></svg></button>
+              </div>
+              
+              <div class="error" id="loginPasswordError"></div>
+            </div>
+          <div class="auth-row">
+            <span></span>
+            <a href="/adminforgotpassword.html" id="adminForgotLink">Forgot your password?</a>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+        </form>
+        <p class="auth-foot">Looking for your member account? <a href="/member.html">Member sign in</a></p>
+      </div>
+    </main>
   </div>
-
+  <script src="/script/site.js" defer></script>
+  <script src="/script/adminlog.js" defer></script>
 </body>
-<script src="script/index.js"></script>
-<script src="script/adminlog.js"></script>
-
 </html>

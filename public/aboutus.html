@@ -2,98 +2,127 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>About OCDA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About OCDA — Oyin-Akoko Community Development Association</title>
+  <meta name="description" content="Who we are, our mission, vision and core values.">
+  <meta name="theme-color" content="#081b29">
+  <link rel="icon" href="/photos/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/photos/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/site.css">
 </head>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="styles/index.css">
-<link rel="icon" type="image/png" href="/photos/favicon.ico" sizes="32x32">
-<link  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-
-
 <body>
-  <!--- header design -->
-  <header class="hicad-header">
-    <a href="index.html" class="hicad-logo">
-      <img src="/photos/OCDA-Logo3.png" alt="ocda-logo" class="ocda-logoIdentity">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+    <a class="brand" href="/">
+      <img src="/photos/ocda-seal-96.webp" alt="" width="44" height="44">
+      <span class="brand-name"><strong>OCDA</strong><span>Oyin-Akoko Community Development Association</span></span>
     </a>
-
-    <nav class="hicad-navbar" id="navbar">
-      <a href="aboutus.html"  class="home-active">About Us</a>
-      <a href="news.html" >News & Events</a>
-      <a href="contact.html" >Contact Us</a>
-      <a href="member.html">Members</a>
-      <a href="adminlog.html" >Admin</a>
-      <a href="faq.html">FAQ</a>
+    <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <a href="/aboutus.html" aria-current="page">About us</a>
+      <a href="/news.html">News &amp; events</a>
+      <a href="/contact.html">Contact us</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/adminlog.html">Admin</a>
+      <a class="btn btn-nav btn-sm" href="/member.html">Member sign in</a>
     </nav>
-
-    <div class="hamburger" id="hamburger">
-      <span></span>
-      <span></span>
-      <span></span>
     </div>
   </header>
 
-<section class="py-12 bg-white text-gray-800 fade-in-section">
-  <div class="max-w-5xl mx-auto px-4 container">
-    <h1 class="text-3xl md:text-4xl font-bold text-center mb-4">
-      About Oyin-Akoko Community Development Association (OCDA)
-    </h1>
-    <p class="text-center text-lg text-gray-600 mb-10">
-      United for progress. Dedicated to Oyin’s future.
-    </p>
+  <main id="main">
+    <section class="about">
+      <div class="about-wrap">
+        <header class="about-head reveal">
+          <h1>About Oyin-Akoko Community Development Association (OCDA)</h1>
+          <p>United for progress. Dedicated to Oyin&rsquo;s future.</p>
+        </header>
 
-    <div class="bg-gray-100 rounded-2xl shadow-md p-6 mb-8 about-content  glass-card fade-in-section">
-      <h2 class="text-2xl font-semibold mb-2">Who We Are</h2>
-      <p>
-        The Oyin-Akoko Community Development Association (OCDA) was established to unite the elites of our community and work closely with His Royal Majesty, Kabiyesi, in achieving holistic and sustainable development for Oyin-Akoko.
-        It serves as a platform that brings together all well-meaning Oyin indigenes to foster collaboration, unity, and coordinated action.
-      </p>
+        <article class="about-card reveal">
+          <h2>Who we are</h2>
+          <p>The Oyin-Akoko Community Development Association (OCDA) was established to unite the elites of our community and work closely with His Royal Majesty, Kabiyesi, in achieving holistic and sustainable development for Oyin-Akoko.</p>
+          <p>It serves as a platform that brings together all well-meaning Oyin indigenes to foster collaboration, unity and coordinated action.</p>
+        </article>
+
+        <div class="about-pair">
+          <article class="about-card reveal reveal-right">
+            <h2>Our mission</h2>
+            <p>To create a unified structure that coordinates the efforts of all Oyin sons and daughters, drives the growth and development of Oyin-Akoko, and ensures consistent funding for impactful community projects.</p>
+          </article>
+          <article class="about-card reveal reveal-left">
+            <h2>Our vision</h2>
+            <p>To transform Oyin-Akoko into a model town through inclusive development, strategic partnerships and sustained community empowerment.</p>
+          </article>
+        </div>
+
+        <article class="about-card reveal reveal-left">
+          <h2>Our core values</h2>
+          <ul class="about-values">
+            <li><strong>Unity</strong> We believe in the strength of collective effort.</li>
+            <li><strong>Service</strong> We serve with passion and a deep sense of responsibility.</li>
+            <li><strong>Transparency</strong> We uphold openness and accountability in our actions.</li>
+            <li><strong>Commitment</strong> We are dedicated to the long-term development of our town, Oyin-Akoko.</li>
+          </ul>
+        </article>
+
+        <article class="about-card reveal">
+          <h2>What we do</h2>
+          <ul class="about-list">
+            <li>Mobilise and coordinate community stakeholders</li>
+            <li>Initiate and fund development projects</li>
+            <li>Engage with local authorities and traditional leadership</li>
+            <li>Foster unity and shared identity among Oyin indigenes</li>
+            <li>Promote education, health and economic empowerment</li>
+          </ul>
+        </article>
+
+        <div class="about-cta reveal">
+          <p>Every Oyin son and daughter has a place in the association.</p>
+          <a class="btn btn-primary" href="/signup.html">Become a member</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <a class="brand" href="/">
+            <img src="/photos/ocda-seal-96.webp" alt="" width="44" height="44">
+            <span class="brand-name"><strong>OCDA</strong><span>Oyin-Akoko Community Development Association</span></span>
+          </a>
+          <p style="margin-top:1rem;max-width:36ch">Secretariat: Oloyin Palace, Oyin-Akoko, Ondo State, Nigeria.</p>
+        </div>
+        <div>
+          <h3>The association</h3>
+          <ul>
+            <li><a href="/aboutus.html">About OCDA</a></li>
+            <li><a href="/news.html">News &amp; events</a></li>
+            <li><a href="/faq.html">Questions</a></li>
+            <li><a href="/contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Members</h3>
+          <ul>
+            <li><a href="/member.html">Sign in</a></li>
+            <li><a href="/signup.html">Register</a></li>
+            <li><a href="/forgotpassword.html">Reset password</a></li>
+            <li><a href="/adminlog.html">Administrator sign in</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>&copy; <span data-year></span> Oyin-Akoko Community Development Association</span>
+        <span>Unity &middot; Service &middot; Transparency &middot; Commitment</span>
+      </div>
     </div>
-
-    <div class="bg-gray-100 rounded-2xl shadow-md p-6 mb-8 mission-values glass-card fade-in-section fade-in-right">
-      <h2 class="text-2xl font-semibold mb-2">Our Mission</h2>
-      <p>
-        To create a unified structure that coordinates the efforts of all Oyin sons and daughters, drives the growth and development of Oyin-Akoko, and ensures consistent funding for impactful community projects.
-      </p>
-    </div>
-
-    <div class="bg-gray-100 rounded-2xl shadow-md p-6 mb-8 vision-values glass-card fade-in-section">
-      <h2 class="text-2xl font-semibold mb-2">Our Vision</h2>
-      <p>
-        To transform Oyin-Akoko into a model town through inclusive development, strategic partnerships, and sustained community empowerment.
-      </p>
-    </div>
-
-    <div class="bg-gray-100 rounded-2xl shadow-md p-6 mb-8 core-values glass-card fade-in-section fade-in-left">
-      <h2 class="text-2xl font-semibold mb-4">Our Core Values</h2>
-      <ul class="text-gray-700">
-        <li><strong>Unity:</strong> We believe in the strength of collective efforts.</li>
-        <li><strong>Service:</strong> We serve with passion and a deep sense of responsibility.</li>
-        <li><strong>Transparency:</strong> We uphold openness and accountability in our actions.</li>
-        <li><strong>Commitment:</strong> We are dedicated to the long-term development of our town; Oyin-Akoko.</li>
-      </ul>
-    </div>
-
-    <div class="bg-gray-100 rounded-2xl shadow-md p-6 what-we-do glass-card fade-in-section">
-      <h2 class="text-2xl font-semibold mb-4">What We Do</h2>
-      <ul class="text-gray-700">
-        <li>Mobilize and coordinate community stakeholders</li>
-        <li>Initiate and fund development projects</li>
-        <li>Engage with local authorities and traditional leadership</li>
-        <li>Foster unity and shared identity among Oyin indigenes</li>
-        <li>Promote education, health, and economic empowerment</li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/emailjs-com/3.2.0/email.min.js"></script>
-
+  </footer>
+  <script src="/script/site.js" defer></script>
 </body>
-<script src="script/index.js"></script>
-
 </html>
-
- 
