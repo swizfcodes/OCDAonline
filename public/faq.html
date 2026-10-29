@@ -1,88 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OCDA - FAQ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Questions — OCDA</title>
+  <meta name="description" content="Answers to common questions about OCDA membership, dues and accounts.">
+  <meta name="theme-color" content="#081b29">
+  <link rel="icon" href="/photos/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/photos/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/site.css">
 </head>
-<link rel="stylesheet" href="styles/index.css">
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-<link rel="icon" type="image/png" href="/photos/favicon.ico" sizes="32x32">
-
-<style>
-  ul li::before { content: "" !important; }
-  .faq-answer { display: none; }
-  .faq-item.open .faq-answer { display: block; }
-  .faq-item.open .faq-chevron { transform: rotate(180deg); }
-  .faq-chevron { transition: transform 0.2s ease; }
-</style>
-
 <body>
-  <header class="hicad-header">
-    <a href="index.html" class="hicad-logo">
-      <img src="/photos/OCDA-Logo3.png" alt="ocda-logo" class="ocda-logoIdentity">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+    <a class="brand" href="/">
+      <img src="/photos/ocda-seal-96.webp" alt="" width="44" height="44">
+      <span class="brand-name"><strong>OCDA</strong><span>Oyin-Akoko Community Development Association</span></span>
     </a>
-    <nav class="hicad-navbar" id="navbar">
-      <a href="aboutus.html">About Us</a>
-      <a href="news.html">News & Events</a>
-      <a href="contact.html">Contact Us</a>
-      <a href="member.html">Members</a>
-      <a href="adminlog.html">Admin</a>
-      <a href="faq.html" class="home-active">FAQ</a>
+    <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <a href="/aboutus.html">About us</a>
+      <a href="/news.html">News &amp; events</a>
+      <a href="/contact.html">Contact us</a>
+      <a href="/faq.html" aria-current="page">FAQ</a>
+      <a href="/adminlog.html">Admin</a>
+      <a class="btn btn-nav btn-sm" href="/member.html">Member sign in</a>
     </nav>
-    <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
   </header>
 
-  <section class="support-section fade-in-section py-8">
-    <div class="container mx-auto px-4 max-w-3xl">
-      <h2 class="text-xl md:text-2xl lg:text-3xl font-bold mb-6">Frequently Asked Questions (FAQ)</h2>
-      <div id="faqList" class="space-y-3">
-        <p class="text-gray-500 text-sm">Loading FAQ...</p>
-      </div>
+  <section class="page-head">
+    <div class="wrap">
+      <h1>Questions and answers</h1>
+      <p>Membership, dues and your account. If your question isn't here, contact the secretariat.</p>
     </div>
+    <svg class="hills" viewBox="0 0 1440 150" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <path fill="#0e2a3e" d="M0 74 C 150 26, 290 30, 420 60 S 690 18, 860 46 S 1170 8, 1440 50 V150 H0Z"/>
+    <path fill="#163a54" d="M0 106 C 190 72, 360 94, 520 100 S 820 64, 1000 90 S 1300 72, 1440 94 V150 H0Z"/>
+    <path fill="#f4f7fa" d="M0 132 C 240 116, 480 142, 720 130 S 1200 116, 1440 134 V150 H0Z"/>
+  </svg>
   </section>
 
-  <script>
-    async function loadFaq() {
-      const list = document.getElementById('faqList');
-      try {
-        const res = await fetch('/admin/faq');
-        const data = await res.json();
-
-        if (!data.length) {
-          list.innerHTML = '<p class="text-gray-500 text-sm">No FAQ entries available yet.</p>';
-          return;
-        }
-
-        list.innerHTML = data.map((item, i) => `
-          <div class="faq-item border rounded-lg bg-white shadow-sm" id="faq-${i}">
-            <button class="w-full text-left px-5 py-4 flex justify-between items-center font-semibold text-gray-800 hover:bg-gray-50 transition-colors"
-              onclick="toggleFaq(${i})">
-              <span>${item.question}</span>
-              <svg class="faq-chevron w-5 h-5 text-gray-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </button>
-            <div class="faq-answer px-5 pb-4 text-gray-700 text-sm leading-relaxed border-t">
-              <div class="pt-3">${item.answer.replace(/\n/g, '<br>')}</div>
-            </div>
+  <main id="main">
+    <section class="section">
+      <div class="wrap">
+        <div class="measure" style="max-width:820px">
+          <div class="faq-list" id="faqList" aria-live="polite">
+            <div class="skeleton-line" style="width:60%"></div><div class="skeleton-line" style="width:75%"></div>
           </div>
-        `).join('');
-      } catch (err) {
-        console.error('FAQ load error:', err);
-        list.innerHTML = '<p class="text-red-500 text-sm">Unable to load FAQ at this time.</p>';
-      }
-    }
+          <p class="muted" style="margin-top:2rem">Still need help? <a href="/contact.html">Send us a message</a>.</p>
+        </div>
+      </div>
+    </section>
+  </main>
 
-    function toggleFaq(index) {
-      const item = document.getElementById(`faq-${index}`);
-      item.classList.toggle('open');
-    }
-
-    document.addEventListener('DOMContentLoaded', loadFaq);
-  </script>
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <a class="brand" href="/">
+            <img src="/photos/ocda-seal-96.webp" alt="" width="44" height="44">
+            <span class="brand-name"><strong>OCDA</strong><span>Oyin-Akoko Community Development Association</span></span>
+          </a>
+          <p style="margin-top:1rem;max-width:36ch">Secretariat: Oloyin Palace, Oyin-Akoko, Ondo State, Nigeria.</p>
+        </div>
+        <div>
+          <h3>The association</h3>
+          <ul>
+            <li><a href="/aboutus.html">About OCDA</a></li>
+            <li><a href="/news.html">News &amp; events</a></li>
+            <li><a href="/faq.html">Questions</a></li>
+            <li><a href="/contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Members</h3>
+          <ul>
+            <li><a href="/member.html">Sign in</a></li>
+            <li><a href="/signup.html">Register</a></li>
+            <li><a href="/forgotpassword.html">Reset password</a></li>
+            <li><a href="/adminlog.html">Administrator sign in</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>&copy; <span data-year></span> Oyin-Akoko Community Development Association</span>
+        <span>Unity &middot; Service &middot; Transparency &middot; Commitment</span>
+      </div>
+    </div>
+  </footer>
+  <script src="/script/site.js" defer></script>
+  <script src="/script/faq.js" defer></script>
 </body>
-<script src="script/index.js"></script>
 </html>

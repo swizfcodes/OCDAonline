@@ -1,109 +1,37 @@
-const isLocal = window.location.hostname === 'localhost';
-const BASE_URL = isLocal ? 'http://localhost:5500' : 'https://oyinakokocda.org'; 
-  
-  function showError(fieldId, message) {
-    const errorElement = document.getElementById(fieldId + 'Error');
-    const inputElement = document.getElementById(fieldId);
-      
-    if (errorElement) {
-      errorElement.textContent = message;
-      errorElement.style.display = 'block';
-      inputElement.style.borderColor = '#e74c3c';
-    }
+/* Administrator password reset: email + new password. */
+document.addEventListener("DOMContentLoaded", () => {
+  const O = window.OCDA;
+  const form = document.getElementById("adminForgotPasswordForm");
+
+  const prefill = sessionStorage.getItem("prefillEmail");
+  if (prefill) {
+    document.getElementById("email").value = prefill;
+    sessionStorage.removeItem("prefillEmail");
   }
 
-  function clearError(fieldId) {
-    const errorElement = document.getElementById(fieldId + 'Error');
-    const inputElement = document.getElementById(fieldId);
-      
-    if (errorElement) {
-      errorElement.style.display = 'none';
-      inputElement.style.borderColor = '#e1e5e9';
-    }
-  }
-
-
-  // Load and prefill email when the page loads
-  document.addEventListener('DOMContentLoaded', function() {
-    // Get the prefilled email from sessionStorage
-    const prefillEmail = sessionStorage.getItem('prefillEmail');
-    const emailInput = document.getElementById('email');
-    
-    if (emailInput && prefillEmail) {
-      emailInput.value = prefillEmail;
-      // Optional: Clear the stored value after using it
-      sessionStorage.removeItem('prefillEmail');
-    }
-  });
-
-
-  document.getElementById('adminForgotPasswordForm').addEventListener('submit', async function (e) {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    
-    const email = document.getElementById('email').value.trim();
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    let isValid = true;
-    clearError('email');
-    clearError('newPassword');
-    clearError('confirmPassword');
-    
-    // Enhanced phone number validation
-    if (!email) {
-      showError('email', 'Email is required');
-      isValid = false;
-    } else if (email.length < 10) {
-      showError('email', 'Please enter a valid email address');
-      isValid = false;
-    }
-    
-    if (!newPassword || newPassword.length < 6) {
-      showError('newPassword', 'Password must be at least 6 characters');
-      isValid = false;
-    }
-    
-    if (newPassword !== confirmPassword) {
-      showError('confirmPassword', 'Passwords do not match');
-      isValid = false;
-    }
-    
-    if (!isValid) return;
-    
-    // Show loading state
-    const submitButton = e.target.querySelector('button[type="submit"]');
-    const originalText = submitButton?.textContent;
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = 'Resetting...';
-    }
-    
+    O.clearFieldErrors(form);
+    O.hideAlert("resetAlert");
+
+    const email = form.email.value.trim();
+    const newPassword = form.newPassword.value;
+    const confirmPassword = form.confirmPassword.value;
+
+    let ok = true;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { O.setFieldError("email", "Enter the email address on your account."); ok = false; }
+    if (newPassword.length < 8) { O.setFieldError("newPassword", "Use at least 8 characters."); ok = false; }
+    if (newPassword !== confirmPassword) { O.setFieldError("confirmPassword", "The passwords don't match."); ok = false; }
+    if (!ok) return;
+
+    const btn = form.querySelector("button[type=submit]");
+    O.setBusy(btn, true, "Updating…");
     try {
-      const res = await fetch(`${BASE_URL}/admin/reset-adminpassword`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, newPassword })
-      });
-      
-      const data = await res.json();
-      
-      if (res.ok) {
-        alert('Password reset successful!');
-        // Clear the form
-        document.getElementById('adminForgotPasswordForm').reset();
-        // Redirect back to login or member page
-        window.location.href = 'adminlog.html';
-      } else {
-        alert(data.message || 'Failed to reset password');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again later.');
-    } finally {
-      // Reset button state
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = originalText;
-      }
+      await O.api("/admin/reset-adminpassword", { method: "POST", body: { email, newPassword } });
+      location.href = "/adminlog.html?reset=1";
+    } catch (err) {
+      O.setBusy(btn, false);
+      O.showAlert("resetAlert", err.message, "error");
     }
   });
+});

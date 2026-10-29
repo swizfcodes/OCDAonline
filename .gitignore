@@ -1,3 +1,5 @@
-backhround-remover.html
+node_modules/
 .env
-node_modules
+_archive/
+*.log
+.DS_Store

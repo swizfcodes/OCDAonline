@@ -1,109 +1,38 @@
-const isLocal = window.location.hostname === 'localhost';
-const BASE_URL = isLocal ? 'http://localhost:5500' : 'https://oyinakokocda.org'; 
-  
-  function showError(fieldId, message) {
-    const errorElement = document.getElementById(fieldId + 'Error');
-    const inputElement = document.getElementById(fieldId);
-      
-    if (errorElement) {
-      errorElement.textContent = message;
-      errorElement.style.display = 'block';
-      inputElement.style.borderColor = '#e74c3c';
-    }
+/* Member password reset: phone number + new password. */
+document.addEventListener("DOMContentLoaded", () => {
+  const O = window.OCDA;
+  const form = document.getElementById("forgotPasswordForm");
+
+  const prefill = sessionStorage.getItem("prefillPhoneNumber");
+  if (prefill) {
+    document.getElementById("phoneNumber").value = prefill;
+    sessionStorage.removeItem("prefillPhoneNumber");
   }
 
-  function clearError(fieldId) {
-    const errorElement = document.getElementById(fieldId + 'Error');
-    const inputElement = document.getElementById(fieldId);
-      
-    if (errorElement) {
-      errorElement.style.display = 'none';
-      inputElement.style.borderColor = '#e1e5e9';
-    }
-  }
-
-
-  // Load and prefill phone number when the page loads
-  document.addEventListener('DOMContentLoaded', function() {
-    // Get the prefilled phone number from sessionStorage
-    const prefillPhoneNumber = sessionStorage.getItem('prefillPhoneNumber');
-    const phoneInput = document.getElementById('phoneNumber');
-    
-    if (phoneInput && prefillPhoneNumber) {
-      phoneInput.value = prefillPhoneNumber;
-      // Optional: Clear the stored value after using it
-      sessionStorage.removeItem('prefillPhoneNumber');
-    }
-  });
-
-
-  document.getElementById('forgotPasswordForm').addEventListener('submit', async function (e) {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    
-    const phoneNumber = document.getElementById('phoneNumber').value.trim();
-    const newPassword = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    let isValid = true;
-    clearError('phoneNumber');
-    clearError('newPassword');
-    clearError('confirmPassword');
-    
-    // Enhanced phone number validation
-    if (!phoneNumber) {
-      showError('phoneNumber', 'Phone number is required');
-      isValid = false;
-    } else if (phoneNumber.length < 10) {
-      showError('phoneNumber', 'Please enter a valid phone number');
-      isValid = false;
-    }
-    
-    if (!newPassword || newPassword.length < 6) {
-      showError('newPassword', 'Password must be at least 6 characters');
-      isValid = false;
-    }
-    
-    if (newPassword !== confirmPassword) {
-      showError('confirmPassword', 'Passwords do not match');
-      isValid = false;
-    }
-    
-    if (!isValid) return;
-    
-    // Show loading state
-    const submitButton = e.target.querySelector('button[type="submit"]');
-    const originalText = submitButton?.textContent;
-    if (submitButton) {
-      submitButton.disabled = true;
-      submitButton.textContent = 'Resetting...';
-    }
-    
+    O.clearFieldErrors(form);
+    O.hideAlert("resetAlert");
+
+    const phoneNumber = form.phoneNumber.value.trim();
+    const newPassword = form.newPassword.value;
+    const confirmPassword = form.confirmPassword.value;
+
+    let ok = true;
+    if (!phoneNumber) { O.setFieldError("phoneNumber", "Enter your phone number."); ok = false; }
+    else if (phoneNumber.replace(/\D/g, "").length < 10) { O.setFieldError("phoneNumber", "Enter a valid phone number."); ok = false; }
+    if (newPassword.length < 6) { O.setFieldError("newPassword", "Use at least 6 characters."); ok = false; }
+    if (newPassword !== confirmPassword) { O.setFieldError("confirmPassword", "The passwords don't match."); ok = false; }
+    if (!ok) return;
+
+    const btn = form.querySelector("button[type=submit]");
+    O.setBusy(btn, true, "Updating…");
     try {
-      const res = await fetch(`${BASE_URL}/api/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phoneNumber, newPassword })
-      });
-      
-      const data = await res.json();
-      
-      if (res.ok) {
-        alert('Password reset successful!');
-        // Clear the form
-        document.getElementById('forgotPasswordForm').reset();
-        // Redirect back to login or member page
-        window.location.href = 'member.html';
-      } else {
-        alert(data.message || 'Failed to reset password');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again later.');
-    } finally {
-      // Reset button state
-      if (submitButton) {
-        submitButton.disabled = false;
-        submitButton.textContent = originalText;
-      }
+      await O.api("/api/reset-password", { method: "POST", body: { phoneNumber, newPassword } });
+      location.href = "/member.html?reset=1";
+    } catch (err) {
+      O.setBusy(btn, false);
+      O.showAlert("resetAlert", err.message, "error");
     }
   });
+});

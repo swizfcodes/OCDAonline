@@ -1,46 +1,49 @@
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const res = await fetch('/admin/notices');
-    const newsItems = await res.json();
-    const newsList = document.getElementById('newsList');
-    
-    newsList.innerHTML = '';
+/* News & events: expandable list of notices. */
+document.addEventListener("DOMContentLoaded", async () => {
+  const list = document.getElementById("newsList");
+  if (!list) return;
+  const { escapeHtml, formatDate, isoDate } = window.OCDA;
 
-    if (!Array.isArray(newsItems) || newsItems.length === 0) {
-      newsList.innerHTML = `<li class="text-gray-500">No news or events available at this time.</li>`;
+  try {
+    const items = await window.OCDA.api("/admin/notices");
+    if (!Array.isArray(items) || items.length === 0) {
+      list.innerHTML = '<li class="empty">No notices or events have been posted yet. Check back soon.</li>';
       return;
     }
 
-    newsItems.forEach((item, index) => {
-      const li = document.createElement('li');
-      const date = new Date(item.created_at).toLocaleDateString(undefined, {
-        year: 'numeric', month: 'short', day: 'numeric'
-      });
+    list.innerHTML = items.map((n) => {
+      const id = `notice-${escapeHtml(n.id)}`;
+      return `
+      <li class="notice" id="${id}">
+        <button type="button" aria-expanded="false" aria-controls="${id}-body">
+          <time datetime="${escapeHtml(isoDate(n.created_at))}">${escapeHtml(formatDate(n.created_at))}</time>
+          <span class="notice-title">${escapeHtml(n.title)}</span>
+          <span class="notice-kind" data-kind="${escapeHtml(n.type)}">${n.type === "event" ? "Event" : "Notice"}</span>
+        </button>
+        <div class="notice-body" id="${id}-body" hidden>${escapeHtml(n.content || "No further details.")}</div>
+      </li>`;
+    }).join("");
 
-      li.innerHTML = `
-        <div class="border rounded shadow">
-          <button class="w-full text-left px-4 py-2 bg-gray-100 font-medium hover:bg-gray-200 transition" data-toggle="news-${index}">
-            ${item.title}
-            <span class="text-xs text-gray-400 float-right">(${date})</span>
-          </button>
-          <div id="news-${index}" class="px-4 py-3 hidden bg-white text-sm text-gray-700 border-t">
-            ${item.content || '<i>No content provided</i>'}
-          </div>
-        </div>
-      `;
-      newsList.appendChild(li);
+    const toggle = (btn, open) => {
+      btn.setAttribute("aria-expanded", String(open));
+      document.getElementById(btn.getAttribute("aria-controls")).hidden = !open;
+    };
+
+    // One notice open at a time
+    list.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[aria-controls]");
+      if (!btn) return;
+      const opening = btn.getAttribute("aria-expanded") !== "true";
+      if (opening) list.querySelectorAll('button[aria-expanded="true"]').forEach((b) => toggle(b, false));
+      toggle(btn, opening);
     });
 
-    // Attach event listeners to toggle buttons
-    document.querySelectorAll('[data-toggle]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-toggle');
-        const contentDiv = document.getElementById(targetId);
-        contentDiv.classList.toggle('hidden');
-      });
-    });
+    // Open the notice linked from the home page, if any
+    const target = location.hash && document.getElementById(location.hash.slice(1));
+    const first = target ? target.querySelector("button") : list.querySelector("button");
+    if (first) toggle(first, true);
+    if (target) target.scrollIntoView({ block: "start" });
   } catch (err) {
-    console.error('Failed to load news:', err);
-    document.getElementById('newsList').innerHTML = '<li class="text-red-500">Error loading news.</li>';
+    list.innerHTML = '<li class="empty">Notices couldn\'t be loaded. Refresh the page to try again.</li>';
   }
 });

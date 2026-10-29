@@ -4,249 +4,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard</title>
+  <title>Admin console — OCDA</title>
+  <meta name="robots" content="noindex">
+  <script>
+    // Send signed-out visitors and view-only admins to the right place before anything renders
+    (function () {
+      var t = localStorage.getItem("adminToken");
+      if (!t || t === "null") { location.replace("/adminlog.html"); return; }
+      if (localStorage.getItem("adminRole") === "VIEWADMIN") location.replace("/viewadmin-dashboard.html");
+    })();
+  </script>
+  <link rel="icon" href="/photos/favicon.ico" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/admin-theme.css">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" type="image/png" href="/photos/favicon.ico" sizes="32x32">
-  <link rel="stylesheet" href="styles/index.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-
-    html {
-      font-size: 85% !important;
-    }
-
-    .active-tab {
-      background-color: #1f2937;
-      color: white;
-    }
-
-    .pdf-export-enhanced {
-      background-color: white;
-      color: #000;
-      font-size: 14px;
-      font-family: Arial, sans-serif;
-    }
-
-    .pdf-export-enhanced table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .pdf-export-enhanced th,
-    .pdf-export-enhanced td {
-      border: 1px solid #333;
-      padding: 8px;
-      text-align: left;
-    }
-
-    .pdf-export-enhanced th {
-      background-color: #f0f0f0;
-    }
-
-    .collapsible-content {
-      display: none;
-    }
-
-    .collapsible-content.show {
-      display: block;
-    }
-
-    .toggle-header {
-      user-select: none;
-    }
-
-    .toggle-header:hover {
-      background-color: #f3f4f6;
-    }
-
-    ul li::before {
-      content: "" !important;
-    }
-
-    .toggle-table.hidden {
-      display: none !important;
-    }
-
-    label {
-      color: black !important;
-    }
-
-    h2 {
-      color: black !important;
-    }
-
-    .form-wrapper,
-    .container-form {
-      background: none !important;
-    }
-
-    @media (max-width: 4000px) and (min-width: 1700px) {
-      html {
-        font-size: 100% !important;
-      }
-
-      label {
-        font-size: 100% !important;
-      }
-    }
-
-    @media (max-width: 1045px) and (min-width: 600px) {
-      .p-6 {
-        padding-top: 7% !important;
-      }
-
-      html {
-        font-size: 80% !important;
-      }
-    }
-
-    @media (max-width: 768px) {
-      html {
-        font-size: 85% !important;
-      }
-    }
-
-    @media (max-width: 600px) {
-      html {
-        font-size: 70% !important;
-      }
-
-      @media (max-width: 468px) {
-        .email-wrap {
-          word-break: break-word;
-          max-width: 70px;
-        }
-
-        .gap-2 {
-          gap: 0.5rem !important;
-        }
-
-        .gap-4 {
-          gap: 0.4rem !important;
-        }
-
-        .px-3 {
-          padding-left: 0.15rem !important;
-          padding-right: 0.15rem !important;
-        }
-
-        .p-6 {
-          padding: 0.5rem !important;
-          padding-top: 15% !important;
-        }
-
-        .p-4 {
-          padding: 0.4rem !important;
-        }
-
-        .px-4 {
-          padding-left: 0.1rem !important;
-          padding-right: 0.1rem !important;
-        }
-      }
-
-      .p-6 {
-        padding: 0.5rem !important;
-        padding-top: 12% !important;
-      }
-    }
+    .pdf-export-enhanced { background-color: white; color: #000; font-size: 14px; font-family: Arial, sans-serif; }
+    .pdf-export-enhanced table { width: 100%; border-collapse: collapse; }
+    .pdf-export-enhanced th, .pdf-export-enhanced td { border: 1px solid #333; padding: 8px; text-align: left; }
+    .pdf-export-enhanced th { background-color: #f0f0f0; }
+    .collapsible-content { display: none; }
+    .collapsible-content.show { display: block; }
+    .toggle-header { user-select: none; }
+    .toggle-header:hover { background-color: #f1f5f8; }
+    .toggle-table.hidden { display: none !important; }
+    @media (max-width: 468px) { .email-wrap { word-break: break-word; max-width: 90px; } }
   </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="admin-ui min-h-screen">
 
-  <!-- Header / Topbar -->
-  <header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between p-4 bg-gray-100 shadow-md lg:hidden">
-    <div class="text-xl font-bold text-gray-800">OCDA Admin</div>
-
-    <!-- Hamburger Menu Button -->
-    <button id="menuToggle" class="p-2 text-gray-800 focus:outline-none">
-      <!-- Hamburger Icon -->
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-        stroke-linejoin="round">
-        <path d="M4 6h16M4 12h16M4 18h16" />
-      </svg>
+  <!-- Mobile top bar -->
+  <header class="admin-topbar fixed top-0 left-0 w-full z-40 flex items-center justify-between lg:hidden">
+    <a class="admin-brand" href="/admin-dashboard.html">
+      <img src="/photos/ocda-seal-96.webp" alt="" width="38" height="38">
+      <span><strong>OCDA Admin</strong></span>
+    </a>
+    <button id="menuToggle" type="button" aria-label="Open menu" aria-controls="sidebar">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
     </button>
   </header>
 
   <div class="flex flex-col lg:flex-row h-screen overflow-hidden">
     <!-- Sidebar -->
-    <aside id="sidebar" class="bg-white w-64 h-full border-r border-gray-800 z-50 overflow-y-auto 
-             fixed lg:relative transform -translate-x-full lg:translate-x-0 
-             transition-transform duration-300">
-      <div class="p-6 text-xl font-bold text-gray-800 border-b">OCDA Admin</div>
-      <nav class="p-4 space-y-3">
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="member-list">OCDA Members</button>
-        <button id="adminTabBtn" class="w-full px-4 py-2 text-left rounded tab-button"
-          data-tab="create-admin">Administrators</button>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="ledger-entry">Ledger Entry</button>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="ocda-expense">OCDA Expense</button>
-        <!-- Receipt Main Tab -->
-        <div class="relative" id="receiptTabWrapper">
-          <button id="receiptTabBtn"
-            class="w-full px-4 py-2 text-left rounded text-black flex justify-between items-center">
-            <span><i data-lucide="file-text" class="w-4 h-4 inline-block mr-2"></i> Reports</span>
-            <i data-lucide="chevron-down" class="w-4 h-4 ml-auto"></i>
-          </button>
-
-          <!-- SUBTABS -->
-          <div id="receiptDropdown" class="hidden left-0 mt-1 bg-white shadow-md rounded z-10 w-full border">
-            <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-              data-tab="enquiry">
-              <i data-lucide="search" class="w-4 h-4 mr-2"></i> Enquiry
+    <aside id="sidebar" class="admin-side w-64 h-full z-50 overflow-y-auto fixed lg:relative transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex-none">
+      <a class="admin-brand" href="/admin-dashboard.html">
+        <img src="/photos/ocda-seal-96.webp" alt="" width="38" height="38">
+        <span><strong>OCDA Admin</strong><span id="adminNameLabel">Administrator</span></span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin">
+          <button class="tab-button" data-tab="member-list"><i data-lucide="users"></i><span>OCDA Members</span></button>
+          <button class="tab-button" data-tab="create-admin" id="adminTabBtn"><i data-lucide="shield"></i><span>Administrators</span></button>
+          <button class="tab-button" data-tab="ledger-entry"><i data-lucide="receipt"></i><span>Ledger Entry</span></button>
+          <button class="tab-button" data-tab="ocda-expense"><i data-lucide="wallet"></i><span>OCDA Expense</span></button>
+          <div id="receiptTabWrapper">
+            <button id="receiptTabBtn" type="button" class="flex items-center">
+              <i data-lucide="file-text"></i><span>Reports</span>
+              <i data-lucide="chevron-down" class="admin-caret ml-auto"></i>
             </button>
-            <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-              data-tab="memberledger">
-              <i data-lucide="book-open" class="w-4 h-4 mr-2"></i> Member Ledger
-            </button>
-            <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-              data-tab="ocda-expenses-analysis">
-              <i data-lucide="file-minus" class="w-4 h-4 mr-2"></i> OCDA Expenses Analysis
-            </button>
-            <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-              data-tab="ocda-income-analysis">
-              <i data-lucide="file-plus" class="w-4 h-4 mr-2"></i> OCDA Income Analysis
-            </button>
-            <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-              data-tab="summary">
-              <i data-lucide="bar-chart" class="w-4 h-4 mr-2"></i>Monthly Summary
-            </button>
-            <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-              data-tab="final-account">
-              <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>Final Account
-            </button>
-            <button class="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center tab-sub-button"
-              data-tab="payment-schedule">
-              <i data-lucide="table" class="w-4 h-4 mr-2"></i>Payment Schedule
-            </button>
+            <div id="receiptDropdown" class="hidden w-full">
+              <button class="w-full text-left flex items-center tab-sub-button" data-tab="enquiry"><i data-lucide="search"></i><span>Enquiry</span></button>
+              <button class="w-full text-left flex items-center tab-sub-button" data-tab="memberledger"><i data-lucide="book-open"></i><span>Member Ledger</span></button>
+              <button class="w-full text-left flex items-center tab-sub-button" data-tab="ocda-expenses-analysis"><i data-lucide="file-minus"></i><span>OCDA Expenses Analysis</span></button>
+              <button class="w-full text-left flex items-center tab-sub-button" data-tab="ocda-income-analysis"><i data-lucide="file-plus"></i><span>OCDA Income Analysis</span></button>
+              <button class="w-full text-left flex items-center tab-sub-button" data-tab="summary"><i data-lucide="bar-chart"></i><span>Monthly Summary</span></button>
+              <button class="w-full text-left flex items-center tab-sub-button" data-tab="final-account"><i data-lucide="file-text"></i><span>Final Account</span></button>
+              <button class="w-full text-left flex items-center tab-sub-button" data-tab="payment-schedule"><i data-lucide="table"></i><span>Payment Schedule</span></button>
+            </div>
           </div>
-        </div>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="std">Standard Expenses</button>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="income">Income Classifications</button>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="static-tables">Static Tables</button>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="notices-section">Notices /
-          Events</button>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="contactus-section">Contact Us</button>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="faq-section">FAQ</button>
-        <button class="w-full px-4 py-2 text-left rounded tab-button" data-tab="change-PhoneNumber">Change
-          PhoneNumber</button>
-        <button id="menuToggle" class="lg:hidden p-4 text-gray-800 focus:outline-none"></button>
-        <button onclick="adminLogout()" class="bg-red-500 w-full px-4 py-2 text-left rounded tab-button">Logout</button>
+          <button class="tab-button" data-tab="std"><i data-lucide="list"></i><span>Standard Expenses</span></button>
+          <button class="tab-button" data-tab="income"><i data-lucide="tags"></i><span>Income Classifications</span></button>
+          <button class="tab-button" data-tab="static-tables"><i data-lucide="database"></i><span>Static Tables</span></button>
+          <button class="tab-button" data-tab="notices-section"><i data-lucide="megaphone"></i><span>Notices / Events</span></button>
+          <button class="tab-button" data-tab="contactus-section"><i data-lucide="mail"></i><span>Contact Us</span></button>
+          <button class="tab-button" data-tab="faq-section"><i data-lucide="help-circle"></i><span>FAQ</span></button>
+          <button class="tab-button" data-tab="change-PhoneNumber"><i data-lucide="phone"></i><span>Change PhoneNumber</span></button>
+          <button type="button" class="admin-logout" onclick="adminLogout()"><i data-lucide="log-out"></i><span>Logout</span></button>
       </nav>
     </aside>
 
-    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-40 lg:hidden"></div>
-
-
+    <div id="overlay" class="fixed inset-0 hidden z-40 lg:hidden"></div>
 
     <!-- Main Content -->
-    <main class="flex-1 p-6 min-w-0 overflow-x-hidden pt-20 lg:pt-6">
+    <main class="admin-main flex-1 min-w-0 overflow-y-auto overflow-x-hidden pt-20 lg:pt-8 px-4 sm:px-6 lg:px-10 pb-16">
 
       <!-- Card + Table Container -->
       <section id="landingSections" class="landings-section tab-content">
+        <h2 class="text-2xl font-semibold mb-4">Membership overview</h2>
         <div class="overflow-x-auto rounded shadow bg-white p-4 space-y-6">
           <div id="membersSummaryTableBox">
             <!-- JS will inject summary cards and table here -->
@@ -256,11 +103,23 @@
 
       <!-- Create Admin Section -->
       <section id="create-admin" class="tab-content hidden">
-        <h2 class="text-xl font-semibold mb-4">Create New Admin</h2>
-        <form id="createAdminForm" class="bg-white p-6 rounded shadow-md space-y-4 max-w-md">
+        <div class="section-bar">
+          <h2 class="text-2xl font-semibold">Administrators</h2>
+          <div class="section-actions">
+            <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2" data-modal-open="newAdminModal"><i data-lucide="user-plus" class="w-4 h-4"></i>New administrator</button>
+          </div>
+        </div>
+        <div id="newAdminModal" class="ocda-modal hidden" role="dialog" aria-modal="true" aria-labelledby="newAdminModal-title" data-close-on-reset>
+          <div class="ocda-modal-panel">
+            <div class="ocda-modal-head">
+              <h3 id="newAdminModal-title">New administrator</h3>
+              <button type="button" class="ocda-modal-x" data-modal-close aria-label="Close">&times;</button>
+            </div>
+            <div class="ocda-modal-body">
+<form id="createAdminForm" class="space-y-4">
           <input type="text" name="fullname" placeholder="Full Name" required class="w-full p-3 border rounded" />
           <input type="email" name="email" placeholder="Email" required class="w-full p-3 border rounded" />
-          <input type="password" name="password" placeholder="Password" required class="w-full p-3 border rounded" />
+          <input type="password" name="password" placeholder="Password (at least 8 characters)" minlength="8" autocomplete="new-password" required class="w-full p-3 border rounded" />
           <select name="role" class="w-full p-3 border rounded">
             <option value="admin">Admin</option>
             <option value="superadmin">Super Admin</option>
@@ -268,11 +127,9 @@
           </select>
           <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">Create Admin</button>
         </form>
-
-        <br>
-
-        <!-- Admin List -->
-        <h2 class="text-xl font-semibold mb-4">Admin List</h2>
+            </div>
+          </div>
+        </div>
         <div id="adminTable" class="bg-white p-4 rounded shadow text-sm overflow-x-auto max-w-full">
           <div class="w-full overflow-hidden">
             <table class="table-auto w-full text-left whitespace-normal break-words">
@@ -318,6 +175,10 @@
                   <option value="VIEWADMIN">View Admin (Reports Only)</option>
                 </select>
               </div>
+              <div>
+                <label class="block mb-1" for="editAdminPassword">New password <span class="text-gray-500 text-sm">(optional, at least 8 characters)</span></label>
+                <input type="password" name="password" id="editAdminPassword" autocomplete="new-password" class="w-full p-2 border rounded" placeholder="Leave blank to keep the current password">
+              </div>
               <div class="flex gap-2 mt-4">
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Save Changes</button>
                 <button type="button" onclick="document.getElementById('editAdminModal').classList.add('hidden')"
@@ -354,33 +215,27 @@
 
       <!-- Unified Monthly Summary Section (Screen F) -->
       <section id="summary" class="tab-content hidden">
-        <h2 class="text-2xl font-semibold mb-4">Monthly Summary</h2>
-
-        <!-- Summary Generator Form -->
-        <form id="summaryForm" class="bg-white p-6 rounded shadow-md space-y-4 max-w-md mb-6">
-          <div class="text-lg font-semibold">Generate Monthly Summary</div>
-          <input name="year" type="number" placeholder="Year (e.g. 2025)" required class="w-full p-3 border rounded" />
-          <select name="month" required class="w-full p-3 border rounded">
-            <option value="">-- Select Month --</option>
-            <option value="01">January</option>
-            <option value="02">February</option>
-            <option value="03">March</option>
-            <option value="04">April</option>
-            <option value="05">May</option>
-            <option value="06">June</option>
-            <option value="07">July</option>
-            <option value="08">August</option>
-            <option value="09">September</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
-          </select>
-          <div class="flex flex-wrap gap-2">
-            <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded">Generate Summary</button>
-            <button type="button" onclick="exportSummaryToPDF()"
-              class="bg-green-600 text-white px-4 py-2 rounded">Export PDF</button>
+        <div class="report-card">
+          <div class="rc-head">
+            <span class="rc-icon"><i data-lucide="bar-chart"></i></span>
+            <div>
+              <h2>Monthly Summary</h2>
+              <p>Close a completed month: opening balance, receipts, payments and net balance.</p>
+            </div>
           </div>
-        </form>
+          <form id="summaryForm" class="rc-body">
+            <div class="rc-grid">
+              <div class="rc-field"><label for="summaryYear">Year</label><input id="summaryYear" name="year" type="number" min="2000" max="2100" placeholder="e.g. 2026" required></div>
+              <div class="rc-field"><label for="summaryMonth">Month</label><select id="summaryMonth" name="month" required><option value="">Select month</option><option value="01">January</option><option value="02">February</option><option value="03">March</option><option value="04">April</option><option value="05">May</option><option value="06">June</option><option value="07">July</option><option value="08">August</option><option value="09">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+            </div>
+            <p class="rc-hint">Summaries can only be generated for completed months, in order.</p>
+            <div class="rc-actions">
+              <button type="reset" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Clear</button>
+              <button type="button" class="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2" onclick="exportSummaryToPDF()"><i data-lucide="download" class="w-4 h-4"></i>Export PDF</button>
+              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2"><i data-lucide="play" class="w-4 h-4"></i>Generate</button>
+            </div>
+          </form>
+        </div>
 
         <!-- Summary Table -->
         <div class="overflow-auto rounded shadow bg-white">
@@ -401,22 +256,24 @@
 
       <!-- Final Account Report (Item 4) -->
       <section id="final-account" class="tab-content hidden">
-        <h2 class="text-2xl font-semibold mb-4">Final Account Report</h2>
-        <div class="bg-white p-6 rounded shadow-md max-w-md mb-6 space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">Start Date <span class="text-gray-400 text-xs">(must be 1st of
-                month)</span></label>
-            <input type="date" id="finalAccountFrom" class="w-full p-2 border rounded text-sm" />
+        <div class="report-card">
+          <div class="rc-head">
+            <span class="rc-icon"><i data-lucide="file-text"></i></span>
+            <div>
+              <h2>Final Account</h2>
+              <p>Statement of income and expenditure between two dates.</p>
+            </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">End Date</label>
-            <input type="date" id="finalAccountTo" class="w-full p-2 border rounded text-sm" />
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <button onclick="loadFinalAccount()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Generate
-              Report</button>
-            <button onclick="exportFinalAccountToPDF()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">Export
-              PDF</button>
+          <div class="rc-body">
+            <div class="rc-grid">
+              <div class="rc-field"><label for="finalAccountFrom">Start date <span class="rc-note">(1st of a month)</span></label><input type="date" id="finalAccountFrom"></div>
+              <div class="rc-field"><label for="finalAccountTo">End date</label><input type="date" id="finalAccountTo"></div>
+            </div>
+            <div class="rc-actions">
+              <button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded" onclick="document.getElementById('finalAccountFrom').value='';document.getElementById('finalAccountTo').value='';document.getElementById('finalAccountResult').innerHTML='';">Clear</button>
+              <button type="button" class="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2" onclick="exportFinalAccountToPDF()"><i data-lucide="download" class="w-4 h-4"></i>Export PDF</button>
+              <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2" onclick="loadFinalAccount()"><i data-lucide="play" class="w-4 h-4"></i>Generate</button>
+            </div>
           </div>
         </div>
         <div id="finalAccountResult"></div>
@@ -424,156 +281,107 @@
 
       <!-- Member Payment Schedule Report -->
       <section id="payment-schedule" class="tab-content hidden">
-        <h2 class="text-2xl font-semibold mb-4">Member Payment Schedule</h2>
-
-        <!-- Filter Form -->
-        <div class="bg-white p-6 rounded shadow-md mb-6">
-          <div class="flex flex-wrap gap-4 items-end">
-
+        <div class="report-card">
+          <div class="rc-head">
+            <span class="rc-icon"><i data-lucide="table"></i></span>
             <div>
-              <label class="block text-sm font-medium mb-1">From Month</label>
-              <select id="psFromMonth" class="border rounded px-3 py-2 text-sm">
-                <option value="1">January</option>
-                <option value="2">February</option>
-                <option value="3">March</option>
-                <option value="4">April</option>
-                <option value="5">May</option>
-                <option value="6">June</option>
-                <option value="7">July</option>
-                <option value="8">August</option>
-                <option value="9">September</option>
-                <option value="10">October</option>
-                <option value="11">November</option>
-                <option value="12">December</option>
-              </select>
+              <h2>Member Payment Schedule</h2>
+              <p>Month-by-month payments for every member over a period.</p>
             </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-1">From Year</label>
-              <input type="number" id="psFromYear" placeholder="e.g. 2025" min="2000" max="2100"
-                class="border rounded px-3 py-2 text-sm w-28" />
+          </div>
+          <div class="rc-body">
+            <div class="rc-group">
+              <span class="rc-label">Period</span>
+              <div class="rc-grid rc-grid-4">
+                <div class="rc-field"><label for="psFromMonth">From month</label><select id="psFromMonth"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+                <div class="rc-field"><label for="psFromYear">From year</label><input type="number" id="psFromYear" placeholder="e.g. 2026" min="2000" max="2100"></div>
+                <div class="rc-field"><label for="psToMonth">To month</label><select id="psToMonth"><option value="1">January</option><option value="2">February</option><option value="3">March</option><option value="4">April</option><option value="5">May</option><option value="6">June</option><option value="7">July</option><option value="8">August</option><option value="9">September</option><option value="10">October</option><option value="11">November</option><option value="12">December</option></select></div>
+                <div class="rc-field"><label for="psToYear">To year</label><input type="number" id="psToYear" placeholder="e.g. 2026" min="2000" max="2100"></div>
+              </div>
             </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-1">To Month</label>
-              <select id="psToMonth" class="border rounded px-3 py-2 text-sm">
-                <option value="1">January</option>
-                <option value="2">February</option>
-                <option value="3">March</option>
-                <option value="4">April</option>
-                <option value="5">May</option>
-                <option value="6">June</option>
-                <option value="7">July</option>
-                <option value="8">August</option>
-                <option value="9">September</option>
-                <option value="10">October</option>
-                <option value="11">November</option>
-                <option value="12">December</option>
-              </select>
+            <div class="rc-grid">
+              <div class="rc-field rc-span-2"><label for="psRemark">Income classification</label><select id="psRemark"><option value="ALL">All classifications</option></select></div>
             </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-1">To Year</label>
-              <input type="number" id="psToYear" placeholder="e.g. 2025" min="2000" max="2100"
-                class="border rounded px-3 py-2 text-sm w-28" />
+            <div class="rc-actions">
+              <button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded" onclick="clearPaymentSchedule()">Clear</button>
+              <button type="button" onclick="printPaymentSchedule()" class="bg-gray-600 text-white px-4 py-2 rounded flex items-center gap-2"><i data-lucide="printer" class="w-4 h-4"></i>Print</button>
+              <button type="button" class="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2" onclick="exportPaymentScheduleToPDF()"><i data-lucide="download" class="w-4 h-4"></i>Export PDF</button>
+              <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2" onclick="loadPaymentSchedule()"><i data-lucide="play" class="w-4 h-4"></i>Generate</button>
             </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-1">Income Classification</label>
-              <select id="psRemark" class="border rounded px-3 py-2 text-sm min-w-[180px]">
-                <option value="ALL">All Classifications</option>
-                <!-- Populated by JS -->
-              </select>
-            </div>
-
-            <button onclick="loadPaymentSchedule()"
-              class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
-              Generate Report
-            </button>
-
-            <button onclick="printPaymentSchedule()"
-              class="bg-gray-600 text-white px-4 py-2 rounded text-sm hover:bg-gray-700">
-              Print
-            </button>
-
-            <button onclick="clearPaymentSchedule()"
-              class="bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-400">
-              Clear
-            </button>
           </div>
         </div>
 
-        <!-- Report Output -->
         <div id="paymentScheduleResult" class="overflow-auto"></div>
       </section>
 
 
       <section id="ocda-expenses-analysis" class="tab-content hidden">
-        <h2 class="text-2xl font-semibold mb-4">OCDA Expenses Analysis</h2>
-
-        <!-- Filter Form -->
-        <form id="ocdaExpensesAnalysisForm" class="bg-white p-4 rounded shadow mb-4 flex flex-wrap gap-4 items-end">
-          <div>
-            <label class="block font-medium mb-1">Mode</label>
-            <select name="mode" class="p-2 border rounded">
-              <option value="summary">Summary</option>
-              <option value="detail">Detail</option>
-            </select>
+        <div class="report-card">
+          <div class="rc-head">
+            <span class="rc-icon"><i data-lucide="file-minus"></i></span>
+            <div>
+              <h2>Expenses Analysis</h2>
+              <p>Spending by expense code, as a summary or with every voucher.</p>
+            </div>
           </div>
-          <div>
-            <label class="block font-medium mb-1">Start Date</label>
-            <input type="date" name="start" class="p-2 border rounded" />
-          </div>
-          <div>
-            <label class="block font-medium mb-1">End Date</label>
-            <input type="date" name="end" class="p-2 border rounded" />
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Specific Code or ALL</label>
-            <input type="text" name="code" class="p-2 border rounded" placeholder="e.g. 1010 or ALL" />
-          </div>
-          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Generate Report</button>
-          <button type="button" onclick="exportOCDAExpReportToPDF()" class="bg-green-600 text-white px-4 py-2 rounded"
-            id="exportExpensesBtn">Export PDF</button>
-        </form>
-
-        <!-- Results Container -->
-        <div id="ocdaExpensesAnalysisTable" class="overflow-auto rounded shadow bg-white p-4 space-y-8">
-          <!-- Dynamic report content will be inserted here -->
+          <form id="ocdaExpensesAnalysisForm" class="rc-body">
+            <div class="rc-group">
+              <span class="rc-label">Report mode</span>
+              <div class="rc-choices" role="radiogroup" aria-label="Report mode">
+                <label class="rc-choice"><input type="radio" name="mode" value="summary" checked><span>Summary</span></label>
+                <label class="rc-choice"><input type="radio" name="mode" value="detail"><span>Detail</span></label>
+              </div>
+            </div>
+            <div class="rc-grid rc-grid-3">
+              <div class="rc-field"><label>Start date</label><input type="date" name="start"></div>
+              <div class="rc-field"><label>End date</label><input type="date" name="end"></div>
+              <div class="rc-field"><label>Expense code</label><input type="text" name="code" placeholder="e.g. 1010, or ALL"></div>
+            </div>
+            <div class="rc-actions">
+              <button type="reset" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Clear</button>
+              <button type="button" onclick="exportOCDAExpReportToPDF()" id="exportExpensesBtn" class="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Export PDF</button>
+              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2"><i data-lucide="play" class="w-4 h-4"></i>Generate</button>
+            </div>
+          </form>
         </div>
+
+        <div id="ocdaExpensesAnalysisTable" class="overflow-auto rounded shadow bg-white p-4 space-y-8"></div>
       </section>
 
 
       <!-- OCDA Income Analysis Section -->
       <section id="ocda-income-analysis" class="tab-content hidden">
-        <h2 class="text-2xl font-semibold mb-4">OCDA Income Analysis</h2>
-        <form id="ocdaIncomeAnalysisForm" class="bg-white p-4 rounded shadow mb-4 flex flex-wrap gap-4 items-end">
-          <div>
-            <label class="block font-medium mb-1">Mode</label>
-            <select name="mode" class="p-2 border rounded">
-              <option value="summary">Summary</option>
-              <option value="detail">Detail</option>
-            </select>
+        <div class="report-card">
+          <div class="rc-head">
+            <span class="rc-icon"><i data-lucide="file-plus"></i></span>
+            <div>
+              <h2>Income Analysis</h2>
+              <p>Income by classification, as a summary or with every payment.</p>
+            </div>
           </div>
-          <div>
-            <label class="block font-medium mb-1">Start Date</label>
-            <input type="date" name="start" class="p-2 border rounded" />
-          </div>
-          <div>
-            <label class="block font-medium mb-1">End Date</label>
-            <input type="date" name="end" class="p-2 border rounded" />
-          </div>
-          <div>
-            <label class="block font-medium mb-1">Specific Description or ALL</label>
-            <input type="text" name="code" class="p-2 border rounded" placeholder="e.g. ANNUAL DUES or ALL" />
-          </div>
-          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Generate Report</button>
-          <button type="button" onclick="exportOCDAReportToPDF()"
-            class="bg-green-600 text-white px-4 py-2 rounded">Export PDF</button>
-        </form>
+          <form id="ocdaIncomeAnalysisForm" class="rc-body">
+            <div class="rc-group">
+              <span class="rc-label">Report mode</span>
+              <div class="rc-choices" role="radiogroup" aria-label="Report mode">
+                <label class="rc-choice"><input type="radio" name="mode" value="summary" checked><span>Summary</span></label>
+                <label class="rc-choice"><input type="radio" name="mode" value="detail"><span>Detail</span></label>
+              </div>
+            </div>
+            <div class="rc-grid rc-grid-3">
+              <div class="rc-field"><label>Start date</label><input type="date" name="start"></div>
+              <div class="rc-field"><label>End date</label><input type="date" name="end"></div>
+              <div class="rc-field"><label>Income description</label><input type="text" name="code" placeholder="e.g. ANNUAL DUES, or ALL"></div>
+            </div>
+            <div class="rc-actions">
+              <button type="reset" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Clear</button>
+              <button type="button" onclick="exportOCDAReportToPDF()" class="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"><i data-lucide="download" class="w-4 h-4"></i>Export PDF</button>
+              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2"><i data-lucide="play" class="w-4 h-4"></i>Generate</button>
+            </div>
+          </form>
+        </div>
+
         <div class="overflow-auto rounded shadow bg-white">
-          <div id="ocdaIncomeAnalysisTable">
-          </div>
+          <div id="ocdaIncomeAnalysisTable"></div>
         </div>
       </section>
 
@@ -618,11 +426,17 @@
       </section>
 
       <!-- Create Member Form -->
-      <section id="create-member" class="tab-content hidden">
+      <div id="create-member" class="ocda-modal hidden" role="dialog" aria-modal="true" aria-labelledby="create-member-title" data-close-on-reset>
+          <div class="ocda-modal-panel wide">
+            <div class="ocda-modal-head">
+              <h3 id="create-member-title">Register new member</h3>
+              <button type="button" class="ocda-modal-x" data-modal-close aria-label="Close">&times;</button>
+            </div>
+            <div class="ocda-modal-body">
+
         <div class="form-wrapper">
           <div class="container-form">
             <form class="form active" id="createMemberForm">
-              <h2 class="title">Register New Member</h2>
 
 
               <div class="form-container">
@@ -771,18 +585,35 @@
                   </div>
                 </div>
 
-                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Create Member</button>
-                <button class="bg-red-600 text-white px-4 py-2 rounded"><a
-                    href="/admin-dashboard.html">Cancel</a></button>
+              </div>
+                <div class="modal-actions">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Create Member</button>
+                <button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded" data-modal-close>Cancel</button>
+                </div>
             </form>
           </div>
         </div>
-      </section>
+      
+            </div>
+          </div>
+        </div>
 
       <!-- Member Ledger Entry -->
       <section id="ledger-entry" class="tab-content hidden">
-        <h2 class="text-2xl font-semibold mb-4">Add Ledger Entry</h2>
-        <form id="ledgerForm" class="bg-white p-6 rounded shadow-md space-y-4 max-w-md">
+        <div class="section-bar">
+          <h2 class="text-2xl font-semibold">Ledger Entry</h2>
+          <div class="section-actions">
+            <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2" data-modal-open="ledgerModal"><i data-lucide="plus" class="w-4 h-4"></i>Add ledger entry</button>
+          </div>
+        </div>
+        <div id="ledgerModal" class="ocda-modal hidden" role="dialog" aria-modal="true" aria-labelledby="ledgerModal-title" data-close-on-reset>
+          <div class="ocda-modal-panel">
+            <div class="ocda-modal-head">
+              <h3 id="ledgerModal-title">Add ledger entry</h3>
+              <button type="button" class="ocda-modal-x" data-modal-close aria-label="Close">&times;</button>
+            </div>
+            <div class="ocda-modal-body">
+<form id="ledgerForm" class="space-y-3">
           <label class="block text-black">Phone Number</label>
           <input list="phonenoList" id="phoneno" name="phoneno" class="w-full p-3 border rounded"
             placeholder="Search phone number..." required>
@@ -809,9 +640,12 @@
           </label>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
         </form>
+            </div>
+          </div>
+        </div>
 
-        <div id="ledger" style="margin-top: 3%;">
-          <h2 class="text-2xl font-semibold mb-4">Recent Member Ledger</h2>
+        <div id="ledger">
+          <h3 class="text-lg font-semibold mb-3">Recent member ledger</h3>
           <div class="overflow-auto rounded shadow bg-white">
             <table class="min-w-full text-sm text-left">
               <thead class="bg-gray-200 text-gray-700">
@@ -831,54 +665,29 @@
       </section>
 
       <section id="memberledger" class="tab-content hidden">
-        <div class="mb-4 flex gap-4 items-center">
-          <div>
-            <label class="block text-sm font-medium mb-1">Start Date:</label>
-            <input type="date" id="startDate" class="border rounded px-3 py-2">
+        <div class="report-card">
+          <div class="rc-head">
+            <span class="rc-icon"><i data-lucide="book-open"></i></span>
+            <div>
+              <h2>Member Ledger</h2>
+              <p>Every payment recorded against members. Leave the dates empty to see all records.</p>
+            </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">End Date:</label>
-            <input type="date" id="endDate" class="border rounded px-3 py-2">
-          </div>
-          <div class="flex flex-wrap gap-2 mt-6">
-            <button onclick="loadAllMemberLedger()"
-              class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-7 h-7 sm:mr-2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-              </svg>
-              <span class="hidden sm:inline">Filter</span>
-            </button>
-            <button onclick="clearDateFilters()"
-              class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-7 h-7 sm:mr-2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <span class="hidden sm:inline">Clear</span>
-            </button>
-            <button onclick="loadCurrentMonth()"
-              class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-7 h-7 sm:mr-2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span class="hidden sm:inline">Current Month</span>
-            </button>
-            <button onclick="exportMemberLedgerToPDF()"
-              class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-7 h-7 sm:mr-2">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span class="hidden sm:inline">Export PDF</span>
-            </button>
+          <div class="rc-body">
+            <div class="rc-grid">
+              <div class="rc-field"><label for="startDate">Start date</label><input type="date" id="startDate"></div>
+              <div class="rc-field"><label for="endDate">End date</label><input type="date" id="endDate"></div>
+            </div>
+            <div class="rc-actions">
+              <button type="button" class="bg-gray-300 text-gray-700 px-4 py-2 rounded" onclick="clearDateFilters()">Clear</button>
+              <button type="button" onclick="loadCurrentMonth()" class="bg-gray-600 text-white px-4 py-2 rounded flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4"></i>Current month</button>
+              <button type="button" class="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2" onclick="exportMemberLedgerToPDF()"><i data-lucide="download" class="w-4 h-4"></i>Export PDF</button>
+              <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2" onclick="loadAllMemberLedger()"><i data-lucide="play" class="w-4 h-4"></i>Generate</button>
+            </div>
           </div>
         </div>
-        <h2 class="text-2xl font-semibold mb-4" id="recordCount">All Member Ledger</h2>
+
+        <h3 class="rc-results-title" id="recordCount">All Member Ledger</h3>
         <div class="overflow-auto rounded shadow bg-white">
           <table class="min-w-full text-sm text-left">
             <thead class="bg-gray-200 text-gray-700">
@@ -897,10 +706,20 @@
 
       <!-- OCDA Expense Entry -->
       <section id="ocda-expense" class="tab-content hidden">
-        <h2 class="text-2xl font-semibold mb-4">Record OCDA Expense</h2>
-        <!-- Screen C: OCDA Cheque Input + Other Charges -->
-        <form id="ocdaForm" class="bg-white p-6 rounded shadow max-w-xl space-y-4">
-          <h2 class="text-xl font-semibold">OCDA Cheque Input + Other Charges</h2>
+        <div class="section-bar">
+          <h2 class="text-2xl font-semibold">OCDA Expense</h2>
+          <div class="section-actions">
+            <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2" data-modal-open="ocdaExpenseModal"><i data-lucide="plus" class="w-4 h-4"></i>Record expense</button>
+          </div>
+        </div>
+        <div id="ocdaExpenseModal" class="ocda-modal hidden" role="dialog" aria-modal="true" aria-labelledby="ocdaExpenseModal-title" data-close-on-reset>
+          <div class="ocda-modal-panel">
+            <div class="ocda-modal-head">
+              <h3 id="ocdaExpenseModal-title">Record OCDA expense <span class="ocda-modal-sub">Cheque input and other charges</span></h3>
+              <button type="button" class="ocda-modal-x" data-modal-close aria-label="Close">&times;</button>
+            </div>
+            <div class="ocda-modal-body">
+<form id="ocdaForm" class="space-y-3">
 
           <label class="block text-black">
             Date
@@ -935,8 +754,11 @@
               class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
           </div>
         </form>
+            </div>
+          </div>
+        </div>
 
-        <h3 class="text-lg font-semibold mt-8 mb-2">Recent OCDA Expenses</h3>
+        <h3 class="text-lg font-semibold mb-3">Recent OCDA expenses</h3>
         <div class="overflow-auto bg-white rounded shadow">
           <table class="min-w-full text-sm text-left">
             <thead class="bg-gray-200">
@@ -956,58 +778,53 @@
 
       <!-- Enquiry Section -->
       <section id="enquiry" class="tab-content hidden">
-        <h2 class="text-2xl font-semibold mb-4">Enquiry</h2>
-
-        <!--  Option Selection -->
-        <form id="enquiryForm" class="bg-white p-4 rounded shadow space-y-4">
-          <div class="flex gap-6 flex-wrap">
-            <label class="text-black"><input type="radio" name="enquiryType" value="member" checked /> Member</label>
-            <label class="text-black"><input type="radio" name="enquiryType" value="ward" /> Ward</label>
-            <label class="text-black"><input type="radio" name="enquiryType" value="quarter" /> Quarter</label>
+        <div class="report-card">
+          <div class="rc-head">
+            <span class="rc-icon"><i data-lucide="search"></i></span>
+            <div>
+              <h2>Enquiry</h2>
+              <p>Contributions by member, ward or quarter, for any period.</p>
+            </div>
           </div>
-
-          <!-- Member -->
-          <div id="memberSelectGroup">
-            <label class="block mt-2 font-medium  text-black">Member GSMNO</label>
-            <select name="queryParam" id="enquiry-member" class="w-full p-2 border rounded">
-              <option value="ALL">ALL</option>
-            </select>
-          </div>
-
-          <!-- Ward -->
-          <div id="wardSelectGroup" class="hidden">
-            <label class="block mt-2 font-medium text-black">Select Ward</label>
-            <select name="queryParam" id="enquiry-ward" class="w-full p-2 border rounded">
-              <option value="ALL">ALL</option>
-            </select>
-          </div>
-
-          <!--  Quarter -->
-          <div id="quarterSelectGroup" class="hidden">
-            <label class="block mt-2 font-medium text-black">Select Quarter</label>
-            <select name="queryParam" id="enquiry-quarter" class="w-full p-2 border rounded">
-              <option value="ALL">ALL</option>
-            </select>
-          </div>
-
-          <!--  Date Filters -->
-          <div class="grid grid-cols-2 gap-4">
-            <input type="date" name="start" class="p-2 border rounded" />
-            <input type="date" name="end" class="p-2 border rounded" />
-          </div>
-
-          <label for="detailCheck" class="flex items-center gap-2 text-base cursor-pointer select-none text-black">
-            <input type="checkbox" id="detailCheck" name="detail" class="w-4 h-4 accent-blue-600" />
-            Show All Details
-          </label>
-
-          <div class="flex items-center gap-4 mt-4">
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
-          </div>
-        </form>
+          <form id="enquiryForm" class="rc-body">
+            <div class="rc-group">
+              <span class="rc-label">Enquire by</span>
+              <div class="rc-choices" role="radiogroup" aria-label="Enquire by">
+                <label class="rc-choice"><input type="radio" name="enquiryType" value="member" checked><span>Member</span></label>
+                <label class="rc-choice"><input type="radio" name="enquiryType" value="ward"><span>Ward</span></label>
+                <label class="rc-choice"><input type="radio" name="enquiryType" value="quarter"><span>Quarter</span></label>
+              </div>
+            </div>
+            <div class="rc-grid">
+              <div id="memberSelectGroup" class="rc-field rc-span-2">
+                <label for="enquiry-member">Member (phone number)</label>
+                <select name="queryParam" id="enquiry-member"><option value="ALL">All members</option></select>
+              </div>
+              <div id="wardSelectGroup" class="rc-field rc-span-2 hidden">
+                <label for="enquiry-ward">Ward</label>
+                <select name="queryParam" id="enquiry-ward"><option value="ALL">All wards</option></select>
+              </div>
+              <div id="quarterSelectGroup" class="rc-field rc-span-2 hidden">
+                <label for="enquiry-quarter">Quarter</label>
+                <select name="queryParam" id="enquiry-quarter"><option value="ALL">All quarters</option></select>
+              </div>
+              <div class="rc-field"><label for="enquiryStart">Start date</label><input type="date" id="enquiryStart" name="start"></div>
+              <div class="rc-field"><label for="enquiryEnd">End date</label><input type="date" id="enquiryEnd" name="end"></div>
+            </div>
+            <div class="rc-group">
+              <span class="rc-label">Output</span>
+              <label class="rc-check" for="detailCheck"><input type="checkbox" id="detailCheck" name="detail"> Include every transaction (detail)</label>
+            </div>
+            <div class="rc-actions">
+              <button type="reset" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Clear</button>
+              <button type="button" class="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2" onclick="exportEnquiry('pdf')"><i data-lucide="download" class="w-4 h-4"></i>Export PDF</button>
+              <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2"><i data-lucide="play" class="w-4 h-4"></i>Generate</button>
+            </div>
+          </form>
+        </div>
 
         <!--  Result View -->
-        <div id="enquiryResults" class="mt-6 hidden min-h-screen flex flex-col">
+        <div id="enquiryResults" class="mt-2 hidden flex flex-col">
           <div class="flex justify-between items-center mb-2">
             <strong>Enquiry Results</strong>
             <div class="space-x-2">
@@ -1051,15 +868,15 @@
 
       <!-- Member List -->
       <section id="member-list" class="tab-content hidden">
-        <h2 class="text-2xl font-semibold mb-4">Registered Members</h2>
+        <h2 class="text-2xl font-semibold mb-4">OCDA Members</h2>
 
         <!-- 🔍 Search & Export -->
-        <div class="flex justify-between mb-4">
+        <div class="flex flex-wrap gap-3 justify-between mb-4">
           <input id="memberSearch" type="text" placeholder="Search..." class="p-2 border rounded w-full max-w-xs" />
 
           <div class="flex flex-wrap gap-2">
-            <button class="bg-blue-600 text-white px-3 py-2 rounded tab-button flex items-center gap-x-2"
-              data-tab="create-member">
+            <button type="button" class="bg-blue-600 text-white px-3 py-2 rounded flex items-center gap-x-2"
+              data-modal-open="create-member">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -1112,8 +929,14 @@
 
 
       <!-- Full Member View/Edit Section -->
-      <section id="memberDetails" class="hidden bg-white p-6 rounded shadow-md">
-        <h2 class="text-xl font-semibold mb-4">Member Details</h2>
+      <div id="memberDetails" class="ocda-modal hidden" role="dialog" aria-modal="true" aria-labelledby="memberDetails-title" data-on-close="closeMemberDetails">
+          <div class="ocda-modal-panel wide">
+            <div class="ocda-modal-head">
+              <h3 id="memberDetails-title">Member details</h3>
+              <button type="button" class="ocda-modal-x" data-modal-close aria-label="Close">&times;</button>
+            </div>
+            <div class="ocda-modal-body">
+
 
         <form id="memberEditForm" style="display:none" class="space-y-6">
 
@@ -1232,13 +1055,12 @@
 
           <!-- Password -->
           <div class="form-group">
-            <label for="Password">Password</label>
-            <input name="Password" id="Password" type="text" class="p-3 border rounded w-full" />
+            <label for="Password">New password <span class="text-gray-500 font-normal text-sm">(leave blank to keep the current one)</span></label>
+            <input name="Password" id="Password" type="password" autocomplete="new-password" class="p-3 border rounded w-full" />
           </div>
         </form>
 
-        <div id="memberViewOnly" class="bg-gray-100 p-6 rounded shadow hidden">
-          <h2 class="text-xl font-bold mb-4">📄 Member Profile</h2>
+        <div id="memberViewOnly" class="member-view hidden">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div><strong>Phone:</strong> <span id="viewPhone"></span></div>
             <div><strong>Secondary Phone:</strong> <span id="viewPhone2"></span></div>
@@ -1261,7 +1083,7 @@
 
 
 
-        <div class="mt-4 space-x-2">
+        <div class="modal-actions">
           <button id="updateMemberBtn" onclick="saveMemberChanges()"
             class="bg-green-600 text-white px-4 py-2 rounded hidden">
             Save
@@ -1270,12 +1092,18 @@
             Close
           </button>
         </div>
-      </section>
+      
+            </div>
+          </div>
+        </div>
 
       <section id="static-tables" class="tab-content hidden">
-        <div class="grid gap-8 md:grid-cols-2 p-4">
-          <!-- Titles -->
-          <div class="bg-white shadow rounded p-4">
+        <div class="section-bar">
+          <h2 class="text-2xl font-semibold">Static Tables</h2>
+        </div>
+        <div class="st-grid" id="staticTablesGrid">
+          <div class="st-col">
+            <div class="bg-white shadow rounded p-5">
             <h2 class="text-lg font-semibold mb-2">Titles</h2>
             <form id="addTitleForm" class="flex gap-2 mb-2">
               <input type="text" id="newTitle" name="title" placeholder="New title..." required
@@ -1292,28 +1120,7 @@
               <tbody id="titlesTableBody"></tbody>
             </table>
           </div>
-
-          <!-- Qualifications -->
-          <div class="bg-white shadow rounded p-4">
-            <h2 class="text-lg font-semibold mb-4">Qualifications</h2>
-            <form id="addQualificationForm" class="flex gap-2 mb-4">
-              <input type="text" id="newQualification" name="qualification" placeholder="New qualification..." required
-                class="flex-1 border rounded px-3 py-2">
-              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Add</button>
-            </form>
-            <table class="w-full table-auto border border-gray-300 text-sm text-center">
-              <thead class="bg-gray-100">
-                <tr>
-                  <th class="p-2 border">Qualification</th>
-                  <th class="p-2 border">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="qualificationsTableBody"></tbody>
-            </table>
-          </div>
-
-          <!-- Hon Titles -->
-          <div class="bg-white shadow rounded p-4 mt-8">
+            <div class="bg-white shadow rounded p-5">
             <h2 class="text-lg font-semibold mb-4">Hon Titles</h2>
             <form id="addHontitleForm" class="flex gap-2 mb-4">
               <input type="text" id="newHtitle" name="Htitle" placeholder="New Hon Title..." required
@@ -1333,9 +1140,26 @@
               <tbody id="hontitlesTableBody"></tbody>
             </table>
           </div>
-
-          <!-- Wards & Quarters -->
-          <div class="bg-white shadow rounded p-4 mt-8">
+          </div>
+          <div class="st-col">
+            <div class="bg-white shadow rounded p-5">
+            <h2 class="text-lg font-semibold mb-4">Qualifications</h2>
+            <form id="addQualificationForm" class="flex gap-2 mb-4">
+              <input type="text" id="newQualification" name="qualification" placeholder="New qualification..." required
+                class="flex-1 border rounded px-3 py-2">
+              <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Add</button>
+            </form>
+            <table class="w-full table-auto border border-gray-300 text-sm text-center">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="p-2 border">Qualification</th>
+                  <th class="p-2 border">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="qualificationsTableBody"></tbody>
+            </table>
+          </div>
+            <div class="bg-white shadow rounded p-5">
             <h2 class="text-lg font-semibold mb-4">Wards & Quarters</h2>
             <form id="addWardsForm" class="flex gap-2 mb-4">
               <input type="text" id="newWard" name="ward" placeholder="Ward..." required
@@ -1355,23 +1179,37 @@
               <tbody id="wardsTableBody"></tbody>
             </table>
           </div>
+          </div>
         </div>
       </section>
 
       <!-- notices -->
       <section id="notices-section" class="tab-content hidden">
-        <h2 class="text-xl font-semibold mb-4">Post Notice/Event</h2>
-        <form id="noticeForm" class="bg-white p-4 rounded shadow space-y-4 max-w-md">
+        <div class="section-bar">
+          <h2 class="text-2xl font-semibold">Notices / Events</h2>
+          <div class="section-actions">
+            <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2" data-modal-open="noticeModal"><i data-lucide="megaphone" class="w-4 h-4"></i>Post notice or event</button>
+          </div>
+        </div>
+        <div id="noticeModal" class="ocda-modal hidden" role="dialog" aria-modal="true" aria-labelledby="noticeModal-title" data-close-on-reset>
+          <div class="ocda-modal-panel">
+            <div class="ocda-modal-head">
+              <h3 id="noticeModal-title">Post a notice or event</h3>
+              <button type="button" class="ocda-modal-x" data-modal-close aria-label="Close">&times;</button>
+            </div>
+            <div class="ocda-modal-body">
+<form id="noticeForm" class="space-y-4">
           <input type="text" id="noticeTitle" placeholder="Title" required class="w-full p-2 border rounded">
           <select id="noticeType" class="w-full p-2 border rounded">
             <option value="notice">Notice</option>
             <option value="event">Event</option>
           </select>
-          <textarea id="noticeContent" placeholder="Content" required class="w-full p-2 border rounded"></textarea>
+          <textarea id="noticeContent" placeholder="Content" rows="6" required class="w-full p-2 border rounded"></textarea>
           <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Post</button>
         </form>
-
-        <h2 class="text-xl font-semibold mt-8 mb-4">Posted Notices/Events</h2>
+            </div>
+          </div>
+        </div>
         <div id="noticesList" class="mt-4">
         </div>
 
@@ -1436,11 +1274,20 @@
 
       <!-- FAQ Management (Item 3) -->
       <section id="faq-section" class="tab-content hidden p-4">
-        <h2 class="text-xl font-semibold mb-4">Manage FAQ</h2>
-
-        <!-- Add new FAQ entry -->
-        <div class="bg-white p-6 rounded shadow-md max-w-2xl mb-6 space-y-3">
-          <h3 class="font-semibold text-sm">Add New FAQ Entry</h3>
+        <div class="section-bar">
+          <h2 class="text-2xl font-semibold">FAQ</h2>
+          <div class="section-actions">
+            <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2" data-modal-open="faqModal"><i data-lucide="plus" class="w-4 h-4"></i>Add FAQ entry</button>
+          </div>
+        </div>
+        <div id="faqModal" class="ocda-modal hidden" role="dialog" aria-modal="true" aria-labelledby="faqModal-title">
+          <div class="ocda-modal-panel">
+            <div class="ocda-modal-head">
+              <h3 id="faqModal-title">Add FAQ entry</h3>
+              <button type="button" class="ocda-modal-x" data-modal-close aria-label="Close">&times;</button>
+            </div>
+            <div class="ocda-modal-body">
+              <div class="space-y-3">
           <div>
             <label class="block text-sm font-medium mb-1">Question</label>
             <input type="text" id="newFaqQuestion" class="w-full p-2 border rounded text-sm"
@@ -1451,14 +1298,15 @@
             <textarea id="newFaqAnswer" rows="4" class="w-full p-2 border rounded text-sm"
               placeholder="Enter answer..."></textarea>
           </div>
-          <button id="addFaqBtn" onclick="addFaqEntry()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">Add
-            FAQ Entry</button>
+          <button id="addFaqBtn" onclick="addFaqEntry()" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">Add FAQ Entry</button>
+        </div>
+            </div>
+          </div>
         </div>
 
         <!-- Existing FAQ list -->
         <div class="max-w-2xl">
-          <h3 class="font-semibold mb-3">Existing FAQ Entries</h3>
-          <div id="faqAdminList" class="space-y-3"></div>
+                    <div id="faqAdminList" class="space-y-3"></div>
         </div>
       </section>
 
@@ -1551,14 +1399,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
   <script>
     lucide.createIcons();
   </script>
   <!-- Reusable Alert Modal -->
-  <div id="appModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 overflow-hidden">
+  <div id="appModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] hidden" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
+    <div class="modal-panel bg-white rounded-lg shadow-xl w-full max-w-sm mx-4 overflow-hidden">
       <div id="appModalHeader" class="px-5 py-3 flex items-center justify-between">
         <h3 id="appModalTitle" class="font-semibold text-base"></h3>
         <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
@@ -1575,6 +1422,25 @@
   </div>
 
 </body>
-<script src="script/admin-dashboard.js"></script>
+<script>
+  document.getElementById("adminNameLabel").textContent = localStorage.getItem("adminName") || "Administrator";
+  // Keep the sidebar highlight in step when moving between reports and other sections
+  document.querySelectorAll(".tab-sub-button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll(".tab-button.active-tab").forEach(function (x) { x.classList.remove("active-tab"); });
+      document.getElementById("receiptTabBtn").classList.add("active-tab");
+    });
+  });
+  document.querySelectorAll(".tab-button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.getElementById("receiptTabBtn").classList.remove("active-tab");
+      document.querySelectorAll(".tab-sub-button.bg-gray-200").forEach(function (x) { x.classList.remove("bg-gray-200"); });
+    });
+  });
+</script>
+<script src="/script/pdf-export.js"></script>
+<script src="/script/admin-dashboard.js"></script>
+<script src="/script/admin-ui.js"></script>
+  <script src="/script/paginate.js"></script>
 
 </html>

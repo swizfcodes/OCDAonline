@@ -1,0 +1,365 @@
+/*
+  OCDA admin console theme.
+  The admin pages still use Tailwind utility classes (the scripts generate them), so this file
+  re-skins those utilities inside body.admin-ui with the OCDA tokens. Requires tokens.css.
+*/
+
+body.admin-ui {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+body.admin-ui :focus-visible { outline: none; box-shadow: var(--focus); }
+
+/* ---------- Shell ---------- */
+.admin-topbar {
+  background: var(--surface); border-bottom: 1px solid var(--line);
+  min-height: 60px; padding: 0 16px;
+}
+.admin-brand { display: flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; }
+.admin-brand img { width: 38px; height: 38px; }
+.admin-brand strong { font-family: var(--font-display); font-size: 1.1rem; letter-spacing: -0.01em; display: block; line-height: 1.1; }
+.admin-brand > span > span { display: block; font-size: 0.78rem; opacity: .75; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-topbar button { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: var(--radius-sm); display: inline-flex; align-items: center; justify-content: center; }
+
+body.admin-ui #sidebar.admin-side {
+  background: var(--canopy-deep); color: #c9dbe7; border: 0;
+  display: flex; flex-direction: column;
+}
+@media (min-width: 1024px) { body.admin-ui #sidebar.admin-side.hidden { display: flex !important; } }
+.admin-side .admin-brand { color: #fff; padding: 22px 20px 18px; }
+.admin-nav { padding: 4px 12px 16px; display: flex; flex-direction: column; gap: 2px; }
+.admin-nav-group { font-size: 0.78rem; color: #8eaabd; padding: 16px 12px 6px; margin: 0; font-weight: 600; }
+body.admin-ui .admin-nav .tab-button,
+body.admin-ui .admin-nav #receiptTabBtn {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 12px; border-radius: var(--radius-sm);
+  color: #d3e2ec; background: transparent; font-size: 0.93rem; font-weight: 500; text-align: left;
+}
+body.admin-ui .admin-nav .tab-button:hover,
+body.admin-ui .admin-nav #receiptTabBtn:hover { background: rgba(255,255,255,.07); color: #fff; }
+body.admin-ui .admin-nav .tab-button.active-tab,
+body.admin-ui .admin-nav #receiptTabBtn.active-tab {
+  background: rgba(255,255,255,.11); color: #fff; box-shadow: inset 3px 0 0 var(--harvest);
+}
+.admin-nav svg, .admin-nav [data-lucide] { width: 18px; height: 18px; flex: none; }
+body.admin-ui #receiptDropdown {
+  background: rgba(0,0,0,.18); border: 0; box-shadow: none; border-radius: var(--radius-sm);
+  margin: 2px 0 4px; padding: 4px; position: static;
+}
+body.admin-ui #receiptDropdown .tab-sub-button {
+  color: #c9dbe7; background: transparent; padding: 8px 10px 8px 22px; font-size: 0.88rem; border-radius: 6px; gap: 10px;
+}
+body.admin-ui #receiptDropdown .tab-sub-button:hover { background: rgba(255,255,255,.07); color: #fff; }
+body.admin-ui #receiptDropdown .tab-sub-button.bg-gray-200 { background: rgba(255,255,255,.12); color: #fff; }
+body.admin-ui #receiptDropdown .tab-sub-button svg { width: 16px; height: 16px; opacity: .8; flex: none; }
+body.admin-ui .admin-nav .admin-logout {
+  display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 14px;
+  padding: 9px 12px; border-radius: var(--radius-sm); font-size: 0.93rem; font-weight: 600;
+  color: #ffd9d5; background: rgba(180, 50, 42, .22); border: 1px solid rgba(255, 140, 130, .25);
+}
+body.admin-ui .admin-nav .admin-logout:hover { background: var(--danger); color: #fff; }
+
+/* Forms that sit in a row (static tables, codes): wrap instead of overflowing the card */
+body.admin-ui .admin-main form.flex { flex-wrap: wrap; }
+body.admin-ui .admin-main form.flex > input,
+body.admin-ui .admin-main form.flex > select { flex: 1 1 140px; min-width: 0; width: auto; }
+body.admin-ui .admin-main form.flex > button { flex: 0 0 auto; min-height: 40px; padding-left: 18px; padding-right: 18px; }
+body.admin-ui #static-tables > div > div { min-width: 0; }
+body.admin-ui #static-tables > div > .mt-8 { margin-top: 0; }
+
+.admin-user { margin-top: auto; padding: 16px 20px 20px; border-top: 1px solid rgba(255,255,255,.12); }
+.admin-user strong { display: block; color: #fff; font-weight: 600; }
+.admin-user span { font-size: 0.82rem; color: #9fb9cc; }
+.admin-user button {
+  margin-top: 12px; width: 100%; min-height: 38px; border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(255,255,255,.4); color: #fff; font-weight: 600; background: transparent;
+}
+.admin-user button:hover { border-color: #fff; background: rgba(255,255,255,.08); }
+
+body.admin-ui #overlay { background: rgba(8, 27, 41, .5); }
+
+/* ---------- Content ---------- */
+body.admin-ui .admin-main { background: var(--paper); }
+body.admin-ui .admin-main > section { max-width: 1280px; }
+body.admin-ui .admin-main h2 {
+  font-family: var(--font-display); color: var(--ink); letter-spacing: -0.015em; font-weight: 650;
+}
+body.admin-ui .admin-main > section > h2:first-child,
+body.admin-ui .admin-main > div > h2:first-child { font-size: 1.6rem; margin-bottom: 1.25rem; }
+body.admin-ui .admin-main h3 { font-family: var(--font-display); font-weight: 600; }
+body.admin-ui label { color: var(--ink); }
+
+/* Cards */
+body.admin-ui .admin-main .bg-white,
+body.admin-ui .admin-main .bg-gray-100.rounded {
+  border: 1px solid var(--line); border-radius: var(--radius); box-shadow: none;
+}
+body.admin-ui .admin-main table .bg-white,
+body.admin-ui .admin-main tr.bg-white { border: 0; border-radius: 0; }
+body.admin-ui .admin-main .shadow,
+body.admin-ui .admin-main .shadow-md,
+body.admin-ui .admin-main .shadow-lg { box-shadow: none; }
+
+/* Tables */
+body.admin-ui .admin-main table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+body.admin-ui .admin-main thead,
+body.admin-ui .admin-main thead tr,
+body.admin-ui .admin-main thead .bg-gray-200,
+body.admin-ui .admin-main thead .bg-gray-100,
+body.admin-ui .admin-main tr.bg-gray-200,
+body.admin-ui .admin-main tr.bg-gray-100 { background: #f1f5f8; color: var(--muted); }
+body.admin-ui .admin-main th { font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); padding: 10px 12px; text-align: left; }
+body.admin-ui .admin-main td { padding: 9px 12px; border-bottom: 1px solid var(--line); }
+body.admin-ui .admin-main tbody tr:hover { background: #f8fbfd; }
+body.admin-ui .admin-main .border { border-color: var(--line); }
+
+/* Fields */
+body.admin-ui .admin-main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+body.admin-ui .admin-main select,
+body.admin-ui .admin-main textarea,
+body.admin-ui .modal-panel input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+body.admin-ui .modal-panel select,
+body.admin-ui .modal-panel textarea {
+  border: 1.5px solid var(--line-strong); border-radius: var(--radius-sm); background-color: var(--surface);
+  min-height: 40px; padding: 8px 12px; font-size: 0.95rem; color: var(--ink); box-shadow: none;
+}
+body.admin-ui .admin-main textarea { min-height: 96px; }
+body.admin-ui .admin-main input:focus,
+body.admin-ui .admin-main select:focus,
+body.admin-ui .admin-main textarea:focus,
+body.admin-ui .modal-panel input:focus,
+body.admin-ui .modal-panel select:focus,
+body.admin-ui .modal-panel textarea:focus {
+  outline: none; border-color: var(--canopy); box-shadow: 0 0 0 3px rgba(17, 46, 66, 0.15);
+}
+body.admin-ui .admin-main input[readonly], body.admin-ui .admin-main input:disabled { background: var(--paper); color: var(--muted); }
+body.admin-ui input[type="checkbox"], body.admin-ui input[type="radio"] { accent-color: var(--canopy); }
+
+/* Buttons — map the scripts' colour utilities onto OCDA roles */
+body.admin-ui button, body.admin-ui .btn-like { transition: background-color .15s, color .15s, border-color .15s; }
+body.admin-ui .admin-main button.rounded, body.admin-ui .modal-panel button.rounded { border-radius: var(--radius-sm); font-weight: 600; }
+
+body.admin-ui .bg-blue-500, body.admin-ui .bg-blue-600, body.admin-ui .bg-blue-700,
+body.admin-ui .bg-purple-600, body.admin-ui .bg-indigo-600 { background-color: var(--canopy); }
+body.admin-ui .bg-blue-500:hover, body.admin-ui .bg-blue-600:hover, body.admin-ui .bg-blue-700:hover,
+body.admin-ui .bg-purple-600:hover, body.admin-ui .bg-indigo-600:hover { background-color: var(--canopy-hover); }
+
+body.admin-ui .bg-green-500, body.admin-ui .bg-green-600, body.admin-ui .bg-green-700,
+body.admin-ui .bg-emerald-600 { background-color: var(--sky-deep); }
+body.admin-ui .bg-green-500:hover, body.admin-ui .bg-green-600:hover, body.admin-ui .bg-green-700:hover,
+body.admin-ui .bg-emerald-600:hover { background-color: #0b5c73; }
+
+body.admin-ui .bg-red-500, body.admin-ui .bg-red-600, body.admin-ui .bg-red-700 { background-color: var(--danger); }
+body.admin-ui .bg-red-500:hover, body.admin-ui .bg-red-600:hover, body.admin-ui .bg-red-700:hover { background-color: #962820; }
+
+body.admin-ui .bg-yellow-500, body.admin-ui .bg-yellow-600 { background-color: #e0a526; color: #2b1f00; }
+body.admin-ui .bg-yellow-500:hover, body.admin-ui .bg-yellow-600:hover { background-color: #c98f17; }
+
+body.admin-ui .admin-main .bg-gray-400, body.admin-ui .admin-main .bg-gray-500, body.admin-ui .admin-main .bg-gray-600,
+body.admin-ui .modal-panel .bg-gray-400 { background-color: #4a5d6d; }
+body.admin-ui .admin-main .bg-gray-400:hover, body.admin-ui .admin-main .bg-gray-500:hover, body.admin-ui .admin-main .bg-gray-600:hover { background-color: #36495a; }
+
+body.admin-ui .admin-main button.bg-gray-200, body.admin-ui .admin-main button.bg-gray-300,
+body.admin-ui .modal-panel button.bg-gray-200, body.admin-ui .modal-panel button.bg-gray-300,
+body.admin-ui #appModalCancel {
+  background-color: var(--surface); color: var(--ink); border: 1.5px solid var(--line-strong);
+}
+body.admin-ui .admin-main button.bg-gray-200:hover, body.admin-ui .admin-main button.bg-gray-300:hover,
+body.admin-ui #appModalCancel:hover { border-color: var(--ink-soft); }
+
+body.admin-ui .text-blue-600, body.admin-ui .text-blue-700 { color: var(--link); }
+body.admin-ui .text-green-700, body.admin-ui .text-green-600 { color: var(--canopy); }
+
+/* Modals */
+body.admin-ui #appModal > div,
+body.admin-ui #editAdminModal > div,
+body.admin-ui #editNoticeModal > div,
+body.admin-ui #vaModal > div { border-radius: var(--radius-lg); box-shadow: var(--shadow-pop); }
+body.admin-ui #appModal, body.admin-ui #editAdminModal, body.admin-ui #editNoticeModal, body.admin-ui #vaModal { background-color: rgba(8, 27, 41, .5); }
+body.admin-ui #appModalHeader.bg-blue-600, body.admin-ui #vaModalHeader.bg-blue-600 { background-color: var(--canopy-deep); }
+
+/* Create-member form (legacy form classes) */
+body.admin-ui .form-wrapper, body.admin-ui .container-form { background: none; padding: 0; }
+body.admin-ui #createMemberForm {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 28px; max-width: 880px;
+}
+body.admin-ui #createMemberForm .title { font-size: 1.6rem; margin-bottom: 1.25rem; }
+body.admin-ui .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+body.admin-ui .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; min-width: 0; }
+body.admin-ui .form-group label { font-weight: 600; font-size: 0.88rem; }
+body.admin-ui .form-group input, body.admin-ui .form-group select { width: 100%; }
+body.admin-ui .required { color: var(--danger); margin-left: 2px; }
+body.admin-ui .error { display: none; color: var(--danger); font-size: 0.82rem; }
+body.admin-ui .success-message {
+  display: none; background: var(--canopy-tint); color: var(--canopy-deep);
+  border: 1px solid #bcd8e6; border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px;
+}
+body.admin-ui #createMemberForm button { min-height: 42px; padding: 0 20px; margin-right: 8px; }
+body.admin-ui #createMemberForm button a { color: inherit; text-decoration: none; }
+@media (max-width: 640px) { body.admin-ui .form-row { grid-template-columns: 1fr; } }
+
+/* Member details panel */
+body.admin-ui #memberDetails { border: 1px solid var(--line); border-radius: var(--radius); box-shadow: none; }
+body.admin-ui #memberViewOnly { background: var(--paper); border: 1px solid var(--line); box-shadow: none; }
+
+/* Pagination buttons generated by script */
+body.admin-ui #pagination button { min-width: 36px; min-height: 36px; border-radius: var(--radius-sm); }
+
+/* View-admin tab buttons */
+body.admin-ui .tab-btn { color: #d3e2ec; border-radius: var(--radius-sm); }
+body.admin-ui .tab-btn:hover { background: rgba(255,255,255,.07); color: #fff; }
+body.admin-ui .tab-btn.active { background: rgba(255,255,255,.11); color: #fff; box-shadow: inset 3px 0 0 var(--harvest); }
+
+@media (max-width: 1023px) {
+  body.admin-ui .va-layout { flex-direction: column; height: auto !important; }
+  body.admin-ui .va-side { width: 100% !important; flex-direction: row !important; overflow-x: auto; padding: 8px !important; position: sticky; top: 0; z-index: 20; }
+  body.admin-ui .va-side .tab-btn { white-space: nowrap; flex: none; }
+}
+
+@media print {
+  body.admin-ui #sidebar, body.admin-ui .admin-topbar, body.admin-ui .va-side, body.admin-ui .va-header { display: none !important; }
+}
+
+/* ---------- Section header bar (title + actions) ---------- */
+body.admin-ui .section-bar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px;
+  margin-bottom: 20px;
+}
+body.admin-ui .admin-main .section-bar h2 { font-size: 1.6rem; margin: 0; }
+body.admin-ui .section-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+body.admin-ui .section-actions button { min-height: 40px; display: inline-flex; align-items: center; gap: 8px; }
+body.admin-ui .section-actions svg { width: 16px; height: 16px; }
+body.admin-ui #ledger, body.admin-ui #ledger-entry h3 { margin-top: 0; }
+
+/* ---------- Modals ---------- */
+body.modal-open { overflow: hidden; }
+body.admin-ui .ocda-modal {
+  position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-start; justify-content: center;
+  padding: 6vh 16px; overflow-y: auto; background: rgba(8, 27, 41, .55); backdrop-filter: blur(2px);
+}
+body.admin-ui .ocda-modal.hidden { display: none !important; }
+body.admin-ui .ocda-modal-panel {
+  width: 100%; max-width: 560px; background: var(--surface); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-pop); overflow: hidden; animation: ocdaModalIn .18s ease-out;
+}
+body.admin-ui .ocda-modal-panel.wide { max-width: 880px; }
+@keyframes ocdaModalIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { body.admin-ui .ocda-modal-panel { animation: none; } }
+body.admin-ui .ocda-modal-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px 22px; background: var(--canopy-deep); color: #fff; border-bottom: 3px solid var(--harvest);
+}
+body.admin-ui .ocda-modal-head h3 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 650; margin: 0; color: #fff; }
+body.admin-ui .ocda-modal-sub { display: block; font-family: var(--font-body); font-size: 0.8rem; font-weight: 500; color: var(--sky); margin-top: 2px; }
+body.admin-ui .ocda-modal-x {
+  width: 36px; height: 36px; border-radius: 10px; font-size: 1.5rem; line-height: 1; color: #c9dbe7;
+  border: 1px solid rgba(255,255,255,.2); background: transparent;
+}
+body.admin-ui .ocda-modal-x:hover { color: #fff; border-color: var(--harvest); }
+body.admin-ui .ocda-modal-body { padding: 22px; }
+body.admin-ui .ocda-modal-body form,
+body.admin-ui .ocda-modal-body #createMemberForm { border: 0; padding: 0; max-width: none; background: none; box-shadow: none; }
+body.admin-ui .ocda-modal-body input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+body.admin-ui .ocda-modal-body select,
+body.admin-ui .ocda-modal-body textarea {
+  width: 100%; border: 1.5px solid var(--line-strong); border-radius: var(--radius-sm); background-color: var(--surface);
+  min-height: 42px; padding: 8px 12px; font-size: 0.95rem; color: var(--ink);
+}
+body.admin-ui .ocda-modal-body input:focus, body.admin-ui .ocda-modal-body select:focus, body.admin-ui .ocda-modal-body textarea:focus {
+  outline: none; border-color: var(--canopy); box-shadow: 0 0 0 3px rgba(17, 46, 66, 0.15);
+}
+body.admin-ui .ocda-modal-body label { font-weight: 600; font-size: 0.88rem; }
+body.admin-ui .modal-grid > div { min-width: 0; }
+body.admin-ui .modal-actions {
+  display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px;
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line);
+}
+body.admin-ui .modal-actions button { min-height: 42px; padding-left: 20px; padding-right: 20px; }
+body.admin-ui .member-view { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+body.admin-ui .member-view > div { gap: 12px 24px; }
+body.admin-ui .member-view strong { color: var(--muted); font-weight: 600; font-size: 0.85rem; display: block; }
+body.admin-ui #memberDetails .ocda-modal-body > .space-y-6 { margin-bottom: 0; }
+
+/* ---------- Static tables: two sticky columns ---------- */
+body.admin-ui .st-grid { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
+body.admin-ui .st-col { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+@media (min-width: 768px) {
+  body.admin-ui .st-grid { grid-template-columns: 1fr 1fr; }
+  body.admin-ui .st-col { position: sticky; top: 16px; }
+}
+
+/* ---------- Reports caret: -180° when closed, rotates +180° to open ---------- */
+body.admin-ui #receiptTabBtn .admin-caret { transform: rotate(-180deg); transition: transform .25s ease; }
+body.admin-ui #receiptTabBtn.is-open .admin-caret { transform: rotate(0deg); }
+
+/* ---------- Report cards (inline forms on every Reports tab) ---------- */
+body.admin-ui .report-card {
+  max-width: 920px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-card); margin-bottom: 28px; overflow: hidden;
+}
+body.admin-ui .rc-head {
+  display: flex; align-items: center; gap: 14px; padding: 20px 24px;
+  border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #fafcfd, #ffffff);
+}
+body.admin-ui .rc-icon {
+  flex: none; width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--canopy-tint); color: var(--canopy);
+}
+body.admin-ui .rc-icon svg { width: 22px; height: 22px; }
+body.admin-ui .admin-main .rc-head h2 { font-size: 1.35rem; margin: 0; }
+body.admin-ui .rc-head p { margin: 2px 0 0; color: var(--muted); font-size: 0.9rem; }
+
+body.admin-ui .rc-body { padding: 20px 24px 22px; display: flex; flex-direction: column; gap: 18px; }
+body.admin-ui .rc-group { display: flex; flex-direction: column; gap: 10px; }
+body.admin-ui .rc-label { font-weight: 700; font-size: 0.9rem; color: var(--ink); }
+
+body.admin-ui .rc-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; }
+body.admin-ui .rc-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+body.admin-ui .rc-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+body.admin-ui .rc-span-2 { grid-column: span 2; }
+@media (max-width: 900px) { body.admin-ui .rc-grid-3, body.admin-ui .rc-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  body.admin-ui .rc-grid, body.admin-ui .rc-grid-3, body.admin-ui .rc-grid-4 { grid-template-columns: 1fr; }
+  body.admin-ui .rc-span-2 { grid-column: auto; }
+}
+
+body.admin-ui .rc-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+body.admin-ui .rc-field.hidden { display: none; }
+body.admin-ui .rc-field label { font-weight: 600; font-size: 0.86rem; color: var(--ink); }
+body.admin-ui .rc-note { font-weight: 400; color: var(--muted); }
+body.admin-ui .admin-main .rc-field input,
+body.admin-ui .admin-main .rc-field select { width: 100%; min-height: 44px; }
+body.admin-ui .rc-hint { margin: -6px 0 0; font-size: 0.85rem; color: var(--muted); }
+
+/* Radio choices as pills */
+body.admin-ui .rc-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+body.admin-ui .rc-choice { position: relative; cursor: pointer; }
+body.admin-ui .rc-choice input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+body.admin-ui .rc-choice span {
+  display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px;
+  border: 1.5px solid var(--line-strong); background: var(--surface); font-weight: 600; font-size: 0.9rem; color: var(--ink-soft);
+  transition: border-color .15s, background-color .15s, color .15s;
+}
+body.admin-ui .rc-choice span::before {
+  content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line-strong); background: #fff;
+  box-sizing: border-box; transition: border .15s;
+}
+body.admin-ui .rc-choice:hover span { border-color: var(--harvest); }
+body.admin-ui .rc-choice input:checked + span { border-color: var(--canopy); background: var(--canopy-tint); color: var(--canopy-deep); }
+body.admin-ui .rc-choice input:checked + span::before { border: 4px solid var(--canopy); }
+body.admin-ui .rc-choice input:focus-visible + span { box-shadow: var(--focus); }
+
+body.admin-ui .rc-check { display: inline-flex; align-items: center; gap: 10px; font-size: 0.92rem; cursor: pointer; }
+body.admin-ui .rc-check input { width: 18px; height: 18px; }
+
+body.admin-ui .rc-actions {
+  display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px;
+  margin: 4px -24px -22px; padding: 16px 24px; border-top: 1px solid var(--line); background: #fafcfd;
+}
+body.admin-ui .rc-actions button { min-height: 42px; display: inline-flex; align-items: center; gap: 8px; }
+body.admin-ui .rc-actions svg { width: 16px; height: 16px; }
+body.admin-ui .admin-main .rc-results-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 650; margin: 0 0 12px; }

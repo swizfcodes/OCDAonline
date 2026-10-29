@@ -1,70 +1,98 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../db");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const SECRET = "your_jwt_secret";
 const { request } = require("../db-wrapper");
+const { JWT_SECRET: SECRET } = require("../lib/config");
+const { hashPassword, verifyPassword } = require("../lib/passwords");
+const { rateLimit } = require("../lib/rateLimit");
+
+const isSuper = (role) => String(role || "").toLowerCase() === "superadmin";
+const isViewOnly = (role) => String(role || "").toUpperCase() === "VIEWADMIN";
+
+// Reads "Bearer <token>" or a bare token.
+function readToken(req) {
+  const header = req.headers["authorization"] || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : header;
+  return token && token !== "null" && token !== "undefined" ? token : null;
+}
 
 // Token verification middleware
 const verifyToken = (req, res, next) => {
-  const bearerHeader = req.headers["authorization"];
-
-  if (!bearerHeader) {
-    return res.status(403).json({ message: "No token provided" });
-  }
-
-  const token = bearerHeader.split(" ")[1]; // Removes "Bearer " part
+  const token = readToken(req);
+  if (!token) return res.status(401).json({ message: "Sign in to continue." });
 
   jwt.verify(token, SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: "Failed to authenticate token" });
-    }
-
-    req.adminId = decoded.id; //Attach to request
+    if (err) return res.status(401).json({ message: "Your session has ended. Sign in again." });
+    req.adminId = decoded.id;
+    req.adminRole = decoded.role;
     next();
   });
 };
 
-// Create Admin (no password hashing)
+const requireSuperAdmin = (req, res, next) =>
+  verifyToken(req, res, () => {
+    if (!isSuper(req.adminRole)) {
+      return res.status(403).json({ message: "Only a super administrator can manage administrators." });
+    }
+    next();
+  });
+
+// Every write to the admin API needs a valid token, and view-only admins can't write.
+// (/login, /create and /reset-adminpassword handle their own checks.)
+const OPEN_WRITES = new Set(["/login", "/create", "/reset-adminpassword"]);
+router.use((req, res, next) => {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method) || OPEN_WRITES.has(req.path)) return next();
+  verifyToken(req, res, () => {
+    if (isViewOnly(req.adminRole)) {
+      return res.status(403).json({ message: "Your account can view reports but can't make changes." });
+    }
+    next();
+  });
+});
+
+const loginLimiter = rateLimit({ max: 10 });
+
+// Create admin. The very first admin can be created without a token; after that, super admins only.
 router.post("/create", async (req, res) => {
   try {
-    // Count existing admins
-    const countResult =
-      await request`SELECT COUNT(*) AS count FROM admins`.run();
-    const adminCount = countResult.recordset[0].count;
-    const created_at = new Date();
+    const countResult = await request`SELECT COUNT(*) AS count FROM admins`.run();
+    const adminCount = Number(countResult.recordset[0].count);
 
-    // If admins exist, require JWT token
     if (adminCount > 0) {
-      const token = req.headers["authorization"];
-      if (!token) return res.status(403).json({ message: "No token provided" });
-
+      const token = readToken(req);
+      if (!token) return res.status(401).json({ message: "Sign in to continue." });
+      let decoded;
       try {
-        jwt.verify(token, SECRET);
+        decoded = jwt.verify(token, SECRET);
       } catch (err) {
-        return res.status(401).json({ message: "Invalid token" });
+        return res.status(401).json({ message: "Your session has ended. Sign in again." });
+      }
+      if (!isSuper(decoded.role)) {
+        return res.status(403).json({ message: "Only a super administrator can create administrators." });
       }
     }
 
-    const { fullname, email, password, role } = req.body;
+    const { fullname, email, password, role } = req.body || {};
+    if (!fullname || !email || !password) {
+      return res.status(400).json({ message: "Full name, email and password are required." });
+    }
+    if (String(password).length < 8) {
+      return res.status(400).json({ message: "Use at least 8 characters for an administrator password." });
+    }
+    const safeRole = ["admin", "superadmin", "VIEWADMIN"].includes(role) ? role : "admin";
 
-    // Check if admin email already exists
-    const checkResult = await request`
-      SELECT * FROM admins WHERE email = ${email}
-    `.run();
-
+    const checkResult = await request`SELECT Id FROM admins WHERE email = ${email}`.run();
     if (checkResult.recordset.length > 0) {
-      return res.status(409).json({ message: "Admin already exists" });
+      return res.status(409).json({ message: "An administrator with this email already exists." });
     }
 
-    // Insert new admin
     await request`
       INSERT INTO admins (fullname, email, password, role, created_at)
-      VALUES (${fullname}, ${email}, ${password}, ${role}, ${created_at})
+      VALUES (${fullname}, ${email}, ${await hashPassword(password)}, ${safeRole}, ${new Date()})
     `.run();
 
-    res.status(201).json({ message: "Admin created successfully" });
+    res.status(201).json({ message: "Administrator created." });
   } catch (err) {
     console.error("Create Admin Error:", err);
     res.status(500).json({ message: "Server error" });
@@ -72,14 +100,10 @@ router.post("/create", async (req, res) => {
 });
 
 // Activate admin
-router.patch("/activate/:id", verifyToken, async (req, res) => {
+router.patch("/activate/:id", requireSuperAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
-    const result = await request("UPDATE admins SET active = 1 WHERE id = @id")
-      .inputs({ id })
-      .run();
-    if (result.rowsAffected[0] === 0)
-      return res.status(404).json({ message: "Admin not found" });
+    const result = await request("UPDATE admins SET active = 1 WHERE id = @id").inputs({ id: req.params.id }).run();
+    if (result.rowsAffected[0] === 0) return res.status(404).json({ message: "Admin not found" });
     res.json({ message: "Admin activated" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -87,15 +111,13 @@ router.patch("/activate/:id", verifyToken, async (req, res) => {
 });
 
 // Deactivate admin
-router.patch("/deactivate/:id", verifyToken, async (req, res) => {
+router.patch("/deactivate/:id", requireSuperAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
-    const result = await request("UPDATE admins SET active = 0 WHERE id = @id")
-      .inputs({ id })
-      .run();
-
-    if (result.rowsAffected[0] === 0)
-      return res.status(404).json({ message: "Admin not found" });
+    if (String(req.params.id) === String(req.adminId)) {
+      return res.status(400).json({ message: "You can't deactivate your own account." });
+    }
+    const result = await request("UPDATE admins SET active = 0 WHERE id = @id").inputs({ id: req.params.id }).run();
+    if (result.rowsAffected[0] === 0) return res.status(404).json({ message: "Admin not found" });
     res.json({ message: "Admin deactivated" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -103,50 +125,46 @@ router.patch("/deactivate/:id", verifyToken, async (req, res) => {
 });
 
 // Delete admin
-router.delete("/delete/:id", verifyToken, async (req, res) => {
+router.delete("/delete/:id", requireSuperAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
-    const result = await request("DELETE FROM admins WHERE id = @id")
-      .inputs({ id })
-      .run();
-    if (result.rowsAffected[0] === 0)
-      return res.status(404).json({ message: "Admin not found" });
+    if (String(req.params.id) === String(req.adminId)) {
+      return res.status(400).json({ message: "You can't delete your own account." });
+    }
+    const result = await request("DELETE FROM admins WHERE id = @id").inputs({ id: req.params.id }).run();
+    if (result.rowsAffected[0] === 0) return res.status(404).json({ message: "Admin not found" });
     res.json({ message: "Admin deleted" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
 });
 
-//  Login (no password hashing)
-router.post("/login", async (req, res) => {
+// Login
+router.post("/login", loginLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
+    if (!email || !password) return res.status(400).json({ message: "Enter your email and password." });
 
-    const result = await request("SELECT * FROM admins WHERE email = @email")
-      .inputs({ email })
-      .run();
-
-    if (result.recordset.length === 0) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
+    const result = await request("SELECT * FROM admins WHERE email = @email").inputs({ email }).run();
     const admin = result.recordset[0];
-    if (password !== admin.password) {
-      return res.status(401).json({ message: "Invalid credentials" });
+    const check = admin ? await verifyPassword(password, admin.password) : { ok: false };
+    if (!admin || !check.ok) {
+      return res.status(401).json({ message: "That email and password don't match an administrator account." });
     }
     if (admin.active === 0 || admin.active === false || admin.active === "0") {
-      return res
-        .status(403)
-        .json({
-          message: "Account is deactivated. Please contact a superadmin.",
-        });
+      return res.status(403).json({ message: "This account is deactivated. Ask a super administrator to reactivate it." });
     }
 
-    const token = jwt.sign({ id: admin.Id, role: admin.role }, SECRET, { expiresIn: "1d" });
-    res.status(200).json({
+    if (check.needsUpgrade) {
+      await request("UPDATE admins SET password = @pw WHERE Id = @id")
+        .inputs({ pw: await hashPassword(password), id: admin.Id })
+        .run();
+    }
+
+    const token = jwt.sign({ id: admin.Id, role: admin.role }, SECRET, { expiresIn: "12h" });
+    res.json({
       message: "Login successful",
       token,
-      admin: { id: admin.Id, fullname: admin.fullname, role: admin.role },
+      admin: { id: admin.Id, Id: admin.Id, fullname: admin.fullname, role: admin.role },
     });
   } catch (err) {
     console.error("Login Error:", err);
@@ -154,40 +172,35 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Admin Forgot Password Route
-router.post("/reset-adminpassword", async (req, res) => {
-  const { email, newPassword } = req.body;
+const resetLimiter = rateLimit({ max: 5, message: "Too many reset attempts. Wait 15 minutes and try again." });
 
+// Administrator password reset: email + new password.
+router.post("/reset-adminpassword", resetLimiter, async (req, res) => {
+  const { email, newPassword } = req.body || {};
   if (!email || !newPassword) {
-    return res
-      .status(400)
-      .json({ message: "Email and new password are required" });
+    return res.status(400).json({ message: "Enter your email address and a new password." });
   }
-
+  if (String(newPassword).length < 8) {
+    return res.status(400).json({ message: "Use at least 8 characters for an administrator password." });
+  }
   try {
-    const result = await request`
-      UPDATE admins
-      SET [Password] = ${newPassword}
-      WHERE [Email] = ${email}
-    `.run();
-
+    const result = await request("UPDATE admins SET password = @pw WHERE email = @email")
+      .inputs({ pw: await hashPassword(newPassword), email: String(email).trim() })
+      .run();
     if (result.rowsAffected[0] === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "We couldn't find an administrator with that email." });
     }
-
-    res.json({ message: "Password updated successfully" });
+    res.json({ message: "Password updated." });
   } catch (error) {
     console.error("Reset Password Error:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Password reset failed because of a server error." });
   }
 });
 
-//  List admins
-router.get("/list", verifyToken, async (req, res) => {
+// List admins
+router.get("/list", requireSuperAdmin, async (req, res) => {
   try {
-    const result = await request(
-      "SELECT Id, fullname, email, role, active FROM admins",
-    ).run();
+    const result = await request("SELECT Id, fullname, email, role, active FROM admins ORDER BY fullname").run();
     res.json(result.recordset);
   } catch (err) {
     console.error("List Admin Error:", err);
@@ -195,17 +208,29 @@ router.get("/list", verifyToken, async (req, res) => {
   }
 });
 
-//  Update Admin
-router.put("/update/:id", verifyToken, async (req, res) => {
+// Update admin (optional new password)
+router.put("/update/:id", requireSuperAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { fullname, email, role } = req.body;
+    const { fullname, email, role, password } = req.body || {};
+    if (!fullname || !email) return res.status(400).json({ message: "Full name and email are required." });
+    const safeRole = ["admin", "superadmin", "VIEWADMIN"].includes(role) ? role : "admin";
+    if (String(id) === String(req.adminId) && !isSuper(safeRole)) {
+      return res.status(400).json({ message: "You can't remove your own super administrator role." });
+    }
 
-    await request(
-      "UPDATE admins SET fullname=@fullname, email=@email, role=@role WHERE id=@id",
-    )
-      .inputs({ id, fullname, email, role })
-      .run();
+    if (password) {
+      if (String(password).length < 8) {
+        return res.status(400).json({ message: "Use at least 8 characters for an administrator password." });
+      }
+      await request("UPDATE admins SET fullname=@fullname, email=@email, role=@role, password=@pw WHERE id=@id")
+        .inputs({ id, fullname, email, role: safeRole, pw: await hashPassword(password) })
+        .run();
+    } else {
+      await request("UPDATE admins SET fullname=@fullname, email=@email, role=@role WHERE id=@id")
+        .inputs({ id, fullname, email, role: safeRole })
+        .run();
+    }
 
     res.json({ message: "Admin updated successfully" });
   } catch (err) {
@@ -219,15 +244,15 @@ router.get("/dashboard", verifyToken, async (req, res) => {
   try {
     const [ledger, summary, expenses, std] = await Promise.all([
       request(
-        "SELECT TOP (1000) phoneno, transdate, amount, remark FROM memberledger",
+        "SELECT phoneno, transdate, amount, remark FROM memberledger LIMIT 1000",
       ).run(),
       request(
-        "SELECT TOP (1000) period, openbalance, Debitbalance, Creditbalance, Netbalance FROM monthlysummary",
+        "SELECT period, openbalance, Debitbalance, Creditbalance, Netbalance FROM monthlysummary LIMIT 1000",
       ).run(),
       request(
-        "SELECT TOP (1000) docdate, project, remarks, amount FROM ocdaexpenses",
+        "SELECT docdate, project, remarks, amount FROM ocdaexpenses LIMIT 1000",
       ).run(),
-      request("SELECT TOP (1000) expscode, expsdesc FROM Stdxpenses").run(),
+      request("SELECT expscode, expsdesc FROM stdxpenses LIMIT 1000").run(),
     ]);
 
     res.json({
@@ -394,7 +419,7 @@ router.post("/createmember", verifyToken, async (req, res) => {
       PhoneNumber: clean(PhoneNumber),
       phoneno2: clean(phoneno2),
       email: clean(email),
-      Password: clean(Password),
+      Password: clean(Password) ? await hashPassword(clean(Password)) : null,
       Surname: clean(Surname),
       othernames: clean(othernames),
       Title: clean(Title),
@@ -603,7 +628,8 @@ router.get("/member/:phone", verifyToken, async (req, res) => {
 
     if (result.recordset.length === 0)
       return res.status(404).json({ message: "Member not found" });
-    res.json(result.recordset[0]);
+    const { Password, password, ...member } = result.recordset[0];
+    res.json(member);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error fetching member" });
@@ -652,6 +678,11 @@ router.put("/member/:phone", verifyToken, async (req, res) => {
     const updatedInputs = {};
 
     fieldsToUpdate.forEach((field) => {
+      // Password: blank means "keep the current one"; anything else is hashed below
+      if (field === "Password") {
+        updatedInputs.Password = existingMember.Password;
+        return;
+      }
       // Check if the field is present in req.body
       if (req.body[field] !== undefined) {
         // If it's a date field and the value is an empty string, set to null
@@ -669,6 +700,10 @@ router.put("/member/:phone", verifyToken, async (req, res) => {
         updatedInputs[field] = existingMember[field];
       }
     });
+
+    if (typeof req.body.Password === "string" && req.body.Password.trim() !== "") {
+      updatedInputs.Password = await hashPassword(req.body.Password.trim());
+    }
 
     // Ensure the PhoneNumber for the WHERE clause is correctly set
     // If PhoneNumber is being updated, use the new one for the UPDATE statement's SET clause,

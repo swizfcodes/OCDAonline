@@ -2,45 +2,162 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OCDA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OCDA — Oyin-Akoko Community Development Association</title>
+  <meta name="description" content="The Oyin-Akoko Community Development Association unites Oyin indigenes to plan, fund and deliver development projects for Oyin-Akoko.">
+  <meta name="theme-color" content="#081b29">
+  <link rel="icon" href="/photos/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/photos/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles/tokens.css">
+  <link rel="stylesheet" href="/styles/site.css">
 </head>
-<link rel="stylesheet" href="styles/index.css">
-<link rel="icon" type="image/png" href="/photos/favicon.ico" sizes="32x32">
-<link  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-
-
 <body>
-  <!--- header design -->
-  <header class="hicad-header">
-    <a href="index.html" class="hicad-logo home-active">
-      <img src="/photos/OCDA-Logo3.png" alt="ocda-logo" class="ocda-logoIdentity">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+    <a class="brand" href="/">
+      <img src="/photos/ocda-seal-96.webp" alt="" width="44" height="44">
+      <span class="brand-name"><strong>OCDA</strong><span>Oyin-Akoko Community Development Association</span></span>
     </a>
-
-    <nav class="hicad-navbar" id="navbar">
-      <a href="aboutus.html">About Us</a>
-      <a href="news.html" >News & Events</a>
-      <a href="contact.html" >Contact Us</a>
-      <a href="member.html" >Members</a>
-      <a href="adminlog.html" >Admin</a>
-      <a href="faq.html">FAQ</a>
+    <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <nav id="site-nav" class="site-nav" aria-label="Main">
+      <a href="/aboutus.html">About us</a>
+      <a href="/news.html">News &amp; events</a>
+      <a href="/contact.html">Contact us</a>
+      <a href="/faq.html">FAQ</a>
+      <a href="/adminlog.html">Admin</a>
+      <a class="btn btn-nav btn-sm" href="/member.html">Member sign in</a>
     </nav>
-
-    <div class="hamburger" id="hamburger">
-      <span></span>
-      <span></span>
-      <span></span>
     </div>
   </header>
 
-  <section class="landing-section fade-in-section">
-    <img src="/photos/OCDA-Logo3.png" alt="OCDA">
-  </section>
+  <main id="main">
+    <section class="hero">
+      <div class="wrap">
+        <div>
+          <h1>Oyin-Akoko, built by its own sons and daughters.</h1>
+          <p>OCDA brings Oyin indigenes at home and abroad together with Kabiyesi, the Oloyin of Oyin-Akoko, to plan, fund and deliver projects for our town.</p>
+          <div class="hero-actions">
+            <a class="btn btn-light" href="/signup.html">Become a member</a>
+            <a class="btn btn-ghost-light" href="/member.html">Member sign in</a>
+          </div>
+        </div>
+        <div class="hero-seal">
+          <img src="/photos/ocda-seal-480.webp" alt="The OCDA seal: farmers, hills and a river under an open sky" width="480" height="480">
+        </div>
+      </div>
+      <svg class="hills" viewBox="0 0 1440 150" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+    <path fill="#0e2a3e" d="M0 74 C 150 26, 290 30, 420 60 S 690 18, 860 46 S 1170 8, 1440 50 V150 H0Z"/>
+    <path fill="#163a54" d="M0 106 C 190 72, 360 94, 520 100 S 820 64, 1000 90 S 1300 72, 1440 94 V150 H0Z"/>
+    <path fill="#f4f7fa" d="M0 132 C 240 116, 480 142, 720 130 S 1200 116, 1440 134 V150 H0Z"/>
+  </svg>
+    </section>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/emailjs-com/3.2.0/email.min.js"></script>
+    <section class="section">
+      <div class="wrap">
+        <div class="work-grid">
+          <article class="work-feature reveal reveal-left">
+            <h2>What the association does</h2>
+            <p>One platform for every well-meaning Oyin indigene to work together on the growth of the town.</p>
+            <a class="btn btn-light" href="/aboutus.html">Read about OCDA</a>
+          </article>
+          <article class="work-tile reveal" style="--rd: 80ms">
+            <span class="work-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.6 3.5 2.8 3.5 6"/></svg></span>
+            <h3>Mobilise</h3>
+            <p>Bring community stakeholders together around shared priorities for the town.</p>
+          </article>
+          <article class="work-tile reveal" style="--rd: 200ms">
+            <span class="work-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg></span>
+            <h3>Fund projects</h3>
+            <p>Initiate development projects and pay for them through members' dues and levies.</p>
+          </article>
+          <article class="work-tile reveal" style="--rd: 320ms">
+            <span class="work-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M4 10h16M12 3l9 5H3z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/></svg></span>
+            <h3>Engage</h3>
+            <p>Work with local authorities and the traditional council on behalf of the community.</p>
+          </article>
+          <article class="work-tile reveal" style="--rd: 80ms">
+            <span class="work-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span>
+            <h3>Unite</h3>
+            <p>Keep Oyin indigenes connected and working together, wherever they live.</p>
+          </article>
+          <article class="work-tile reveal" style="--rd: 200ms">
+            <span class="work-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V11"/><path d="M12 11C12 7 9 4.5 4.5 4.5 4.5 9 7 11 12 11zM12 13c0-3.5 2.5-6 7.5-6 0 4-2.5 6-7.5 6z"/></svg></span>
+            <h3>Empower</h3>
+            <p>Promote education, health and economic opportunity in Oyin-Akoko.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section band">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2>Notices and events</h2>
+          <a href="/news.html">See all notices</a>
+        </div>
+        <div class="notice-cards" id="homeNotices" aria-live="polite">
+          <div class="notice-card is-loading"><div class="skeleton-line" style="width:40%"></div><div class="skeleton-line" style="width:80%"></div><div class="skeleton-line" style="width:65%"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="dues-banner reveal reveal-right">
+          <span class="dues-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="13" rx="2"/><path d="M2.5 10h19M6.5 15h4"/></svg></span>
+          <div class="dues-copy">
+            <h2>Paying your dues</h2>
+            <p>Pay into the association's bank account using your name and phone number as the reference. Your payments appear as receipts in the member portal once they are recorded.</p>
+          </div>
+          <div class="dues-actions">
+            <a class="btn btn-light" href="/contact.html">See payment details</a>
+            <a class="btn btn-ghost-light" href="/member.html">View my receipts</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-grid">
+        <div>
+          <a class="brand" href="/">
+            <img src="/photos/ocda-seal-96.webp" alt="" width="44" height="44">
+            <span class="brand-name"><strong>OCDA</strong><span>Oyin-Akoko Community Development Association</span></span>
+          </a>
+          <p style="margin-top:1rem;max-width:36ch">Secretariat: Oloyin Palace, Oyin-Akoko, Ondo State, Nigeria.</p>
+        </div>
+        <div>
+          <h3>The association</h3>
+          <ul>
+            <li><a href="/aboutus.html">About OCDA</a></li>
+            <li><a href="/news.html">News &amp; events</a></li>
+            <li><a href="/faq.html">Questions</a></li>
+            <li><a href="/contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Members</h3>
+          <ul>
+            <li><a href="/member.html">Sign in</a></li>
+            <li><a href="/signup.html">Register</a></li>
+            <li><a href="/forgotpassword.html">Reset password</a></li>
+            <li><a href="/adminlog.html">Administrator sign in</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-base">
+        <span>&copy; <span data-year></span> Oyin-Akoko Community Development Association</span>
+        <span>Unity &middot; Service &middot; Transparency &middot; Commitment</span>
+      </div>
+    </div>
+  </footer>
+  <script src="/script/site.js" defer></script>
+  <script src="/script/home.js" defer></script>
 </body>
-<script src="script/index.js"></script>
-
 </html>
-
- 
