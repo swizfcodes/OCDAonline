@@ -245,9 +245,19 @@
     const toggle = document.querySelector(".nav-toggle");
     const nav = document.getElementById("site-nav");
     if (toggle && nav) {
-      toggle.addEventListener("click", function () {
-        const open = nav.classList.toggle("is-open");
+      const setOpen = (open) => {
+        nav.classList.toggle("is-open", open);
         toggle.setAttribute("aria-expanded", String(open));
+      };
+      toggle.addEventListener("click", function () {
+        setOpen(!nav.classList.contains("is-open"));
+      });
+      // Close when tapping outside the menu or pressing Escape
+      document.addEventListener("click", (e) => {
+        if (nav.classList.contains("is-open") && !nav.contains(e.target) && !toggle.contains(e.target)) setOpen(false);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && nav.classList.contains("is-open")) { setOpen(false); toggle.focus(); }
       });
     }
 

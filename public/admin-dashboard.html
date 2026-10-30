@@ -341,7 +341,7 @@
             <div class="rc-grid rc-grid-3">
               <div class="rc-field"><label>Start date</label><input type="date" name="start"></div>
               <div class="rc-field"><label>End date</label><input type="date" name="end"></div>
-              <div class="rc-field"><label>Expense code</label><input type="text" name="code" placeholder="e.g. 1010, or ALL"></div>
+              <div class="rc-field"><label>Expense</label><select name="code" data-code-list="expense"><option value="ALL">All expenses</option></select></div>
             </div>
             <div class="rc-actions">
               <button type="reset" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Clear</button>
@@ -376,7 +376,7 @@
             <div class="rc-grid rc-grid-3">
               <div class="rc-field"><label>Start date</label><input type="date" name="start"></div>
               <div class="rc-field"><label>End date</label><input type="date" name="end"></div>
-              <div class="rc-field"><label>Income description</label><input type="text" name="code" placeholder="e.g. ANNUAL DUES, or ALL"></div>
+              <div class="rc-field"><label>Income</label><select name="code" data-code-list="income"><option value="ALL">All income</option></select></div>
             </div>
             <div class="rc-actions">
               <button type="reset" class="bg-gray-300 text-gray-700 px-4 py-2 rounded">Clear</button>
@@ -1448,6 +1448,7 @@
 <script src="/script/pdf-export.js"></script>
 <script src="/script/admin-dashboard.js"></script>
 <script src="/script/admin-ui.js"></script>
+  <script src="/script/report-codes.js"></script>
   <script src="/script/paginate.js"></script>
 
 </html>

@@ -245,17 +245,9 @@ document.addEventListener("DOMContentLoaded", () => {
         .querySelectorAll(".tab-sub-button")
         .forEach((btn) => btn.classList.remove("bg-gray-200"));
       button.classList.add("bg-gray-200");
-
-      // Close dropdown
-      dropdown.classList.add("hidden");
+      // The Reports menu stays open while a report is showing; it closes when
+      // "Reports" is clicked again or another (non-report) section is opened.
     });
-  });
-
-  // Close dropdown if clicked outside
-  window.addEventListener("click", (e) => {
-    if (!document.getElementById("receiptTabWrapper").contains(e.target)) {
-      dropdown.classList.add("hidden");
-    }
   });
 
   // Render Lucide icons
@@ -334,37 +326,16 @@ window.addEventListener("DOMContentLoaded", () => {
         sidebar.classList.add("-translate-x-full", "hidden");
         overlay.classList.add("hidden");
 
-        // Also hide dropdown on mobile when any tab (including subtabs) is clicked
-        if (receiptDropdown) {
+        // Keep the Reports menu open on mobile too while a report is showing
+        if (receiptDropdown && !isSubtab(tab)) {
           receiptDropdown.classList.add("hidden");
         }
       }
     });
   });
 
-  // Manual dropdown toggle for receipt tab
-  if (receiptTabBtn && receiptDropdown) {
-    // Force initialize dropdown as hidden using inline style
-    receiptDropdown.style.display = "none";
-    console.log("Dropdown initialized as hidden");
-
-    receiptTabBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log("Receipt tab clicked");
-
-      const isHidden = receiptDropdown.style.display === "none";
-      console.log("Is dropdown hidden?", isHidden);
-
-      if (isHidden) {
-        receiptDropdown.style.display = "block";
-        console.log("Dropdown shown");
-      } else {
-        receiptDropdown.style.display = "none";
-        console.log("Dropdown hidden");
-      }
-    });
-  }
+  // The Reports menu is opened/closed only by the "hidden" class (handler above);
+  // a second inline-style toggle used to fight it and left the caret out of step.
 
   // Close dropdown only when menuwrapper is clicked
   const menuWrapper = document.querySelector(

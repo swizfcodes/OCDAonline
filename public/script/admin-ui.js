@@ -110,7 +110,7 @@
     const dd = document.getElementById("receiptDropdown");
     const btn = document.getElementById("receiptTabBtn");
     if (!dd || !btn) return;
-    const open = !dd.classList.contains("hidden") && dd.style.display !== "none";
+    const open = !dd.classList.contains("hidden");
     btn.classList.toggle("is-open", open);
     btn.setAttribute("aria-expanded", String(open));
   }
