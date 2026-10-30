@@ -16,9 +16,9 @@
       padding: 10px 2px 2px; font-size: 0.86rem; color: var(--muted, #5a6b79); }
     .pg-pages { display: flex; flex-wrap: wrap; gap: 4px; }
     .pg-btn { min-width: 34px; height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line-strong, #c3cfd9);
-      background: #fff; color: var(--ink, #0f1f2b); font: 600 0.84rem var(--font-body, system-ui); cursor: pointer; }
+      background: var(--surface, #fff); color: var(--ink, #0f1f2b); font: 600 0.84rem var(--font-body, system-ui); cursor: pointer; }
     .pg-btn:hover:not([disabled]) { border-color: var(--harvest, #00bcd4); background: var(--harvest-tint, #e0f7fa); }
-    .pg-btn[aria-current="page"] { background: var(--canopy, #112e42); border-color: var(--canopy, #112e42); color: #fff; }
+    .pg-btn[aria-current="page"] { background: var(--canopy, #112e42); border-color: var(--canopy, #112e42); color: var(--on-canopy, #fff); }
     .pg-btn[disabled] { opacity: .45; cursor: default; }
     .pg-gap { padding: 0 4px; align-self: center; }
     @media print { tr.pg-hidden { display: table-row !important; } .pg-bar { display: none !important; } }

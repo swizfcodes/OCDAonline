@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reports — OCDA</title>
   <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <script>(function(){var t;try{t=localStorage.getItem("ocda-theme")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)})();</script>
   <link rel="icon" href="/photos/favicon.ico" sizes="any">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,12 +30,13 @@
     </a>
     <div class="flex items-center gap-4">
       <span class="text-sm hidden sm:inline" id="vaWho" style="color:var(--muted)"></span>
+      <button type="button" class="theme-icon-btn" data-theme-toggle aria-label="Switch theme"><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
       <button type="button" onclick="viewAdminLogout()" class="rounded text-sm font-semibold px-4" style="border:1.5px solid var(--line-strong);width:auto;min-height:38px">Sign out</button>
     </div>
   </header>
 
   <div class="va-layout flex" style="height:calc(100vh - 64px)">
-    <aside class="va-side admin-side w-60 flex flex-col py-4 px-3 gap-1 shrink-0 overflow-y-auto" style="background:var(--canopy-deep)" aria-label="Reports">
+    <aside class="va-side admin-side w-60 flex flex-col py-4 px-3 gap-1 shrink-0 overflow-y-auto" style="background:var(--side-bg)" aria-label="Reports">
         <button type="button" class="tab-btn active text-left px-3 py-2 text-sm font-medium" data-tab="enquiry-tab">Enquiry</button>
         <button type="button" class="tab-btn text-left px-3 py-2 text-sm font-medium" data-tab="memberledger-tab">Member ledger</button>
         <button type="button" class="tab-btn text-left px-3 py-2 text-sm font-medium" data-tab="summary-tab">Monthly summary</button>
@@ -817,6 +820,7 @@
       });
     });
   </script>
+  <script src="/script/theme.js"></script>
   <script src="/script/paginate.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>

@@ -1,25 +1,72 @@
-/* OCDA design tokens — shared by the public site, member portal and admin consoles. */
+/* OCDA design tokens — shared by the public site, member portal and admin consoles.
+
+   Two themes:
+   - light: a faint, almost-white blue ground with navy text
+   - dark:  the OCDA navy ground with white and light-blue text
+   The device setting decides by default (prefers-color-scheme). A visitor's own choice is
+   stored by /script/theme.js and applied as <html data-theme="light|dark"> before paint. */
+
 :root {
-  /* Palette — the original OCDA navy and sky blue */
-  --ink: #0f1f2b;          /* body text */
+  /* Brand constants (never change with the theme) */
+  --navy: #081b29;          /* original OCDA background */
+  --navy-2: #112e42;        /* original second background */
+  --sky: #94c2d8;           /* original main colour */
+  --harvest: #00bcd4;       /* original accent: active markers, underlines */
+
+  /* ---- Light theme ---- */
+  --paper: #edf4f9;         /* page background: faint blue, almost white */
+  --paper-glass: rgba(237, 244, 249, 0.86);
+  --surface: #f8fbfd;       /* cards, inputs */
+  --surface-2: #e4eef5;     /* table heads, quiet fills */
+  --row-hover: #eaf2f8;
+  --ink: #0f1f2b;           /* body text */
   --ink-soft: #33485a;
-  --muted: #5a6b79;        /* secondary text */
-  --canopy: #112e42;       /* primary actions (original second background) */
+  --muted: #5a6b79;         /* secondary text */
+  --line: #d3e1eb;
+  --line-strong: #b9cbd9;
+  --link: #0b6a8a;
+  --canopy: #112e42;        /* primary actions and strong accents */
   --canopy-hover: #081b29;
-  --canopy-deep: #081b29;  /* hero, sidebars, footer (original background) */
-  --canopy-tint: #e7f1f7;  /* selected rows, soft fills */
-  --link: #0b6a8a;         /* links on light backgrounds */
-  --sky: #94c2d8;          /* original main colour — on dark grounds */
-  --sky-deep: #0e7490;     /* secondary actions (export, print) */
-  --harvest: #00bcd4;      /* original accent: active markers, underlines */
-  --harvest-tint: #e0f7fa;
-  --paper: #f4f7fa;        /* page background */
-  --surface: #ffffff;
-  --line: #dbe3ea;
-  --line-strong: #c3cfd9;
+  --on-canopy: #ffffff;     /* text on --canopy */
+  --canopy-deep: #081b29;   /* navy panels: sidebars, footer, sign-in aside */
+  --canopy-tint: #dfecf4;   /* selected rows, soft fills */
+  --feature: #081b29;       /* navy feature cards on the home page */
+  --accent-word: #3d8fb8;   /* the light-blue word in page headings */
+  --sky-deep: #0e7490;      /* secondary actions (export, print) */
+  --harvest-tint: #d9f1f5;
+  --harvest-ink: #00606e;
   --danger: #b4322a;
   --danger-tint: #fbeae8;
+  --danger-ink: #8a231d;
+  --success-line: #bcd8e6;
+  --info-bg: #e3f0f7;
+  --info-ink: #17506b;
+  --info-line: #c2dcea;
   --warning: #9a6a00;
+  --hill-back: #d6e6f0;
+  --hill-mid: #e1edf5;
+  --side-bg: #e2edf5;        /* sidebars (admin, reports, member portal) */
+  --side-ink: #0f1f2b;
+  --side-text: #33485a;
+  --side-muted: #5a6b79;
+  --side-hover: rgba(17, 46, 66, .06);
+  --side-active: rgba(17, 46, 66, .1);
+  --side-sub: rgba(17, 46, 66, .045);
+  --side-line: #cddce7;
+  --side-line-strong: #b9cbd9;
+  --side-danger-bg: #f6e3e1;
+  --side-danger-ink: #a12d25;
+  --side-danger-line: #ecc6c2;
+  --scroll-track: #edf4f9;
+  --scroll-thumb: #c4dcea;
+  --scroll-thumb-hover: #9cc4da;
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%235a6b79' stroke-width='1.8'/%3E%3C/svg%3E");
+  --shadow-pop: 0 12px 32px rgba(8, 27, 41, 0.22);
+  --shadow-card: 0 8px 28px rgba(8, 27, 41, 0.07);
+  --shadow-hover: 0 14px 34px rgba(8, 27, 41, 0.1);
+  --focus: 0 0 0 3px rgba(0, 188, 212, 0.55);
+  --focus-soft: 0 0 0 3px rgba(17, 46, 66, 0.15);
+  color-scheme: light;
 
   /* Type */
   --font-display: "Bricolage Grotesque", "Public Sans", system-ui, sans-serif;
@@ -44,8 +91,99 @@
   --radius-sm: 6px;
   --radius: 10px;
   --radius-lg: 16px;
-  --shadow-pop: 0 12px 32px rgba(8, 27, 41, 0.22);
-  --shadow-card: 0 8px 28px rgba(8, 27, 41, 0.08);
-  --focus: 0 0 0 3px rgba(0, 188, 212, 0.55);
   --content: 1120px;
+}
+
+/* ---- Dark theme: the OCDA navy with white and light blue ---- */
+:root[data-theme="dark"] {
+  --paper: #081b29;
+  --paper-glass: rgba(8, 27, 41, 0.86);
+  --surface: #0d2436;
+  --surface-2: #112d43;
+  --row-hover: #12304a;
+  --ink: #eaf3f8;
+  --ink-soft: #c3d7e4;
+  --muted: #8eacc0;
+  --line: #1c3a52;
+  --line-strong: #2a4d68;
+  --link: #94c2d8;
+  --canopy: #94c2d8;
+  --canopy-hover: #b6d8e8;
+  --on-canopy: #081b29;
+  --canopy-deep: #05131e;
+  --canopy-tint: #133650;
+  --feature: #112e42;
+  --accent-word: #94c2d8;
+  --sky-deep: #1b6f8c;
+  --harvest-tint: #0b3442;
+  --harvest-ink: #7fe3f0;
+  --danger: #e0574e;
+  --danger-tint: #3a1b1f;
+  --danger-ink: #ffb4ad;
+  --success-line: #24506b;
+  --info-bg: #10304a;
+  --info-ink: #bfe0f0;
+  --info-line: #24506b;
+  --warning: #f0c060;
+  --hill-back: #0e2a3e;
+  --hill-mid: #133650;
+  --side-bg: #05131e;
+  --side-ink: #ffffff;
+  --side-text: #d3e2ec;
+  --side-muted: #9fb9cc;
+  --side-hover: rgba(255, 255, 255, .07);
+  --side-active: rgba(255, 255, 255, .11);
+  --side-sub: rgba(0, 0, 0, .18);
+  --side-line: rgba(255, 255, 255, .12);
+  --side-line-strong: rgba(255, 255, 255, .3);
+  --side-danger-bg: rgba(180, 50, 42, .22);
+  --side-danger-ink: #ffd9d5;
+  --side-danger-line: rgba(255, 140, 130, .25);
+  --scroll-track: #081b29;
+  --scroll-thumb: #1d3d56;
+  --scroll-thumb-hover: #2c5675;
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%2394c2d8' stroke-width='1.8'/%3E%3C/svg%3E");
+  --shadow-pop: 0 16px 40px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 8px 28px rgba(0, 0, 0, 0.25);
+  --shadow-hover: 0 14px 34px rgba(0, 0, 0, 0.35);
+  --focus-soft: 0 0 0 3px rgba(148, 194, 216, 0.25);
+  color-scheme: dark;
+}
+
+/* Without JavaScript, still follow the device setting */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --paper: #081b29; --paper-glass: rgba(8, 27, 41, 0.86); --surface: #0d2436; --surface-2: #112d43; --row-hover: #12304a;
+    --ink: #eaf3f8; --ink-soft: #c3d7e4; --muted: #8eacc0; --line: #1c3a52; --line-strong: #2a4d68;
+    --link: #94c2d8; --canopy: #94c2d8; --canopy-hover: #b6d8e8; --on-canopy: #081b29; --canopy-deep: #05131e;
+    --canopy-tint: #133650; --feature: #112e42; --accent-word: #94c2d8; --sky-deep: #1b6f8c;
+    --harvest-tint: #0b3442; --harvest-ink: #7fe3f0; --danger: #e0574e; --danger-tint: #3a1b1f; --danger-ink: #ffb4ad;
+    --success-line: #24506b; --info-bg: #10304a; --info-ink: #bfe0f0; --info-line: #24506b; --warning: #f0c060;
+    --hill-back: #0e2a3e; --hill-mid: #133650;
+    --scroll-track: #081b29; --scroll-thumb: #1d3d56; --scroll-thumb-hover: #2c5675;
+    --side-bg: #05131e; --side-ink: #fff; --side-text: #d3e2ec; --side-muted: #9fb9cc; --side-hover: rgba(255,255,255,.07);
+    --side-active: rgba(255,255,255,.11); --side-sub: rgba(0,0,0,.18); --side-line: rgba(255,255,255,.12); --side-line-strong: rgba(255,255,255,.3);
+    --side-danger-bg: rgba(180,50,42,.22); --side-danger-ink: #ffd9d5; --side-danger-line: rgba(255,140,130,.25);
+    --shadow-pop: 0 16px 40px rgba(0, 0, 0, 0.5); --shadow-card: 0 8px 28px rgba(0, 0, 0, 0.25); --shadow-hover: 0 14px 34px rgba(0, 0, 0, 0.35);
+    --focus-soft: 0 0 0 3px rgba(148, 194, 216, 0.25);
+    color-scheme: dark;
+  }
+}
+
+/* Smooth hand-over when the theme is switched */
+html.theme-switching, html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after {
+  transition: background-color .3s ease, border-color .3s ease, color .3s ease, fill .3s ease !important;
+}
+
+/* ---- Scrollbars: faint light blue in light mode, navy in dark mode (every page) ---- */
+html { scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
+* { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+html { scrollbar-width: auto; }
+/* Safari and older Chromium */
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track { background: var(--scroll-track); }
+  ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; border: 3px solid var(--scroll-track); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+  ::-webkit-scrollbar-corner { background: var(--scroll-track); }
 }

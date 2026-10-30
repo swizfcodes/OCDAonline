@@ -364,29 +364,24 @@
               <span class="notice-title">${esc(n.title)}</span>
               <span class="notice-kind" data-kind="${esc(n.type)}">${n.type === "event" ? "Event" : "Notice"}</span>
             </button>
-            <div class="notice-body" id="${id}-body" hidden>${esc(n.content || "No further details.")}</div>
+            <div class="notice-body" id="${id}-body" hidden><div class="notice-body-inner">${esc(n.content || "No further details.")}</div></div>
           </li>`;
         }).join("")
       : '<li class="empty">No notices or events have been posted yet.</li>';
   }
 
-  function setNotice(btn, open) {
-    btn.setAttribute("aria-expanded", String(open));
-    $(btn.getAttribute("aria-controls")).hidden = !open;
-  }
-
-  // One notice open at a time
-  function toggleNotice(btn, forceOpen) {
-    const open = forceOpen === true || btn.getAttribute("aria-expanded") !== "true";
-    if (open) $("noticeFullList").querySelectorAll('button[aria-expanded="true"]').forEach((b) => setNotice(b, false));
-    setNotice(btn, open);
+  // One notice open at a time, animated (see OCDA.noticeAccordion)
+  let noticeAccordion = null;
+  function toggleNotice(btn, forceOpen, opts) {
+    noticeAccordion = noticeAccordion || O.noticeAccordion($("noticeFullList"));
+    noticeAccordion.toggle(btn, forceOpen, opts);
   }
 
   function openNotice(id) {
     show("notices");
     const item = $(`pn-${id}`);
     if (!item) return;
-    toggleNotice(item.querySelector("button"), true);
+    toggleNotice(item.querySelector("button"), true, { animate: false });
     item.scrollIntoView({ block: "start" });
   }
 
@@ -473,10 +468,7 @@
       const b = e.target.closest("[data-notice]");
       if (b) openNotice(b.dataset.notice);
     });
-    $("noticeFullList").addEventListener("click", (e) => {
-      const b = e.target.closest("button[aria-controls]");
-      if (b) toggleNotice(b);
-    });
+    noticeAccordion = O.noticeAccordion($("noticeFullList"));
 
     document.querySelectorAll('input[name="filterType"]').forEach((r) => r.addEventListener("change", syncEnquiryType));
     syncEnquiryType();

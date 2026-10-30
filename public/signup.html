@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Register — OCDA</title>
   <meta name="description" content="Registering gives you a member account where you can keep your details current and see your dues receipts.">
-  <meta name="theme-color" content="#081b29">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#edf4f9">
+  <script>(function(){var t;try{t=localStorage.getItem("ocda-theme")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)})();</script>
   <link rel="icon" href="/photos/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/photos/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,22 +17,25 @@
   <link rel="stylesheet" href="/styles/site.css">
 </head>
 <body>
-  <div class="auth">
+  <div class="auth auth-wide">
+    <div class="auth-tools"><button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme"><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button></div>
     <aside class="auth-aside">
       <div class="auth-aside-inner">
         <a class="auth-back" href="/">&larr; Back to the website</a>
-        <div class="auth-aside-body">
-          <a href="/" aria-label="OCDA home"><img src="/photos/ocda-seal-480.webp" alt="OCDA seal" width="168" height="168"></a>
-          <p class="auth-org">Oyin-Akoko Community Development Association</p>
+        <div class="auth-band auth-band-brand">
+          <a class="auth-brand" href="/" aria-label="OCDA home">
+            <img src="/photos/ocda-seal-192.webp" alt="OCDA seal" width="60" height="60">
+            <span class="brand-name"><strong>OCDA</strong><span>Oyin-Akoko Community Development Association</span></span>
+          </a>
+        </div>
+        <div class="auth-band auth-band-main auth-aside-body">
           <h2>Join the association.</h2>
           <p>Registering gives you a member account where you can keep your details current and see your dues receipts.</p>
         </div>
-        <small>&copy; <span data-year></span> OCDA</small>
+        <div class="auth-band auth-band-foot">
+          <p class="auth-credit"><span>&copy; <span data-year></span> Oyin-Akoko Community Development Association</span><span>Engineered by SwizfCodes.</span></p>
+        </div>
       </div>
-      <svg class="hills" viewBox="0 0 1440 150" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-    <path fill="#0e2a3e" d="M0 74 C 150 26, 290 30, 420 60 S 690 18, 860 46 S 1170 8, 1440 50 V150 H0Z"/>
-    <path fill="#163a54" d="M0 106 C 190 72, 360 94, 520 100 S 820 64, 1000 90 S 1300 72, 1440 94 V150 H0Z"/>
-  </svg>
     </aside>
     <main class="auth-main" id="main">
       <div class="auth-card wide">
@@ -186,8 +191,10 @@
         </form>
         <p class="auth-foot">Already registered? <a href="/member.html">Sign in</a></p>
       </div>
+      <p class="auth-credit auth-credit-mobile"><span>&copy; <span data-year></span> Oyin-Akoko Community Development Association</span><span>Engineered by SwizfCodes.</span></p>
     </main>
   </div>
+  <script src="/script/theme.js" defer></script>
   <script src="/script/site.js" defer></script>
   <script src="/script/signup.js" defer></script>
 </body>

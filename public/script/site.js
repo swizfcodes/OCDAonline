@@ -119,6 +119,113 @@
     list.forEach((el) => revealObserver.observe(el));
   };
 
+  /* ---------- Smooth accordions ----------
+     Height is animated with the Web Animations API, and when an open item ABOVE the one being opened
+     closes, it closes instantly and the page is scrolled by the same amount, so the tapped row stays
+     exactly where the finger is (this is what made the list jump on phones). */
+  const reducedMotion = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  OCDA.slide = function (panel, open, done) {
+    // If it is mid-animation, carry on from its current height rather than snapping
+    const mid = panel._anim ? panel.getBoundingClientRect().height : null;
+    if (panel._anim) panel._anim.cancel();
+    if (reducedMotion() || !panel.animate) { if (done) done(); return; }
+    const from = mid !== null ? mid : open ? 0 : panel.offsetHeight;
+    const to = open ? panel.scrollHeight : 0;
+    panel.style.overflow = "hidden";
+    const anim = panel.animate(
+      [{ height: from + "px", opacity: open ? 0.2 : 1 }, { height: to + "px", opacity: open ? 1 : 0 }],
+      { duration: open ? 320 : 260, easing: "cubic-bezier(.2,.7,.2,1)" },
+    );
+    panel._anim = anim;
+    anim.onfinish = () => { panel._anim = null; panel.style.overflow = ""; if (done) done(); };
+    anim.oncancel = () => { panel._anim = null; panel.style.overflow = ""; };
+  };
+
+  const isBefore = (a, b) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+  /** Run `change` and then scroll so `anchor` stays at the same place on screen. */
+  function keepInPlace(anchor, change) {
+    const before = anchor.getBoundingClientRect().top;
+    change();
+    const shift = anchor.getBoundingClientRect().top - before;
+    if (Math.abs(shift) > 1) window.scrollBy(0, shift);
+  }
+
+  /** Lists of <button aria-controls> + panel (news page, portal notices). One open at a time. */
+  OCDA.noticeAccordion = function (list) {
+    if (!list) return null;
+    const panelOf = (btn) => document.getElementById(btn.getAttribute("aria-controls"));
+
+    function set(btn, open, animate) {
+      const panel = panelOf(btn);
+      btn.setAttribute("aria-expanded", String(open));
+      if (!panel) return;
+      if (!animate) {
+        if (panel._anim) panel._anim.cancel();
+        panel.hidden = !open;
+        return;
+      }
+      if (open) {
+        panel.hidden = false;
+        OCDA.slide(panel, true);
+      } else {
+        OCDA.slide(panel, false, () => { if (btn.getAttribute("aria-expanded") !== "true") panel.hidden = true; });
+      }
+    }
+
+    function toggle(btn, forceOpen, opts) {
+      const open = forceOpen === true || btn.getAttribute("aria-expanded") !== "true";
+      const animate = !(opts && opts.animate === false);
+      if (!open) { set(btn, false, animate); return; }
+      const others = [...list.querySelectorAll('button[aria-expanded="true"]')].filter((b) => b !== btn);
+      // Only snap the items above shut if the page can scroll up by their height; otherwise animate them
+      const aboveHeight = others.filter((b) => isBefore(b, btn)).reduce((t, b) => t + ((panelOf(b) || {}).offsetHeight || 0), 0);
+      const canAnchor = window.scrollY >= aboveHeight - 1;
+      keepInPlace(btn, () => {
+        others.forEach((b) => set(b, false, animate && !(canAnchor && isBefore(b, btn))));
+        set(btn, true, animate);
+      });
+    }
+
+    list.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[aria-controls]");
+      if (btn && list.contains(btn)) toggle(btn);
+    });
+    return { toggle };
+  };
+
+  /** <details> lists (FAQ). One open at a time, animated open and close. */
+  OCDA.detailsAccordion = function (container) {
+    if (!container) return;
+    const panelOf = (d) => d.querySelector(":scope > :not(summary)");
+
+    function close(d, animate) {
+      const panel = panelOf(d);
+      if (!animate || !panel) { if (panel && panel._anim) panel._anim.cancel(); d.classList.remove("is-closing"); d.open = false; return; }
+      d.classList.add("is-closing");
+      OCDA.slide(panel, false, () => { d.classList.remove("is-closing"); d.open = false; });
+    }
+
+    container.addEventListener("click", (e) => {
+      const summary = e.target.closest("summary");
+      if (!summary || !container.contains(summary)) return;
+      const d = summary.parentElement;
+      e.preventDefault();
+      if (d.open && !d.classList.contains("is-closing")) { close(d, true); return; }
+      const others = [...container.querySelectorAll("details[open]")].filter((o) => o !== d);
+      const aboveHeight = others.filter((o) => isBefore(o, d)).reduce((t, o) => t + ((panelOf(o) || {}).offsetHeight || 0), 0);
+      const canAnchor = window.scrollY >= aboveHeight - 1;
+      keepInPlace(summary, () => {
+        others.forEach((o) => close(o, !(canAnchor && isBefore(o, d))));
+        d.classList.remove("is-closing");
+        d.open = true;
+        const panel = panelOf(d);
+        if (panel) OCDA.slide(panel, true);
+      });
+    });
+  };
+
   /** Only one <details> open at a time inside `container`. */
   OCDA.singleOpen = function (container) {
     if (!container) return;

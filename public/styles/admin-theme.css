@@ -25,42 +25,42 @@ body.admin-ui :focus-visible { outline: none; box-shadow: var(--focus); }
 .admin-topbar button { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: var(--radius-sm); display: inline-flex; align-items: center; justify-content: center; }
 
 body.admin-ui #sidebar.admin-side {
-  background: var(--canopy-deep); color: #c9dbe7; border: 0;
+  background: var(--side-bg); color: var(--side-text); border: 0;
   display: flex; flex-direction: column;
 }
 @media (min-width: 1024px) { body.admin-ui #sidebar.admin-side.hidden { display: flex !important; } }
-.admin-side .admin-brand { color: #fff; padding: 22px 20px 18px; }
+.admin-side .admin-brand { color: var(--side-ink); padding: 22px 20px 18px; }
 .admin-nav { padding: 4px 12px 16px; display: flex; flex-direction: column; gap: 2px; }
-.admin-nav-group { font-size: 0.78rem; color: #8eaabd; padding: 16px 12px 6px; margin: 0; font-weight: 600; }
+.admin-nav-group { font-size: 0.78rem; color: var(--side-muted); padding: 16px 12px 6px; margin: 0; font-weight: 600; }
 body.admin-ui .admin-nav .tab-button,
 body.admin-ui .admin-nav #receiptTabBtn {
   display: flex; align-items: center; gap: 10px; width: 100%;
   padding: 9px 12px; border-radius: var(--radius-sm);
-  color: #d3e2ec; background: transparent; font-size: 0.93rem; font-weight: 500; text-align: left;
+  color: var(--side-text); background: transparent; font-size: 0.93rem; font-weight: 500; text-align: left;
 }
 body.admin-ui .admin-nav .tab-button:hover,
-body.admin-ui .admin-nav #receiptTabBtn:hover { background: rgba(255,255,255,.07); color: #fff; }
+body.admin-ui .admin-nav #receiptTabBtn:hover { background: var(--side-hover); color: var(--side-ink); }
 body.admin-ui .admin-nav .tab-button.active-tab,
 body.admin-ui .admin-nav #receiptTabBtn.active-tab {
-  background: rgba(255,255,255,.11); color: #fff; box-shadow: inset 3px 0 0 var(--harvest);
+  background: var(--side-active); color: var(--side-ink); box-shadow: inset 3px 0 0 var(--harvest);
 }
 .admin-nav svg, .admin-nav [data-lucide] { width: 18px; height: 18px; flex: none; }
 body.admin-ui #receiptDropdown {
-  background: rgba(0,0,0,.18); border: 0; box-shadow: none; border-radius: var(--radius-sm);
+  background: var(--side-sub); border: 0; box-shadow: none; border-radius: var(--radius-sm);
   margin: 2px 0 4px; padding: 4px; position: static;
 }
 body.admin-ui #receiptDropdown .tab-sub-button {
-  color: #c9dbe7; background: transparent; padding: 8px 10px 8px 22px; font-size: 0.88rem; border-radius: 6px; gap: 10px;
+  color: var(--side-text); background: transparent; padding: 8px 10px 8px 22px; font-size: 0.88rem; border-radius: 6px; gap: 10px;
 }
-body.admin-ui #receiptDropdown .tab-sub-button:hover { background: rgba(255,255,255,.07); color: #fff; }
-body.admin-ui #receiptDropdown .tab-sub-button.bg-gray-200 { background: rgba(255,255,255,.12); color: #fff; }
+body.admin-ui #receiptDropdown .tab-sub-button:hover { background: var(--side-hover); color: var(--side-ink); }
+body.admin-ui #receiptDropdown .tab-sub-button.bg-gray-200 { background: var(--side-active); color: var(--side-ink); }
 body.admin-ui #receiptDropdown .tab-sub-button svg { width: 16px; height: 16px; opacity: .8; flex: none; }
 body.admin-ui .admin-nav .admin-logout {
   display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 14px;
   padding: 9px 12px; border-radius: var(--radius-sm); font-size: 0.93rem; font-weight: 600;
-  color: #ffd9d5; background: rgba(180, 50, 42, .22); border: 1px solid rgba(255, 140, 130, .25);
+  color: var(--side-danger-ink); background: var(--side-danger-bg); border: 1px solid var(--side-danger-line);
 }
-body.admin-ui .admin-nav .admin-logout:hover { background: var(--danger); color: #fff; }
+body.admin-ui .admin-nav .admin-logout:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
 /* Forms that sit in a row (static tables, codes): wrap instead of overflowing the card */
 body.admin-ui .admin-main form.flex { flex-wrap: wrap; }
@@ -70,14 +70,14 @@ body.admin-ui .admin-main form.flex > button { flex: 0 0 auto; min-height: 40px;
 body.admin-ui #static-tables > div > div { min-width: 0; }
 body.admin-ui #static-tables > div > .mt-8 { margin-top: 0; }
 
-.admin-user { margin-top: auto; padding: 16px 20px 20px; border-top: 1px solid rgba(255,255,255,.12); }
-.admin-user strong { display: block; color: #fff; font-weight: 600; }
-.admin-user span { font-size: 0.82rem; color: #9fb9cc; }
+.admin-user { margin-top: auto; padding: 16px 20px 20px; border-top: 1px solid var(--side-line); }
+.admin-user strong { display: block; color: var(--side-ink); font-weight: 600; }
+.admin-user span { font-size: 0.82rem; color: var(--side-muted); }
 .admin-user button {
   margin-top: 12px; width: 100%; min-height: 38px; border-radius: var(--radius-sm);
-  border: 1.5px solid rgba(255,255,255,.4); color: #fff; font-weight: 600; background: transparent;
+  border: 1.5px solid var(--side-line-strong); color: var(--side-ink); font-weight: 600; background: transparent;
 }
-.admin-user button:hover { border-color: #fff; background: rgba(255,255,255,.08); }
+.admin-user button:hover { border-color: var(--side-ink); background: var(--side-hover); }
 
 body.admin-ui #overlay { background: rgba(8, 27, 41, .5); }
 
@@ -110,10 +110,10 @@ body.admin-ui .admin-main thead tr,
 body.admin-ui .admin-main thead .bg-gray-200,
 body.admin-ui .admin-main thead .bg-gray-100,
 body.admin-ui .admin-main tr.bg-gray-200,
-body.admin-ui .admin-main tr.bg-gray-100 { background: #f1f5f8; color: var(--muted); }
+body.admin-ui .admin-main tr.bg-gray-100 { background: var(--surface-2); color: var(--muted); }
 body.admin-ui .admin-main th { font-size: 0.8rem; font-weight: 600; color: var(--ink-soft); padding: 10px 12px; text-align: left; }
 body.admin-ui .admin-main td { padding: 9px 12px; border-bottom: 1px solid var(--line); }
-body.admin-ui .admin-main tbody tr:hover { background: #f8fbfd; }
+body.admin-ui .admin-main tbody tr:hover { background: var(--row-hover); }
 body.admin-ui .admin-main .border { border-color: var(--line); }
 
 /* Fields */
@@ -133,9 +133,9 @@ body.admin-ui .admin-main textarea:focus,
 body.admin-ui .modal-panel input:focus,
 body.admin-ui .modal-panel select:focus,
 body.admin-ui .modal-panel textarea:focus {
-  outline: none; border-color: var(--canopy); box-shadow: 0 0 0 3px rgba(17, 46, 66, 0.15);
+  outline: none; border-color: var(--canopy); box-shadow: var(--focus-soft);
 }
-body.admin-ui .admin-main input[readonly], body.admin-ui .admin-main input:disabled { background: var(--paper); color: var(--muted); }
+body.admin-ui .admin-main input[readonly], body.admin-ui .admin-main input:disabled { background: var(--surface-2); color: var(--muted); }
 body.admin-ui input[type="checkbox"], body.admin-ui input[type="radio"] { accent-color: var(--canopy); }
 
 /* Buttons — map the scripts' colour utilities onto OCDA roles */
@@ -143,9 +143,9 @@ body.admin-ui button, body.admin-ui .btn-like { transition: background-color .15
 body.admin-ui .admin-main button.rounded, body.admin-ui .modal-panel button.rounded { border-radius: var(--radius-sm); font-weight: 600; }
 
 body.admin-ui .bg-blue-500, body.admin-ui .bg-blue-600, body.admin-ui .bg-blue-700,
-body.admin-ui .bg-purple-600, body.admin-ui .bg-indigo-600 { background-color: var(--canopy); }
+body.admin-ui .bg-purple-600, body.admin-ui .bg-indigo-600 { background-color: var(--canopy); color: var(--on-canopy); }
 body.admin-ui .bg-blue-500:hover, body.admin-ui .bg-blue-600:hover, body.admin-ui .bg-blue-700:hover,
-body.admin-ui .bg-purple-600:hover, body.admin-ui .bg-indigo-600:hover { background-color: var(--canopy-hover); }
+body.admin-ui .bg-purple-600:hover, body.admin-ui .bg-indigo-600:hover { background-color: var(--canopy-hover); color: var(--on-canopy); }
 
 body.admin-ui .bg-green-500, body.admin-ui .bg-green-600, body.admin-ui .bg-green-700,
 body.admin-ui .bg-emerald-600 { background-color: var(--sky-deep); }
@@ -170,7 +170,8 @@ body.admin-ui #appModalCancel {
 body.admin-ui .admin-main button.bg-gray-200:hover, body.admin-ui .admin-main button.bg-gray-300:hover,
 body.admin-ui #appModalCancel:hover { border-color: var(--ink-soft); }
 
-body.admin-ui .text-blue-600, body.admin-ui .text-blue-700 { color: var(--link); }
+body.admin-ui .text-blue-500, body.admin-ui .text-blue-600, body.admin-ui .text-blue-700,
+body.admin-ui .text-blue-800, body.admin-ui .text-blue-900, body.admin-ui .text-indigo-700 { color: var(--link); }
 body.admin-ui .text-green-700, body.admin-ui .text-green-600 { color: var(--canopy); }
 
 /* Modals */
@@ -179,7 +180,7 @@ body.admin-ui #editAdminModal > div,
 body.admin-ui #editNoticeModal > div,
 body.admin-ui #vaModal > div { border-radius: var(--radius-lg); box-shadow: var(--shadow-pop); }
 body.admin-ui #appModal, body.admin-ui #editAdminModal, body.admin-ui #editNoticeModal, body.admin-ui #vaModal { background-color: rgba(8, 27, 41, .5); }
-body.admin-ui #appModalHeader.bg-blue-600, body.admin-ui #vaModalHeader.bg-blue-600 { background-color: var(--canopy-deep); }
+body.admin-ui #appModalHeader.bg-blue-600, body.admin-ui #vaModalHeader.bg-blue-600 { background-color: var(--canopy-deep); color: #fff; }
 
 /* Create-member form (legacy form classes) */
 body.admin-ui .form-wrapper, body.admin-ui .container-form { background: none; padding: 0; }
@@ -195,8 +196,8 @@ body.admin-ui .form-group input, body.admin-ui .form-group select { width: 100%;
 body.admin-ui .required { color: var(--danger); margin-left: 2px; }
 body.admin-ui .error { display: none; color: var(--danger); font-size: 0.82rem; }
 body.admin-ui .success-message {
-  display: none; background: var(--canopy-tint); color: var(--canopy-deep);
-  border: 1px solid #bcd8e6; border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px;
+  display: none; background: var(--canopy-tint); color: var(--ink);
+  border: 1px solid var(--success-line); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 16px;
 }
 body.admin-ui #createMemberForm button { min-height: 42px; padding: 0 20px; margin-right: 8px; }
 body.admin-ui #createMemberForm button a { color: inherit; text-decoration: none; }
@@ -204,15 +205,15 @@ body.admin-ui #createMemberForm button a { color: inherit; text-decoration: none
 
 /* Member details panel */
 body.admin-ui #memberDetails { border: 1px solid var(--line); border-radius: var(--radius); box-shadow: none; }
-body.admin-ui #memberViewOnly { background: var(--paper); border: 1px solid var(--line); box-shadow: none; }
+body.admin-ui #memberViewOnly { background: var(--surface-2); border: 1px solid var(--line); box-shadow: none; }
 
 /* Pagination buttons generated by script */
 body.admin-ui #pagination button { min-width: 36px; min-height: 36px; border-radius: var(--radius-sm); }
 
 /* View-admin tab buttons */
-body.admin-ui .tab-btn { color: #d3e2ec; border-radius: var(--radius-sm); }
-body.admin-ui .tab-btn:hover { background: rgba(255,255,255,.07); color: #fff; }
-body.admin-ui .tab-btn.active { background: rgba(255,255,255,.11); color: #fff; box-shadow: inset 3px 0 0 var(--harvest); }
+body.admin-ui .tab-btn { color: var(--side-text); border-radius: var(--radius-sm); }
+body.admin-ui .tab-btn:hover { background: var(--side-hover); color: var(--side-ink); }
+body.admin-ui .tab-btn.active { background: var(--side-active); color: var(--side-ink); box-shadow: inset 3px 0 0 var(--harvest); }
 
 @media (max-width: 1023px) {
   body.admin-ui .va-layout { flex-direction: column; height: auto !important; }
@@ -270,7 +271,7 @@ body.admin-ui .ocda-modal-body textarea {
   min-height: 42px; padding: 8px 12px; font-size: 0.95rem; color: var(--ink);
 }
 body.admin-ui .ocda-modal-body input:focus, body.admin-ui .ocda-modal-body select:focus, body.admin-ui .ocda-modal-body textarea:focus {
-  outline: none; border-color: var(--canopy); box-shadow: 0 0 0 3px rgba(17, 46, 66, 0.15);
+  outline: none; border-color: var(--canopy); box-shadow: var(--focus-soft);
 }
 body.admin-ui .ocda-modal-body label { font-weight: 600; font-size: 0.88rem; }
 body.admin-ui .modal-grid > div { min-width: 0; }
@@ -279,7 +280,7 @@ body.admin-ui .modal-actions {
   margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line);
 }
 body.admin-ui .modal-actions button { min-height: 42px; padding-left: 20px; padding-right: 20px; }
-body.admin-ui .member-view { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+body.admin-ui .member-view { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
 body.admin-ui .member-view > div { gap: 12px 24px; }
 body.admin-ui .member-view strong { color: var(--muted); font-weight: 600; font-size: 0.85rem; display: block; }
 body.admin-ui #memberDetails .ocda-modal-body > .space-y-6 { margin-bottom: 0; }
@@ -303,7 +304,7 @@ body.admin-ui .report-card {
 }
 body.admin-ui .rc-head {
   display: flex; align-items: center; gap: 14px; padding: 20px 24px;
-  border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #fafcfd, #ffffff);
+  border-bottom: 1px solid var(--line); background: linear-gradient(180deg, var(--surface-2), var(--surface));
 }
 body.admin-ui .rc-icon {
   flex: none; width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
@@ -345,11 +346,11 @@ body.admin-ui .rc-choice span {
   transition: border-color .15s, background-color .15s, color .15s;
 }
 body.admin-ui .rc-choice span::before {
-  content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line-strong); background: #fff;
+  content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line-strong); background: var(--surface);
   box-sizing: border-box; transition: border .15s;
 }
 body.admin-ui .rc-choice:hover span { border-color: var(--harvest); }
-body.admin-ui .rc-choice input:checked + span { border-color: var(--canopy); background: var(--canopy-tint); color: var(--canopy-deep); }
+body.admin-ui .rc-choice input:checked + span { border-color: var(--canopy); background: var(--canopy-tint); color: var(--ink); }
 body.admin-ui .rc-choice input:checked + span::before { border: 4px solid var(--canopy); }
 body.admin-ui .rc-choice input:focus-visible + span { box-shadow: var(--focus); }
 
@@ -358,8 +359,63 @@ body.admin-ui .rc-check input { width: 18px; height: 18px; }
 
 body.admin-ui .rc-actions {
   display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px;
-  margin: 4px -24px -22px; padding: 16px 24px; border-top: 1px solid var(--line); background: #fafcfd;
+  margin: 4px -24px -22px; padding: 16px 24px; border-top: 1px solid var(--line); background: var(--surface-2);
 }
 body.admin-ui .rc-actions button { min-height: 42px; display: inline-flex; align-items: center; gap: 8px; }
 body.admin-ui .rc-actions svg { width: 16px; height: 16px; }
 body.admin-ui .admin-main .rc-results-title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 650; margin: 0 0 12px; }
+
+/* =====================================================================
+   Theme: Tailwind's greys and whites follow the light / dark tokens.
+   (Light values match the old look; dark turns everything to OCDA navy.)
+   ===================================================================== */
+body.admin-ui .bg-white { background-color: var(--surface); }
+body.admin-ui .bg-gray-50, body.admin-ui .bg-gray-100 { background-color: var(--surface-2); }
+body.admin-ui .admin-main div.bg-gray-200, body.admin-ui .admin-main tr.bg-gray-200,
+body.admin-ui .admin-main thead.bg-gray-200, body.admin-ui .admin-main th.bg-gray-200,
+body.admin-ui .ocda-modal-panel div.bg-gray-200 { background-color: var(--surface-2); }
+body.admin-ui .bg-blue-50, body.admin-ui .bg-blue-100 { background-color: var(--canopy-tint); }
+body.admin-ui .bg-orange-50, body.admin-ui .bg-orange-100 { background-color: var(--danger-tint); }
+body.admin-ui .hover\:bg-gray-50:hover, body.admin-ui .hover\:bg-gray-100:hover,
+body.admin-ui .hover\:bg-blue-50:hover, body.admin-ui .hover\:bg-orange-50:hover { background-color: var(--row-hover); }
+body.admin-ui .admin-main .hover\:bg-gray-200:hover, body.admin-ui .admin-main .hover\:bg-gray-300:hover { background-color: var(--row-hover); }
+body.admin-ui .text-black, body.admin-ui .text-gray-800, body.admin-ui .text-gray-900 { color: var(--ink); }
+body.admin-ui .text-gray-600, body.admin-ui .text-gray-700 { color: var(--ink-soft); }
+body.admin-ui .text-gray-400, body.admin-ui .text-gray-500 { color: var(--muted); }
+body.admin-ui .border-gray-200, body.admin-ui .border-gray-300 { border-color: var(--line); }
+body.admin-ui .border-gray-400 { border-color: var(--line-strong); }
+body.admin-ui .border-blue-300, body.admin-ui .border-blue-500 { border-color: var(--canopy); }
+body.admin-ui .admin-main, body.admin-ui .ocda-modal-panel { color: var(--ink); }
+body.admin-ui .toggle-header:hover { background-color: var(--row-hover); }
+body.admin-ui .admin-main ::placeholder, body.admin-ui .ocda-modal-panel ::placeholder { color: var(--muted); opacity: .8; }
+body.admin-ui select { background-color: var(--surface); color: var(--ink); }
+
+/* Primary buttons: navy with white text in light, light blue with navy text in dark */
+body.admin-ui .bg-blue-500, body.admin-ui .bg-blue-600, body.admin-ui .bg-blue-700 { color: var(--on-canopy); }
+body.admin-ui .bg-blue-500:hover, body.admin-ui .bg-blue-600:hover, body.admin-ui .bg-blue-700:hover { color: var(--on-canopy); }
+body.admin-ui #appModalHeader.bg-blue-600, body.admin-ui #vaModalHeader.bg-blue-600 { color: #fff; }
+
+/* Mobile top bar and view-only header follow the page */
+body.admin-ui .admin-topbar { background: var(--paper-glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); color: var(--ink); }
+body.admin-ui .admin-topbar button { color: var(--ink); border-color: var(--line-strong); background: transparent; }
+body.admin-ui #sidebar.admin-side, body.admin-ui .va-side { border-right: 1px solid var(--line); }
+body.admin-ui .va-side { background: var(--side-bg) !important; }
+body.admin-ui #receiptTabBtn .admin-caret { color: var(--side-muted); }
+
+/* Theme switch: sidebar row + icon button in the top bars */
+body.admin-ui .admin-nav .admin-theme {
+  display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 14px;
+  padding: 9px 12px; border-radius: var(--radius-sm); font-size: 0.93rem; font-weight: 500;
+  color: var(--side-text); background: transparent; border: 1px solid var(--side-line); text-align: left;
+}
+body.admin-ui .admin-nav .admin-theme:hover { background: var(--side-hover); color: var(--side-ink); border-color: var(--side-line-strong); }
+body.admin-ui .admin-nav .admin-theme + .admin-logout { margin-top: 8px; }
+body.admin-ui .admin-theme svg, body.admin-ui .theme-icon-btn svg { width: 18px; height: 18px; flex: none; }
+body.admin-ui .theme-icon-btn {
+  width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line-strong); background: transparent; color: var(--ink);
+}
+body.admin-ui .admin-topbar .theme-icon-btn { border-radius: 50%; }
+body.admin-ui .theme-icon-btn:hover { border-color: var(--harvest); }
+body.admin-ui .i-sun, [data-theme="dark"] body.admin-ui .i-moon { display: none; }
+[data-theme="dark"] body.admin-ui .i-sun { display: block; }

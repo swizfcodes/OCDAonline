@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Questions — OCDA</title>
   <meta name="description" content="Answers to common questions about OCDA membership, dues and accounts.">
-  <meta name="theme-color" content="#081b29">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#edf4f9">
+  <script>(function(){var t;try{t=localStorage.getItem("ocda-theme")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)})();</script>
   <link rel="icon" href="/photos/favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="/photos/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +24,6 @@
       <img src="/photos/ocda-seal-96.webp" alt="" width="44" height="44">
       <span class="brand-name"><strong>OCDA</strong><span>Oyin-Akoko Community Development Association</span></span>
     </a>
-    <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <nav id="site-nav" class="site-nav" aria-label="Main">
       <a href="/aboutus.html">About us</a>
       <a href="/news.html">News &amp; events</a>
@@ -31,22 +32,20 @@
       <a href="/adminlog.html">Admin</a>
       <a class="btn btn-nav btn-sm" href="/member.html">Member sign in</a>
     </nav>
+    <button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch theme"><svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+    <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     </div>
   </header>
 
-  <section class="page-head">
-    <div class="wrap">
-      <h1>Questions and answers</h1>
-      <p>Membership, dues and your account. If your question isn't here, contact the secretariat.</p>
-    </div>
-    <svg class="hills" viewBox="0 0 1440 150" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-    <path fill="#0e2a3e" d="M0 74 C 150 26, 290 30, 420 60 S 690 18, 860 46 S 1170 8, 1440 50 V150 H0Z"/>
-    <path fill="#163a54" d="M0 106 C 190 72, 360 94, 520 100 S 820 64, 1000 90 S 1300 72, 1440 94 V150 H0Z"/>
-    <path fill="#f4f7fa" d="M0 132 C 240 116, 480 142, 720 130 S 1200 116, 1440 134 V150 H0Z"/>
-  </svg>
-  </section>
-
   <main id="main">
+    <section class="page-intro">
+      <div class="wrap">
+        <p class="eyebrow reveal">Questions</p>
+        <h1 class="reveal" style="--rd: 80ms">Answers, <em class="accent">plainly</em> put.</h1>
+        <p class="lede reveal" style="--rd: 160ms">Membership, dues and your account. If your question isn't here, the secretariat is a message away.</p>
+      </div>
+    </section>
+
     <section class="section">
       <div class="wrap">
         <div class="measure" style="max-width:820px">
@@ -91,9 +90,11 @@
       <div class="footer-base">
         <span>&copy; <span data-year></span> Oyin-Akoko Community Development Association</span>
         <span>Unity &middot; Service &middot; Transparency &middot; Commitment</span>
+        <span>Engineered by SwizfCodes.</span>
       </div>
     </div>
   </footer>
+  <script src="/script/theme.js" defer></script>
   <script src="/script/site.js" defer></script>
   <script src="/script/faq.js" defer></script>
 </body>

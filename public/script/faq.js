@@ -12,9 +12,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     list.innerHTML = items.map((q, i) => `
       <details class="faq-item"${i === 0 ? " open" : ""}>
         <summary>${escapeHtml(q.question)}</summary>
-        <div class="faq-answer">${escapeHtml(q.answer)}</div>
+        <div class="faq-answer"><div class="faq-answer-inner">${escapeHtml(q.answer)}</div></div>
       </details>`).join("");
-    window.OCDA.singleOpen(list);
+    window.OCDA.detailsAccordion(list);
   } catch (err) {
     list.innerHTML = '<p class="empty">Questions couldn\'t be loaded. Refresh the page to try again.</p>';
   }

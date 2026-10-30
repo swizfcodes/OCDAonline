@@ -20,28 +20,17 @@ document.addEventListener("DOMContentLoaded", async () => {
           <span class="notice-title">${escapeHtml(n.title)}</span>
           <span class="notice-kind" data-kind="${escapeHtml(n.type)}">${n.type === "event" ? "Event" : "Notice"}</span>
         </button>
-        <div class="notice-body" id="${id}-body" hidden>${escapeHtml(n.content || "No further details.")}</div>
+        <div class="notice-body" id="${id}-body" hidden><div class="notice-body-inner">${escapeHtml(n.content || "No further details.")}</div></div>
       </li>`;
     }).join("");
 
-    const toggle = (btn, open) => {
-      btn.setAttribute("aria-expanded", String(open));
-      document.getElementById(btn.getAttribute("aria-controls")).hidden = !open;
-    };
-
-    // One notice open at a time
-    list.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[aria-controls]");
-      if (!btn) return;
-      const opening = btn.getAttribute("aria-expanded") !== "true";
-      if (opening) list.querySelectorAll('button[aria-expanded="true"]').forEach((b) => toggle(b, false));
-      toggle(btn, opening);
-    });
+    // One notice open at a time, animated, without the list jumping on phones
+    const accordion = window.OCDA.noticeAccordion(list);
 
     // Open the notice linked from the home page, if any
     const target = location.hash && document.getElementById(location.hash.slice(1));
     const first = target ? target.querySelector("button") : list.querySelector("button");
-    if (first) toggle(first, true);
+    if (first) accordion.toggle(first, true, { animate: false });
     if (target) target.scrollIntoView({ block: "start" });
   } catch (err) {
     list.innerHTML = '<li class="empty">Notices couldn\'t be loaded. Refresh the page to try again.</li>';
