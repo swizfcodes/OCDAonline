@@ -3,8 +3,8 @@
    Two themes:
    - light: a faint, almost-white blue ground with navy text
    - dark:  the OCDA navy ground with white and light-blue text
-   The device setting decides by default (prefers-color-scheme). A visitor's own choice is
-   stored by /script/theme.js and applied as <html data-theme="light|dark"> before paint. */
+   Each browser's own setting decides by default (prefers-color-scheme). A visitor's choice from the
+   theme button is stored by /script/theme.js and applied as <html data-theme="light|dark"> before paint. */
 
 :root {
   /* Brand constants (never change with the theme) */
@@ -150,7 +150,7 @@
   color-scheme: dark;
 }
 
-/* Without JavaScript, still follow the device setting */
+/* Without JavaScript, still follow the browser's setting */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     --paper: #081b29; --paper-glass: rgba(8, 27, 41, 0.86); --surface: #0d2436; --surface-2: #112d43; --row-hover: #12304a;
@@ -175,15 +175,16 @@ html.theme-switching, html.theme-switching *, html.theme-switching *::before, ht
   transition: background-color .3s ease, border-color .3s ease, color .3s ease, fill .3s ease !important;
 }
 
-/* ---- Scrollbars: faint light blue in light mode, navy in dark mode (every page) ---- */
-html { scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
-* { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
-html { scrollbar-width: auto; }
-/* Safari and older Chromium */
-@supports not (scrollbar-color: auto) {
-  ::-webkit-scrollbar { width: 12px; height: 12px; }
-  ::-webkit-scrollbar-track { background: var(--scroll-track); }
-  ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; border: 3px solid var(--scroll-track); }
-  ::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
-  ::-webkit-scrollbar-corner { background: var(--scroll-track); }
+/* ---- Scrollbars: very thin; faint light blue in light mode, navy in dark mode (every page) ----
+   Chrome, Edge and Safari use the ::-webkit-scrollbar rules (6px). Firefox only offers
+   "thin", so it gets the standard properties. */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-track { background: var(--scroll-track); }
+::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); }
+::-webkit-scrollbar-corner { background: transparent; }
+@supports (-moz-appearance: none) {
+  * { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+  html { scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
 }

@@ -1,7 +1,8 @@
 /* Light / dark theme for every OCDA page.
-   - Default: follow the device (prefers-color-scheme), including phones and Chrome set to dark.
+   - Default: follow the browser's own setting (prefers-color-scheme). Each browser reports its
+     own choice, so Chrome set to dark opens dark while Edge set to light opens light.
    - A click on any [data-theme-toggle] button switches theme and remembers it on this browser.
-     Picking the same theme as the device forgets the choice, so the page follows the device again.
+     Picking the same theme as the browser forgets the choice, so the page follows the browser again.
    The tiny inline snippet in each page's <head> applies the theme before first paint;
    this file only handles switching. */
 (function () {
@@ -59,7 +60,7 @@
     apply(next, true);
   });
 
-  // Follow the device while the visitor hasn't picked a theme
+  // Follow the browser's setting while the visitor hasn't picked a theme
   if (media) {
     const onChange = () => { if (!stored()) apply(system(), true); };
     if (media.addEventListener) media.addEventListener("change", onChange);
