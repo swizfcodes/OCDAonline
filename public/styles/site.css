@@ -421,6 +421,10 @@ a:hover { color: var(--canopy); }
 .auth-aside-body p { color: var(--ink-soft); font-size: var(--step-1); line-height: 1.7; margin: 0; }
 .auth-credit { margin: 0; display: flex; flex-direction: column; gap: 2px; color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
 .auth-credit-mobile { display: none; }
+.credit-link { color: inherit; font-weight: 600; text-decoration: none; border-bottom: 1px dotted currentColor; transition: color .2s, border-color .2s; }
+.credit-link:hover { color: var(--link); border-bottom-color: transparent; }
+.site-footer .credit-link:hover { color: var(--link); text-decoration: none; }
+[data-theme="dark"] .credit-link:hover { color: var(--harvest); }
 
 /* Right: the form card, centred in the screen height; a long form scrolls while the left waits */
 .auth-main {
